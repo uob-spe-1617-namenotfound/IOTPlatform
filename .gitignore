@@ -9,6 +9,10 @@
 .idea/dictionaries
 .idea/vcs.xml
 .idea/jsLibraryMappings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/SPE-IoT-Energy.iml
+.idea/remote-mappings.xml
 
 # Sensitive or high-churn files:
 .idea/dataSources.ids
