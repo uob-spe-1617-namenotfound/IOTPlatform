@@ -1,0 +1,26 @@
+{% extends "bootstrap/base.html" %}
+{%block metas%}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description"
+      content="IoT platform (Software Engineering Project at University of Bristol)">
+<meta name="author" content="Team 404. NAMENOTFOUND">
+{%endblock%}
+{%block title%}
+SPE IoT
+{%endblock%}
+
+{% block content %}
+<div class="container">
+    {% block messages %}
+    {% for category, message in get_flashed_messages(with_categories=true) %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endblock %}
+    {% block page_content %}
+    {% endblock %}
+</div>
+{% endblock %}
+
+{% block navbar %}
+    {{ nav.navbar.render() }}
+{% endblock %}

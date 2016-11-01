@@ -1,19 +1,3 @@
-from flask import Flask
-from flask_bootstrap import Bootstrap
+from website import app
 
-app = Flask(__name__)
-
-Bootstrap(app)
-
-app.config.update(
-    DEBUG=True,
-    HOSTNAME="0.0.0.0"
-)
-
-
-@app.route('/')
-def index():
-    return "Hello, world!"
-
-
-app.run(host=app.config['HOSTNAME'])
+app.run(debug=True,host=app.config['HOSTNAME'])
