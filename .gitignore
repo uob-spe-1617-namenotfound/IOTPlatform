@@ -13,6 +13,7 @@
 .idea/modules.xml
 .idea/SPE-IoT-Energy.iml
 .idea/remote-mappings.xml
+.idea*
 
 # Sensitive or high-churn files:
 .idea/dataSources.ids
