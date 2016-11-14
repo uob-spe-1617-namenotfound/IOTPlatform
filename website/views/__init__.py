@@ -23,11 +23,11 @@ def account_settings():
     return "To be implemented"
 
 
-@app.route('/Home Actions')
+@app.route('/home Actions')
 def home_actions():
     return render_template("homeactions.html")
 
 
-@app.route('/Devices')
+@app.route('/devices')
 def devices():
     return render_template("devices.html")
