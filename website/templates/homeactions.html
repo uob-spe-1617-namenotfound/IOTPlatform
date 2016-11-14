@@ -1,15 +1,24 @@
 {% extends "base.html" %}
 {%block page_content %}
 <h1> Home Actions </h1>
-<h5>This page allows the user to manage the conditions of the chosen room. </h5>
+
+    <br>
+    </br>
+<h4>This page allows the user to manage the conditions of the chosen room. </h4>
 <ul>
 </ul>
 <p>
-	<button type="button" class="btn btn-primary btn-lg"> Set Temperature </button>
+	<div class="btn-group" role="group" aria-label="...">
+  <button type="button" class="btn btn-default"> Decrease </button>
+  <button type="button" class="btn btn-default"> Current Temperature showing </button>
+  <button type="button" class="btn btn-default"> Increase</button>
+</div>
+
 </p>
-<p> change temperature to desigered while current shows </p>
+      <h5> change temperature to desired while current shows </h5>
 <ul>
 </ul>
+    <br></br>
 <h3> Triggers for the chosen room</h3>
     This allows user to configure actions to be triggered automatically.
 <ul>

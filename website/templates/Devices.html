@@ -1,24 +1,37 @@
 {% extends "base.html" %}
 {%block page_content %}
 <h1> Devices </h1>
-<p> A link in the room page (called manage devices) leads you to this page where you can:</p>
 
-    <a href="Device.html">Pair New Device</a>
+<p style="font-size:120%;"> This page opens when you click on a  link in the room page (called manage devices). This page allows the user to do the following:</p>
+
+   <b><a href="Devices.html">
+        <p style="font-size:140%;">  <span class="glyphicon glyphicon-plus"></span>
+        </a> Pair New Device </p> </b>
+   <br></br>
     <ul></ul>
-    <p1> All paired devices will appear here: </p1>
+    <h4> All paired devices will appear here: </h4>
        <ol>
-          <li><a href="Devices.html" >Device1</a> <ul>
+          <li> <h5> Device 1</h5> <ul>
   <li> <a href="Devices.html"> Delete Paired Device</a></li>
 </ul> <ul>
   <li> <a href="Devices.html">Add to a My Devices Group </a></li>
 </ul>
           </li>
-               <li><a href="Triggers.html" >Device2</a></li>
-                      <li><a href="Triggers.html" >Device3</a></li>
-</ol>
+               <li><h5> Device 2</h5><ul>
+  <li> <a href="Devices.html"> Delete Paired Device</a></li>
+</ul> <ul>
+  <li> <a href="Devices.html">Add to a My Devices Group </a></li>
+</ul></li>
+                      <li><h5> Device 3</h5><ul>
+  <li> <a href="Devices.html"> Delete Paired Device</a></li>
+</ul> <ul>
+  <li> <a href="Devices.html">Add to a My Devices Group </a></li>
+</ul></li>
 
+</ol>
+ <br></br>
    <h1> Device Groups </h1>
-    <p>This page allows you to manage your Device groups. Device groups allow you to manage and control multiple devives together.</p>
+    <p style="font-size:120%;">This page allows the user to manage smart devices at home. By creating a Device group, the user can manage and control multiple devices together to perform in a unified manner.</p>
 <style>
 table, td, th {
     border: 1px solid #ddd;
@@ -37,28 +50,26 @@ th, td {
 </head>
 <body>
 
-<h2>The padding Property</h2>
-<p>This property adds space between the border and the content in a table.</p>
-
 <table>
   <tr>
-    <th> Device Name</th>
+    <th> Device Group Name</th>
     <th> Actions </th>
     <th> Devices </th>
   </tr>
   <tr>
-    <td> Ground Floor </td>
+    <td> Ground Floor Devices </td>
       <td> Power Actions </td>
-      <td></td>
+      <td> Lounge </td>
   </tr>
   <tr>
     <td></td>
-    <td></td>
+    <td> Trigger Actions </td>
+      <td> Dining Room </td>
   </tr>
   <tr>
     <td></td>
-    <td></td>
-    <td>$300</td>
+    <td> Temperature Settings </td>
+    <td> Kitchen </td>
   </tr>
 </table>
 
