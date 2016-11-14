@@ -1,93 +1,97 @@
 {% extends "base.html" %}
-{%block page_content %}
-<h1> Home Actions </h1>
+{% block page_content %}
+    <h1> Home Actions </h1>
 
     <br>
     </br>
-<h4>This page allows the user to manage the conditions of the chosen room. </h4>
-<ul>
-</ul>
-<p>
-	<div class="btn-group" role="group" aria-label="...">
-  <button type="button" class="btn btn-default"> Decrease </button>
-  <button type="button" class="btn btn-default"> Current Temperature showing </button>
-  <button type="button" class="btn btn-default"> Increase</button>
-</div>
+    <h4>This page allows the user to manage the conditions of the chosen room. </h4>
+    <ul>
+    </ul>
+    <p>
+    <div class="btn-group" role="group" aria-label="...">
+        <button type="button" class="btn btn-default"> Decrease</button>
+        <button type="button" class="btn btn-default"> Current Temperature showing</button>
+        <button type="button" class="btn btn-default"> Increase</button>
+    </div>
 
-</p>
-      <h5> change temperature to desired while current shows </h5>
-<ul>
-</ul>
+    </p>
+    <h5> change temperature to desired while current shows </h5>
+    <ul>
+    </ul>
     <br></br>
-<h3> Triggers for the chosen room</h3>
+    <h3> Triggers for the chosen room</h3>
     This allows user to configure actions to be triggered automatically.
-<ul>
-</ul>
+    <ul>
+    </ul>
 
     <p> User can select from the following list:</p>
-      <ol>
-    <li><a href="Triggers.html"> Trigger1</a></li>
-          <li><a href="Triggers.html" >Trigger2</a></li>
-               <li><a href="Triggers.html" >Trigger3</a></li>
-                      <li><a href="Triggers.html" >Trigger4</a></li>
-</ol>
+    <ol>
+        <li> <a href="{{ url_for ('triggers') }}"> CLICK HERE </a>
+
+
+
+        <li><a href="{{ url_for ('triggers') }}">Trigger2</a></li>
+        <li><a href="{{ url_for ('triggers') }}">Trigger3</a></li>
+        <li><a href="{{ url_for ('triggers') }}">Trigger4</a></li>
+    </ol>
 
     <p> when trigger is detected:</p>
-<select class="selectpicker">
-	<option>Power On</option>
-	<option>Power Off </option>
-	<option>No Action</option>
-	<option>Set Temperature</option>
-</select>
+    <select class="selectpicker">
+        <option>Power On</option>
+        <option>Power Off</option>
+        <option>No Action</option>
+        <option>Set Temperature</option>
+    </select>
     <ul>
     </ul>
-<p> when trigger is not detected:</p>
-<select class="selectpicker">
-	<option>Power On</option>
-	<option>Power Off </option>
-	<option>No Action</option>
-	<option>Set Temperature</option>
-</select>
+    <p> when trigger is not detected:</p>
+    <select class="selectpicker">
+        <option>Power On</option>
+        <option>Power Off</option>
+        <option>No Action</option>
+        <option>Set Temperature</option>
+    </select>
     <ul>
 
     </ul>
-<p> When?</p><div class="radio">
-	<label><input type="radio" name="optradio">Always </label>
-</div>
-<div class="radio">
-	<label><input type="radio" name="optradio">Between the following times</label>
-</div>
-<div class="overflowchat-setting">
-    <div>
-
-       <div class="btn-group">
-      </ul>
-   </div>
- </div>
-
-<div>
-   <label>From: </label>
-   <div>
-     <div class="input-group bootstrap-timepicker timepicker">
-        <input id="timepicker1" type="text" class="form-control input-small">
-        <span class="fa fa-clock-o"></span>
-     </div>
-    <div class="btn-group">
-     </div>
- </div>
-</div>
-
-<div>
-<label>To: </label>
-<div>
-   <div class="input-group bootstrap-timepicker timepicker">
-        <input id="timepicker2" type="text" class="form-control input-small">
-        <span class="fa fa-clock-o"></span>
+    <p> When?</p>
+    <div class="radio">
+        <label><input type="radio" name="optradio">Always </label>
     </div>
-   <div class="btn-group">
-       <ul class="dropdown-menu">
+    <div class="radio">
+        <label><input type="radio" name="optradio">Between the following times</label>
     </div>
-</div>
-</div>
+    <div class="overflowchat-setting">
+        <div>
 
-{%endblock%}
+            <div class="btn-group">
+                </ul>
+            </div>
+        </div>
+
+        <div>
+            <label>From: </label>
+            <div>
+                <div class="input-group bootstrap-timepicker timepicker">
+                    <input id="timepicker1" type="text" class="form-control input-small">
+                    <span class="fa fa-clock-o"></span>
+                </div>
+                <div class="btn-group">
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <label>To: </label>
+            <div>
+                <div class="input-group bootstrap-timepicker timepicker">
+                    <input id="timepicker2" type="text" class="form-control input-small">
+                    <span class="fa fa-clock-o"></span>
+                </div>
+                <div class="btn-group">
+                    <ul class="dropdown-menu">
+                </div>
+            </div>
+        </div>
+
+{% endblock %}
