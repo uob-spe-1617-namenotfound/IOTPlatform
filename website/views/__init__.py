@@ -24,6 +24,10 @@ def account_settings():
 def home_actions():
     return render_template("homeactions.html")
 
+@app.route('/Room View')
+def room_view():
+    return render_template("roomview.html")
+
 @app.route('/Devices')
 def devices():
     return render_template("Devices.html")

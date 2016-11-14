@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{%block page_content %}
+
+<h1> Rooms </h1>
+
+<br>
+
+<ul class="nav nav-pills">
+  <li role="presentation" class="active"><a href="#">Manage Devices</a></li>
+</ul>
+
+<br>
+
+
+
+<body>
+
+
+
+<table class="table table-inverse">
+
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>Temperature</td>
+      <td>24 </td>
+      <td>
+          <ul class="nav nav-pills">  <li role="presentation" class="active"><a href="#">Edit</a></li></ul>
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>
+              <div class="dropdown">
+            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+              Select Sensor
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+              <li><a href="#">South Window</a></li>
+              <li><a href="#">East Window</a></li>
+              <li><a href="#">Door</a></li>
+            </ul>
+          </div>
+      </td>
+      <td>Closed</td>
+      <td>
+        <ul class="nav nav-pills">  <li role="presentation" class="active"><a href="#">History</a></li></ul>
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td>
+              <div class="dropdown">
+            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+              Select Light
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+              <li><a href="#">A</a></li>
+              <li><a href="#">B</a></li>
+              <li><a href="#">C</a></li>
+            </ul>
+          </div>
+      </td>
+      <td>On</td>
+      <td>
+        <ul class="nav nav-pills">  <li role="presentation" class="active"><a href="#">Edit</a></li></ul>
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td>
+              <div class="dropdown">
+            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+              Select Motion Sensor
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+              <li><a href="#">A</a></li>
+              <li><a href="#">B</a></li>
+              <li><a href="#">C</a></li>
+            </ul>
+          </div>
+      </td>
+      <td>Last movement: 3:45</td>
+      <td>
+        <ul class="nav nav-pills">  <li role="presentation" class="active"><a href="#">History</a></li></ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+</body>
+</html>
+
+{%endblock%}
