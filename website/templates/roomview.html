@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {%block page_content %}
 
-<h1> Rooms </h1>
+<h1> Kitchen </h1>
 
 <br>
 
@@ -22,72 +22,130 @@
   <tbody>
     <tr>
       <th scope="row">1</th>
-      <td>Temperature</td>
+      <td>Thermostat</td>
       <td>24 </td>
       <td>
-          <ul class="nav nav-pills">  <li role="presentation" class="active"><a href="#">Edit</a></li></ul>
+          <ul class="nav nav-pills btn-xs">  <li role="presentation" class="active"><a href="#">View</a></li></ul>
       </td>
     </tr>
+
     <tr>
       <th scope="row">2</th>
       <td>
-              <div class="dropdown">
-            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-              Select Sensor
-              <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-              <li><a href="#">South Window</a></li>
-              <li><a href="#">East Window</a></li>
-              <li><a href="#">Door</a></li>
-            </ul>
-          </div>
+          <table>
+              <tr>
+                <th>Door/Window Sensor</th>
+              </tr>
+              <tr>
+                <td>South Window</td>
+              </tr>
+              <tr>
+                <td>East Window</td>
+              </tr>
+              <tr>
+                <td>Door</td>
+              </tr>
+          </table>
       </td>
-      <td>Closed</td>
       <td>
-        <ul class="nav nav-pills">  <li role="presentation" class="active"><a href="#">History</a></li></ul>
+          <table>
+              <tr>
+                <td><br></td>
+              </tr>
+              <tr>
+                <td>Closed</td>
+              </tr>
+              <tr>
+                <td>Closed</td>
+              </tr>
+              <tr>
+                <td>Open</td>
+              </tr>
+          </table>
+      </td>
+      <td>
+        <ul class="nav nav-pills btn-xs">  <li role="presentation" class="active"><a href="#">View</a></li></ul>
       </td>
     </tr>
+
     <tr>
       <th scope="row">3</th>
       <td>
-              <div class="dropdown">
-            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-              Select Light
-              <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-              <li><a href="#">A</a></li>
-              <li><a href="#">B</a></li>
-              <li><a href="#">C</a></li>
-            </ul>
-          </div>
+          <table>
+              <tr>
+                <th>Light</th>
+              </tr>
+              <tr>
+                <td>A</td>
+              </tr>
+              <tr>
+                <td>B</td>
+              </tr>
+              <tr>
+                <td>C</td>
+              </tr>
+          </table>
       </td>
-      <td>On</td>
       <td>
-        <ul class="nav nav-pills">  <li role="presentation" class="active"><a href="#">Edit</a></li></ul>
+          <table>
+              <tr>
+                <td><br></td>
+              </tr>
+              <tr>
+                <td>On</td>
+              </tr>
+              <tr>
+                <td>On</td>
+              </tr>
+              <tr>
+                <td>Off</td>
+              </tr>
+          </table>
+      </td>
+      <td>
+        <ul class="nav nav-pills btn-xs">  <li role="presentation" class="active"><a href="#">View</a></li></ul>
       </td>
     </tr>
+
     <tr>
-      <th scope="row">3</th>
+      <th scope="row">4</th>
       <td>
-              <div class="dropdown">
-            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-              Select Motion Sensor
-              <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-              <li><a href="#">A</a></li>
-              <li><a href="#">B</a></li>
-              <li><a href="#">C</a></li>
-            </ul>
-          </div>
+          <table>
+              <tr>
+                <th>Motion Sensor</th>
+              </tr>
+              <tr>
+                <td>A</td>
+              </tr>
+              <tr>
+                <td>B</td>
+              </tr>
+              <tr>
+                <td>C</td>
+              </tr>
+          </table>
       </td>
-      <td>Last movement: 3:45</td>
       <td>
-        <ul class="nav nav-pills">  <li role="presentation" class="active"><a href="#">History</a></li></ul>
+          <table>
+              <tr>
+                <th>Last movement detected at:</th>
+              </tr>
+              <tr>
+                <td>4:20</td>
+              </tr>
+              <tr>
+                <td>2:04</td>
+              </tr>
+              <tr>
+                <td>0:42</td>
+              </tr>
+          </table>
+      </td>
+      <td>
+        <ul class="nav nav-pills btn-xs">  <li role="presentation" class="active"><a href="#">View</a></li></ul>
       </td>
     </tr>
+
   </tbody>
 </table>
 
