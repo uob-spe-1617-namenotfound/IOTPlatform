@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{%block page_content %}
+<h1> Devices </h1>
+<p> A link in the room page (called manage devices) leads you to this page where you can:</p>
+
+    <a href="Device.html">Pair New Device</a>
+    <ul></ul>
+    <p1> All paired devices will appear here: </p1>
+       <ol>
+          <li><a href="Devices.html" >Device1</a> <ul>
+  <li> <a href="Devices.html"> Delete Paired Device</a></li>
+</ul> <ul>
+  <li> <a href="Devices.html">Add to a My Devices Group </a></li>
+</ul>
+          </li>
+               <li><a href="Triggers.html" >Device2</a></li>
+                      <li><a href="Triggers.html" >Device3</a></li>
+</ol>
+
+   <h1> Device Groups </h1>
+    <p>This page allows you to manage your Device groups. Device groups allow you to manage and control multiple devives together.</p>
+<style>
+table, td, th {
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    padding: 15px;
+}
+</style>
+</head>
+<body>
+
+<h2>The padding Property</h2>
+<p>This property adds space between the border and the content in a table.</p>
+
+<table>
+  <tr>
+    <th> Device Name</th>
+    <th> Actions </th>
+    <th> Devices </th>
+  </tr>
+  <tr>
+    <td> Ground Floor </td>
+      <td> Power Actions </td>
+      <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td></td>
+    <td>$300</td>
+  </tr>
+</table>
+
+</body>
+</html>
+    <a href="Device.html"> Creat New Group</a>
+{%endblock%}
