@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block page_content %}
+    <h1> Devices </h1>
+    <p style="font-size:120%;"> This page opens when you click on a link in the room page (called manage devices). This
+        page allows the user to do the following:</p>
+    <b><a href="{{ url_for('.devices') }}">
+        <p style="font-size:140%;"><span class="glyphicon glyphicon-plus"></span>
+    </a> Pair New Device </p> </b>
+    <br><br>
+    <ul></ul>
+    <h4> All paired devices will appear here: </h4>
+    <ol>
+        <li><h5> Device 1</h5>
+            <ul>
+                <li><a href="{{ url_for('.devices') }}"> Delete Paired Device</a></li>
+            </ul>
+            <ul>
+                <li><a href="{{ url_for('.devices') }}">Add to a My Devices Group </a></li>
+            </ul>
+        </li>
+        <li><h5> Device 2</h5>
+            <ul>
+                <li><a href="{{ url_for('.devices') }}"> Delete Paired Device</a></li>
+            </ul>
+            <ul>
+                <li><a href="{{ url_for('.devices') }}">Add to a My Devices Group </a></li>
+            </ul>
+        </li>
+        <li><h5> Device 3</h5>
+            <ul>
+                <li><a href="{{ url_for('.devices') }}"> Delete Paired Device</a></li>
+            </ul>
+            <ul>
+                <li><a href="{{ url_for('.devices') }}">Add to a My Devices Group </a></li>
+            </ul>
+        </li>
+
+    </ol>
+    <br>
+    <h1> Device Groups </h1>
+    <p style="font-size:120%;">This page allows the user to manage smart devices at home. By creating a Device group,
+        the user can manage and control multiple devices together to perform in a unified manner.</p>
+    <style>
+        table, td, th {
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            padding: 15px;
+        }
+    </style>
+    </head>
+    <body>
+
+    <table>
+        <tr>
+            <th> Device Group Name</th>
+            <th> Actions</th>
+            <th> Devices</th>
+        </tr>
+        <tr>
+            <td> Ground Floor Devices</td>
+            <td> Power Actions</td>
+            <td> Lounge</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td> Trigger Actions</td>
+            <td> Dining Room</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td> Temperature Settings</td>
+            <td> Kitchen</td>
+        </tr>
+    </table>
+    <a href="{{ url_for('.devices') }}"> Create New Group</a>
+{% endblock %}

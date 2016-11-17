@@ -11,4 +11,5 @@ Bootstrap(app)
 nav = Nav(app)
 
 nav.register_element('navbar', navbar)
+
 import website.views

@@ -1,157 +1,147 @@
 {% extends "base.html" %}
-{%block page_content %}
+{% block page_content %}
+    <h1> Kitchen </h1>
+    <br>
+    <ul class="nav nav-pills">
+        <li role="presentation" class="active"><a href="#">Manage Devices</a></li>
+    </ul>
+    <br>
+    <table class="table table-inverse">
 
-<h1> Kitchen </h1>
+        <tbody>
+        <tr>
+            <th scope="row">1</th>
+            <td>Thermostat</td>
+            <td>24</td>
+            <td>
+                <ul class="nav nav-pills btn-xs">
+                    <li role="presentation" class="active"><a href="#">View</a></li>
+                </ul>
+            </td>
+        </tr>
 
-<br>
+        <tr>
+            <th scope="row">2</th>
+            <td>
+                <table>
+                    <tr>
+                        <th>Door/Window Sensor</th>
+                    </tr>
+                    <tr>
+                        <td>South Window</td>
+                    </tr>
+                    <tr>
+                        <td>East Window</td>
+                    </tr>
+                    <tr>
+                        <td>Door</td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <table>
+                    <tr>
+                        <td><br></td>
+                    </tr>
+                    <tr>
+                        <td>Closed</td>
+                    </tr>
+                    <tr>
+                        <td>Closed</td>
+                    </tr>
+                    <tr>
+                        <td>Open</td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <ul class="nav nav-pills btn-xs">
+                    <li role="presentation" class="active"><a href="#">View</a></li>
+                </ul>
+            </td>
+        </tr>
 
-<ul class="nav nav-pills">
-  <li role="presentation" class="active"><a href="#">Manage Devices</a></li>
-</ul>
+        <tr>
+            <th scope="row">3</th>
+            <td>
+                <table>
+                    <tr>
+                        <th>Light</th>
+                    </tr>
+                    <tr>
+                        <td>A</td>
+                    </tr>
+                    <tr>
+                        <td>B</td>
+                    </tr>
+                    <tr>
+                        <td>C</td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <table>
+                    <tr>
+                        <td><br></td>
+                    </tr>
+                    <tr>
+                        <td>On</td>
+                    </tr>
+                    <tr>
+                        <td>On</td>
+                    </tr>
+                    <tr>
+                        <td>Off</td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <ul class="nav nav-pills btn-xs">
+                    <li role="presentation" class="active"><a href="#">View</a></li>
+                </ul>
+            </td>
+        </tr>
 
-<br>
-
-
-
-<body>
-
-
-
-<table class="table table-inverse">
-
-  <tbody>
-    <tr>
-      <th scope="row">1</th>
-      <td>Thermostat</td>
-      <td>24 </td>
-      <td>
-          <ul class="nav nav-pills btn-xs">  <li role="presentation" class="active"><a href="#">View</a></li></ul>
-      </td>
-    </tr>
-
-    <tr>
-      <th scope="row">2</th>
-      <td>
-          <table>
-              <tr>
-                <th>Door/Window Sensor</th>
-              </tr>
-              <tr>
-                <td>South Window</td>
-              </tr>
-              <tr>
-                <td>East Window</td>
-              </tr>
-              <tr>
-                <td>Door</td>
-              </tr>
-          </table>
-      </td>
-      <td>
-          <table>
-              <tr>
-                <td><br></td>
-              </tr>
-              <tr>
-                <td>Closed</td>
-              </tr>
-              <tr>
-                <td>Closed</td>
-              </tr>
-              <tr>
-                <td>Open</td>
-              </tr>
-          </table>
-      </td>
-      <td>
-        <ul class="nav nav-pills btn-xs">  <li role="presentation" class="active"><a href="#">View</a></li></ul>
-      </td>
-    </tr>
-
-    <tr>
-      <th scope="row">3</th>
-      <td>
-          <table>
-              <tr>
-                <th>Light</th>
-              </tr>
-              <tr>
-                <td>A</td>
-              </tr>
-              <tr>
-                <td>B</td>
-              </tr>
-              <tr>
-                <td>C</td>
-              </tr>
-          </table>
-      </td>
-      <td>
-          <table>
-              <tr>
-                <td><br></td>
-              </tr>
-              <tr>
-                <td>On</td>
-              </tr>
-              <tr>
-                <td>On</td>
-              </tr>
-              <tr>
-                <td>Off</td>
-              </tr>
-          </table>
-      </td>
-      <td>
-        <ul class="nav nav-pills btn-xs">  <li role="presentation" class="active"><a href="#">View</a></li></ul>
-      </td>
-    </tr>
-
-    <tr>
-      <th scope="row">4</th>
-      <td>
-          <table>
-              <tr>
-                <th>Motion Sensor</th>
-              </tr>
-              <tr>
-                <td>A</td>
-              </tr>
-              <tr>
-                <td>B</td>
-              </tr>
-              <tr>
-                <td>C</td>
-              </tr>
-          </table>
-      </td>
-      <td>
-          <table>
-              <tr>
-                <th>Last movement detected at:</th>
-              </tr>
-              <tr>
-                <td>4:20</td>
-              </tr>
-              <tr>
-                <td>2:04</td>
-              </tr>
-              <tr>
-                <td>0:42</td>
-              </tr>
-          </table>
-      </td>
-      <td>
-        <ul class="nav nav-pills btn-xs">  <li role="presentation" class="active"><a href="#">View</a></li></ul>
-      </td>
-    </tr>
-
-  </tbody>
-</table>
-
-
-
-</body>
-</html>
-
-{%endblock%}
+        <tr>
+            <th scope="row">4</th>
+            <td>
+                <table>
+                    <tr>
+                        <th>Motion Sensor</th>
+                    </tr>
+                    <tr>
+                        <td>A</td>
+                    </tr>
+                    <tr>
+                        <td>B</td>
+                    </tr>
+                    <tr>
+                        <td>C</td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <table>
+                    <tr>
+                        <th>Last movement detected at:</th>
+                    </tr>
+                    <tr>
+                        <td>4:20</td>
+                    </tr>
+                    <tr>
+                        <td>2:04</td>
+                    </tr>
+                    <tr>
+                        <td>0:42</td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <ul class="nav nav-pills btn-xs">
+                    <li role="presentation" class="active"><a href="#">View</a></li>
+                </ul>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+{% endblock %}
