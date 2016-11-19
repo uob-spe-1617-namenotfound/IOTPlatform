@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block page_content %}
+    <h1> Motion Sensor Action Settings </h1>
+    <br></br>
+    <hr></hr>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet"/>
+    <div class="container">
+
+        <form class="form-horizontal" role="form">
+
+            <div class="form-group">
+                <label class="col-sm-4 control-label"> Motion detection (on/off): </label>
+                <div class="col-sm-8">
+                    <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor" value="ON"
+                                                        checked> Motion Sensor is ON</label>
+                    <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor" value="OFF">
+                        Motion Sensor is OFF </label>
+
+                </div>
+            </div>
+
+            <ul>
+            </ul>
+            <hr>
+            </hr>
+            <br></br>
+
+
+            </ul>
+
+            <div class="container">
+                <div class="row">
+                    <h4> Kitchen Motion Triggers: </h4>
+                    <hr>
+
+                    <div class="dropdown">
+
+                        <button class="btn btn-default" type="button" data-toggle="dropdown">
+
+                            When Motion is Detected
+
+                            <span class="caret"></span>
+
+                        </button>
+
+
+                        <ul class="dropdown-menu" role="menu">
+
+                            <li><a tabindex="0"> Thermostat </a></li>
+
+                            <li class="dropdown-submenu">
+
+                                <a tabindex="0" data-toggle="dropdown"> Switch</a>
+
+
+                                <ul class="dropdown-menu">
+
+                                    <li class="dropdown-header">Dropdown header</li>
+
+                                    <li><a tabindex="0">Sub action</a></li>
+
+                                    <li class="disabled"><a tabindex="0">Another sub action</a></li>
+
+                                    <li><a tabindex="0"> jdklj </a></li>
+
+                                </ul>
+
+                            </li>
+
+                            <li><a tabindex="0"> Send Email</a></li>
+
+                            <li class="divider"></li>
+
+                            <li><a tabindex="0"> Remove Trigger</a></li>
+
+                        </ul>
+                        <br></br>
+                        <br></br>
+                    </div>
+                    <div class="dropdown">
+
+                        <button class="btn btn-default" type="button" data-toggle="dropdown">
+
+                            When No Motion is Detected
+
+                            <span class="caret"></span>
+
+                        </button>
+
+
+                        <ul class="dropdown-menu" role="menu">
+
+                            <li><a tabindex="0"> Thermostat </a></li>
+
+                            <li class="dropdown-submenu">
+
+                                <a tabindex="0" data-toggle="dropdown"> Switch</a>
+
+
+                                <ul class="dropdown-menu">
+
+                                    <li class="dropdown-header">Dropdown header</li>
+
+                                    <li><a tabindex="0">Sub action</a></li>
+
+                                    <li class="disabled"><a tabindex="0">Another sub action</a></li>
+
+                                    <li><a tabindex="0"> jdklj </a></li>
+
+                                </ul>
+
+                            </li>
+
+                            <li><a tabindex="0"> Send Email</a></li>
+
+                            <li class="divider"></li>
+
+                            <li><a tabindex="0"> Remove Trigger</a></li>
+
+                        </ul>
+
+                    </div>
+
+
+
+{% endblock %}
