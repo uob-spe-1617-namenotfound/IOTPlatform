@@ -1,17 +1,13 @@
 {% extends "base.html" %}
 {% block page_content %}
     <h1>Welcome!</h1>
+    <br>
+
     <ul class="nav nav-pills">
-        <li role="presentation" class="dropdown">
+       <li role="presentation" class="dropdown active">
             <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="True"
                aria-expanded="False">
-
-                <ul class="nav nav-pills">
-                    <button type="button" class="btn btn-primary" aria-label="Left Align">
-                        <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add New Room
-                    </button>
-                </ul>
-
+                <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add New Room
             </a>
             <ul class="dropdown-menu">
                 <div class="input-group">
@@ -20,8 +16,25 @@
                             class="glyphicon glyphicon-plus"></span></span>
                 </div>
             </ul>
+       </li>
+
+        <li role="presentation" class="dropdown active">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="True"
+               aria-expanded="False">
+                <span class="glyphicon glyphicon-minus" aria-hidden="true"></span> Remve Room
+            </a>
+            <ul class="dropdown-menu">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Room Name" aria-describedby="basic-addon2">
+                    <span class="input-group-addon" id="basic-addon2"> <span
+                            class="glyphicon glyphicon-minus"></span></span>
+                </div>
+            </ul>
         </li>
+      <li role="presentation"><a href="{{ url_for('.devices') }}">View Devices</a></li>
     </ul>
+
+
     <br>
     <br>
     <table class="table">
@@ -36,30 +49,15 @@
         <tbody>
         <tr>
             <th scope="row">1</th>
-            <td>Kitchen</td>
-            <td>
-                <ul class="nav nav-pills btn-xs">
-                    <li role="presentation" class="active"><a href="{{ url_for('.room_view') }}">View Room</a></li>
-                </ul>
-            </td>
+            <td><a href="{{ url_for('.room_view') }}">Kitchen</a></td>
         </tr>
         <tr>
             <th scope="row">2</th>
-            <td>Bathroom</td>
-            <td>
-                <ul class="nav nav-pills btn-xs">
-                    <li role="presentation" class="active"><a href="{{ url_for('.room_view') }}">View Room</a></li>
-                </ul>
-            </td>
+            <td><a href="{{ url_for('.room_view') }}">Bathroom</a></td>
         </tr>
         <tr>
             <th scope="row">3</th>
-            <td>Living Room</td>
-            <td>
-                <ul class="nav nav-pills btn-xs">
-                    <li role="presentation" class="active"><a href="{{ url_for('.room_view') }}">View Room</a></li>
-                </ul>
-            </td>
+            <td><a href="{{ url_for('.room_view') }}">Living Room</a></td>
         </tr>
         </tbody>
     </table>

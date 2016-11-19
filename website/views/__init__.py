@@ -36,3 +36,7 @@ def room_view():
 @app.route('/devices')
 def devices():
     return render_template("devices.html")
+
+@app.route('/help')
+def help():
+    return render_template("help.html")

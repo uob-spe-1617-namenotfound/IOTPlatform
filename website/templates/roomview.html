@@ -2,39 +2,64 @@
 {% block page_content %}
     <h1> Kitchen </h1>
     <br>
+
     <ul class="nav nav-pills">
-        <li role="presentation" class="active"><a href="#">Manage Devices</a></li>
+       <li role="presentation" class="dropdown active">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="True"
+               aria-expanded="False">
+                <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Link Device to Room
+            </a>
+            <ul class="dropdown-menu">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Room Name" aria-describedby="basic-addon2">
+                    <span class="input-group-addon" id="basic-addon2"> <span
+                            class="glyphicon glyphicon-plus"></span></span>
+                </div>
+            </ul>
+       </li>
+
+        <li role="presentation" class="dropdown active">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="True"
+               aria-expanded="False">
+                <span class="glyphicon glyphicon-minus" aria-hidden="true"></span> Unlink Device
+            </a>
+            <ul class="dropdown-menu">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Room Name" aria-describedby="basic-addon2">
+                    <span class="input-group-addon" id="basic-addon2"> <span
+                            class="glyphicon glyphicon-minus"></span></span>
+                </div>
+            </ul>
+        </li>
+      <li role="presentation"><a href="{{ url_for('.devices') }}">Manage Devices</a></li>
     </ul>
+
+
     <br>
     <table class="table table-inverse">
 
         <tbody>
         <tr>
-            <th scope="row">1</th>
-            <td>Thermostat</td>
+            <th scope="row"><br></th>
+            <td><a href="{{ url_for('.home_actions') }}">Thermostat</a></td>
             <td>24</td>
-            <td>
-                <ul class="nav nav-pills btn-xs">
-                    <li role="presentation" class="active"><a href="#">View</a></li>
-                </ul>
-            </td>
         </tr>
 
         <tr>
-            <th scope="row">2</th>
+            <th scope="row"><br></th>
             <td>
                 <table>
                     <tr>
                         <th>Door/Window Sensor</th>
                     </tr>
                     <tr>
-                        <td>South Window</td>
+                        <td><a href="{{ url_for('.home_actions') }}">South Window</a></td>
                     </tr>
                     <tr>
-                        <td>East Window</td>
+                        <td><a href="{{ url_for('.home_actions') }}">East Window</a></td>
                     </tr>
                     <tr>
-                        <td>Door</td>
+                        <td><a href="{{ url_for('.home_actions') }}">Door</a></td>
                     </tr>
                 </table>
             </td>
@@ -54,28 +79,23 @@
                     </tr>
                 </table>
             </td>
-            <td>
-                <ul class="nav nav-pills btn-xs">
-                    <li role="presentation" class="active"><a href="#">View</a></li>
-                </ul>
-            </td>
         </tr>
 
         <tr>
-            <th scope="row">3</th>
+            <th scope="row"><br></th>
             <td>
                 <table>
                     <tr>
                         <th>Light</th>
                     </tr>
                     <tr>
-                        <td>A</td>
+                        <td><a href="{{ url_for('.home_actions') }}">A</a></td>
                     </tr>
                     <tr>
-                        <td>B</td>
+                        <td><a href="{{ url_for('.home_actions') }}">B</a></td>
                     </tr>
                     <tr>
-                        <td>C</td>
+                        <td><a href="{{ url_for('.home_actions') }}">C</a></td>
                     </tr>
                 </table>
             </td>
@@ -95,28 +115,23 @@
                     </tr>
                 </table>
             </td>
-            <td>
-                <ul class="nav nav-pills btn-xs">
-                    <li role="presentation" class="active"><a href="#">View</a></li>
-                </ul>
-            </td>
         </tr>
 
         <tr>
-            <th scope="row">4</th>
+            <th scope="row"><br></th>
             <td>
                 <table>
                     <tr>
                         <th>Motion Sensor</th>
                     </tr>
                     <tr>
-                        <td>A</td>
+                        <td><a href="{{ url_for('.home_actions') }}">A</a></td>
                     </tr>
                     <tr>
-                        <td>B</td>
+                        <td><a href="{{ url_for('.home_actions') }}">B</a></td>
                     </tr>
                     <tr>
-                        <td>C</td>
+                        <td><a href="{{ url_for('.home_actions') }}">C</a></td>
                     </tr>
                 </table>
             </td>
@@ -135,11 +150,6 @@
                         <td>0:42</td>
                     </tr>
                 </table>
-            </td>
-            <td>
-                <ul class="nav nav-pills btn-xs">
-                    <li role="presentation" class="active"><a href="#">View</a></li>
-                </ul>
             </td>
         </tr>
         </tbody>
