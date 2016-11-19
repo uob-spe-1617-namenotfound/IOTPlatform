@@ -23,9 +23,9 @@ def account_settings():
     return "To be implemented"
 
 
-@app.route('/device/actions')
-def device_actions():
-    return render_template("deviceactions.html")
+@app.route('/home/actions')
+def home_actions():
+    return render_template("homeactions.html")
 
 
 @app.route('/room')
