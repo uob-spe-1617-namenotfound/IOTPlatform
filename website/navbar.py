@@ -11,3 +11,4 @@ navbar = Navbar(
     View('Devices', '.devices'),
     View('Room View', '.room_view')
 )
+f
