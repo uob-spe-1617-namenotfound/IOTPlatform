@@ -1,10 +1,51 @@
 {% extends "base.html" %}
 {% block page_content %}
     <h1> Devices </h1>
-<br></br>
-    <b><a href="{{ url_for('.devices') }}">
-        <p style="font-size:140%;"><span class="glyphicon glyphicon-plus"></span>
-    </a> Pair New Device </p> </b>
+    <br></br>
+    <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
+        Pair New Device
+    </button>
+
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Pair New Device</h4>
+                </div>
+                <div class="modal-body">
+                    <br></br>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label"> Devices to pair: </label>
+                        <div class="col-sm-8">
+                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                                                                value="ON"
+                                                                checked> Motion Sensor </label>
+                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                                                                value="OFF">
+                                Thermostat </label>
+                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                                                                value="OFF">
+                                Switch </label>
+                            <br></br>
+                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                                                                value="OFF">
+                                Door/Window Sensor </label>
+                            <br></br>
+
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Pair New Device</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <ul></ul>
     <h4> All paired devices will appear here: </h4>
@@ -56,21 +97,42 @@
     <body>
 
 
+    <table border="3" bordercolor="#c86260" bgcolor="#ffffcc" width="50%" cellspacing="5" cellpadding="4">
 
-<table border="3" bordercolor="#c86260" bgcolor="#ffffcc" width="50%" cellspacing="5" cellpadding="4">
+        <tr>
+            <td valign="top"><b> Device Group Name </b></td>
+            <td><b>Devices</b></td>
+            <td><b>Actions</b></td>
+        </tr>
+        <ul>
+            <tr>
+                <td valign="top"><b> Ground Floor Thermostats </b></td>
+                <td> Kitchen Thermostat <br> Dining Room Thermostat <br> Bathroom Thermostat</td>
+                <td>
+                    <button type="button"> Set Temperature</button>
+                    <br>
+                    <button type="button"> Turn On</button>
+                    <br>
+                    <button type="button"> Turn Off</button>
+                </td>
+            </tr>
 
-<tr><td valign="top"><b> Device Group Name </b> </td><td><b>Devices</b></td><td> <b>Actions</b></td></tr>
-<ul>
-<tr><td valign="top"><b> Ground Floor Thermostats </b></td><td> Kitchen Thermostat <br> Dining Room Thermostat <br> Bathroom Thermostat</td><td> <button type="button"> Set Temperature </button><br> <button type="button"> Turn On </button> <br><button type="button"> Turn Off</button></td></tr>
 
+            <tr>
+                <td valign="top"><b> Bedrooms Motion Sensors </b></td>
+                <td> David's Room Motion Sensor<br> Ann's Room Motion Sensor <br></td>
+                <td>
+                    <button type="button"> Turn On</button>
+                    <br>
+                    <button type="button"> Turn Off</button>
+                </td>
+            </tr>
+        </ul>
 
-<tr><td valign="top"><b> Bedrooms Motion Sensors </b></td><td> David's Room Motion Sensor<br> Ann's Room Motion Sensor <br></td><td> <button type="button"> Turn On </button> <br> <button type="button"> Turn Off </button></td></tr>
-</ul>
-
-</table>
-<br></br>
-      <ul class="nav nav-pills">
+    </table>
+    <br></br>
+    <ul class="nav nav-pills">
         <li role="presentation" class="active"><a href="#"> Creat New Device Group</a></li>
-          </ul>
+    </ul>
 
 {% endblock %}
