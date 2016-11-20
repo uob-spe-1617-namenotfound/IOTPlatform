@@ -1,16 +1,15 @@
 {% extends "base.html" %}
 {% block page_content %}
     <h1> Devices </h1>
-    <p style="font-size:120%;"> This page opens when you click on a link in the room page (called manage devices). This
-        page allows the user to do the following:</p>
+<br></br>
     <b><a href="{{ url_for('.devices') }}">
         <p style="font-size:140%;"><span class="glyphicon glyphicon-plus"></span>
     </a> Pair New Device </p> </b>
-    <br><br>
+
     <ul></ul>
     <h4> All paired devices will appear here: </h4>
     <ol>
-        <li><h5> Device 1</h5>
+        <li><h5> Kitchen Thermostat </h5>
             <ul>
                 <li><a href="{{ url_for('.devices') }}"> Delete Paired Device</a></li>
             </ul>
@@ -18,7 +17,7 @@
                 <li><a href="{{ url_for('.devices') }}">Add to a My Devices Group </a></li>
             </ul>
         </li>
-        <li><h5> Device 2</h5>
+        <li><h5> Living Room Sensor </h5>
             <ul>
                 <li><a href="{{ url_for('.devices') }}"> Delete Paired Device</a></li>
             </ul>
@@ -26,7 +25,7 @@
                 <li><a href="{{ url_for('.devices') }}">Add to a My Devices Group </a></li>
             </ul>
         </li>
-        <li><h5> Device 3</h5>
+        <li><h5> Bathroom Door/Window Sensor </h5>
             <ul>
                 <li><a href="{{ url_for('.devices') }}"> Delete Paired Device</a></li>
             </ul>
@@ -37,9 +36,7 @@
 
     </ol>
     <br>
-    <h1> Device Groups </h1>
-    <p style="font-size:120%;">This page allows the user to manage smart devices at home. By creating a Device group,
-        the user can manage and control multiple devices together to perform in a unified manner.</p>
+    <h3> Device Groups </h3>
     <style>
         table, td, th {
             border: 1px solid #ddd;
@@ -58,27 +55,22 @@
     </head>
     <body>
 
-    <table>
-        <tr>
-            <th> Device Group Name</th>
-            <th> Actions</th>
-            <th> Devices</th>
-        </tr>
-        <tr>
-            <td> Ground Floor Devices</td>
-            <td> Power Actions</td>
-            <td> Lounge</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td> Trigger Actions</td>
-            <td> Dining Room</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td> Temperature Settings</td>
-            <td> Kitchen</td>
-        </tr>
-    </table>
-    <a href="{{ url_for('.devices') }}"> Create New Group</a>
+
+
+<table border="3" bordercolor="#c86260" bgcolor="#ffffcc" width="50%" cellspacing="5" cellpadding="4">
+
+<tr><td valign="top"><b> Device Group Name </b> </td><td><b>Devices</b></td><td> <b>Actions</b></td></tr>
+<ul>
+<tr><td valign="top"><b> Ground Floor Thermostats </b></td><td> Kitchen Thermostat <br> Dining Room Thermostat <br> Bathroom Thermostat</td><td> <button type="button"> Set Temperature </button><br> <button type="button"> Turn On </button> <br><button type="button"> Turn Off</button></td></tr>
+
+
+<tr><td valign="top"><b> Bedrooms Motion Sensors </b></td><td> David's Room Motion Sensor<br> Ann's Room Motion Sensor <br></td><td> <button type="button"> Turn On </button> <br> <button type="button"> Turn Off </button></td></tr>
+</ul>
+
+</table>
+<br></br>
+      <ul class="nav nav-pills">
+        <li role="presentation" class="active"><a href="#"> Creat New Device Group</a></li>
+          </ul>
+
 {% endblock %}
