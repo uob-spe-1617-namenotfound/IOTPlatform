@@ -1,11 +1,5 @@
 {% extends "base.html" %}
 {% block page_content %}
-    <h1> Devices </h1>
-    <br></br>
-    <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
-        Pair New Device
-    </button>
-
     <!-- Modal -->
     <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
         <div class="modal-dialog" role="document">
@@ -16,28 +10,27 @@
                     <h4 class="modal-title" id="myModalLabel">Pair New Device</h4>
                 </div>
                 <div class="modal-body">
-                    <br></br>
-                    <div class="form-group">
-                        <label class="col-sm-4 control-label"> Devices to pair: </label>
-                        <div class="col-sm-8">
+                    <label class="control-label"> Devices to pair: </label>
+                    <ul>
+                        <li>
                             <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
                                                                 value="ON"
                                                                 checked> Motion Sensor </label>
+                        </li>
+                        <li>
                             <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
                                                                 value="OFF">
                                 Thermostat </label>
-                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                        </li>
+                        <li><label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
                                                                 value="OFF">
-                                Switch </label>
-                            <br></br>
-                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                            Switch </label>
+                        </li>
+                        <li><label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
                                                                 value="OFF">
-                                Door/Window Sensor </label>
-                            <br></br>
-
-                        </div>
-                    </div>
-
+                            Door/Window Sensor </label>
+                        </li>
+                    </ul>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -47,92 +40,82 @@
         </div>
     </div>
 
-    <ul></ul>
-    <h4> All paired devices will appear here: </h4>
+    <h2>Devices</h2>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+        Pair New Device
+    </button>
+    <p>
+        Below is a list of all your current devices.
+    </p>
     <ol>
-        <li><h5> Kitchen Thermostat </h5>
-            <ul>
-                <li><a href="{{ url_for('.devices') }}"> Delete Paired Device</a></li>
-            </ul>
-            <ul>
-                <li><a href="{{ url_for('.devices') }}">Add to a My Devices Group </a></li>
-            </ul>
+        <li>Kitchen Thermostat
+            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
+                <span class="glyphicon glyphicon-remove"></span>
+                Delete
+            </a>
+            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
+                <span class="glyphicon glyphicon-plus"></span>
+                Add to group
+            </a>
         </li>
-        <li><h5> Living Room Sensor </h5>
-            <ul>
-                <li><a href="{{ url_for('.devices') }}"> Delete Paired Device</a></li>
-            </ul>
-            <ul>
-                <li><a href="{{ url_for('.devices') }}">Add to a My Devices Group </a></li>
-            </ul>
+        <li>Living Room Sensor
+            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
+                <span class="glyphicon glyphicon-remove"></span>
+                Delete
+            </a>
+            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
+                <span class="glyphicon glyphicon-plus"></span>
+                Add to group
+            </a>
         </li>
-        <li><h5> Bathroom Door/Window Sensor </h5>
-            <ul>
-                <li><a href="{{ url_for('.devices') }}"> Delete Paired Device</a></li>
-            </ul>
-            <ul>
-                <li><a href="{{ url_for('.devices') }}">Add to a My Devices Group </a></li>
-            </ul>
+        <li>Bathroom Door/Window Sensor
+            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
+                <span class="glyphicon glyphicon-remove"></span>
+                Delete
+            </a>
+            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
+                <span class="glyphicon glyphicon-plus"></span>
+                Add to group
+            </a>
         </li>
-
     </ol>
-    <br>
-    <h3> Device Groups </h3>
-    <style>
-        table, td, th {
-            border: 1px solid #ddd;
-            text-align: left;
-        }
+    <h2>Device Groups </h2>
 
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
+    <a href="#" class="btn btn-primary"> Create New Device Group</a>
 
-        th, td {
-            padding: 15px;
-        }
-    </style>
-    </head>
-    <body>
-
-
-    <table border="3" bordercolor="#c86260" bgcolor="#ffffcc" width="50%" cellspacing="5" cellpadding="4">
-
+    <table class="table table-condensed table-striped">
         <tr>
-            <td valign="top"><b> Device Group Name </b></td>
-            <td><b>Devices</b></td>
-            <td><b>Actions</b></td>
+            <th>Device Group Name</th>
+            <th>Devices</th>
+            <th>Actions</th>
         </tr>
-        <ul>
-            <tr>
-                <td valign="top"><b> Ground Floor Thermostats </b></td>
-                <td> Kitchen Thermostat <br> Dining Room Thermostat <br> Bathroom Thermostat</td>
-                <td>
-                    <button type="button"> Set Temperature</button>
-                    <br>
-                    <button type="button"> Turn On</button>
-                    <br>
-                    <button type="button"> Turn Off</button>
-                </td>
-            </tr>
-
-
-            <tr>
-                <td valign="top"><b> Bedrooms Motion Sensors </b></td>
-                <td> David's Room Motion Sensor<br> Ann's Room Motion Sensor <br></td>
-                <td>
-                    <button type="button"> Turn On</button>
-                    <br>
-                    <button type="button"> Turn Off</button>
-                </td>
-            </tr>
-        </ul>
-
+        <tr>
+            <td>Ground Floor Thermostats</td>
+            <td>
+                <ul>
+                    <li>Kitchen Thermostat</li>
+                    <li>Dining Room Thermostat</li>
+                    <li>Bathroom Thermostat</li>
+                </ul>
+            </td>
+            <td>
+                <button class="btn btn-default btn-xs"> Set Temperature</button>
+                <button class="btn btn-default btn-xs"> Turn On</button>
+                <button class="btn btn-default btn-xs"> Turn Off</button>
+            </td>
+        </tr>
+        <tr>
+            <td>Bedrooms Motion Sensors</td>
+            <td>
+                <ul>
+                    <li>David's Room Motion Sensor</li>
+                    <li>Ann's Room Motion Sensor</li>
+                </ul>
+            </td>
+            <td>
+                <button class="btn btn-default btn-xs"> Turn On</button>
+                <button class="btn btn-default btn-xs"> Turn Off</button>
+            </td>
+        </tr>
     </table>
-    <br></br>
-    <ul class="nav nav-pills">
-        <li role="presentation" class="active"><a href="#"> Creat New Device Group</a></li>
-    </ul>
-
 {% endblock %}
