@@ -1,84 +1,121 @@
 {% extends "base.html" %}
 {% block page_content %}
-    <h1> Devices </h1>
-    <p style="font-size:120%;"> This page opens when you click on a link in the room page (called manage devices). This
-        page allows the user to do the following:</p>
-    <b><a href="{{ url_for('.devices') }}">
-        <p style="font-size:140%;"><span class="glyphicon glyphicon-plus"></span>
-    </a> Pair New Device </p> </b>
-    <br><br>
-    <ul></ul>
-    <h4> All paired devices will appear here: </h4>
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Pair New Device</h4>
+                </div>
+                <div class="modal-body">
+                    <label class="control-label"> Devices to pair: </label>
+                    <ul>
+                        <li>
+                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                                                                value="ON"
+                                                                checked> Motion Sensor </label>
+                        </li>
+                        <li>
+                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                                                                value="OFF">
+                                Thermostat </label>
+                        </li>
+                        <li><label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                                                                value="OFF">
+                            Switch </label>
+                        </li>
+                        <li><label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                                                                value="OFF">
+                            Door/Window Sensor </label>
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Pair New Device</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2>Devices</h2>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+        Pair New Device
+    </button>
+    <p>
+        Below is a list of all your current devices.
+    </p>
     <ol>
-        <li><h5> Device 1</h5>
-            <ul>
-                <li><a href="{{ url_for('.devices') }}"> Delete Paired Device</a></li>
-            </ul>
-            <ul>
-                <li><a href="{{ url_for('.devices') }}">Add to a My Devices Group </a></li>
-            </ul>
+        <li>Kitchen Thermostat
+            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
+                <span class="glyphicon glyphicon-remove"></span>
+                Delete
+            </a>
+            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
+                <span class="glyphicon glyphicon-plus"></span>
+                Add to group
+            </a>
         </li>
-        <li><h5> Device 2</h5>
-            <ul>
-                <li><a href="{{ url_for('.devices') }}"> Delete Paired Device</a></li>
-            </ul>
-            <ul>
-                <li><a href="{{ url_for('.devices') }}">Add to a My Devices Group </a></li>
-            </ul>
+        <li>Living Room Sensor
+            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
+                <span class="glyphicon glyphicon-remove"></span>
+                Delete
+            </a>
+            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
+                <span class="glyphicon glyphicon-plus"></span>
+                Add to group
+            </a>
         </li>
-        <li><h5> Device 3</h5>
-            <ul>
-                <li><a href="{{ url_for('.devices') }}"> Delete Paired Device</a></li>
-            </ul>
-            <ul>
-                <li><a href="{{ url_for('.devices') }}">Add to a My Devices Group </a></li>
-            </ul>
+        <li>Bathroom Door/Window Sensor
+            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
+                <span class="glyphicon glyphicon-remove"></span>
+                Delete
+            </a>
+            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
+                <span class="glyphicon glyphicon-plus"></span>
+                Add to group
+            </a>
         </li>
-
     </ol>
-    <br>
-    <h1> Device Groups </h1>
-    <p style="font-size:120%;">This page allows the user to manage smart devices at home. By creating a Device group,
-        the user can manage and control multiple devices together to perform in a unified manner.</p>
-    <style>
-        table, td, th {
-            border: 1px solid #ddd;
-            text-align: left;
-        }
+    <h2>Device Groups </h2>
 
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
+    <a href="#" class="btn btn-primary"> Create New Device Group</a>
 
-        th, td {
-            padding: 15px;
-        }
-    </style>
-    </head>
-    <body>
-
-    <table>
+    <table class="table table-condensed table-striped">
         <tr>
-            <th> Device Group Name</th>
-            <th> Actions</th>
-            <th> Devices</th>
+            <th>Device Group Name</th>
+            <th>Devices</th>
+            <th>Actions</th>
         </tr>
         <tr>
-            <td> Ground Floor Devices</td>
-            <td> Power Actions</td>
-            <td> Lounge</td>
+            <td>Ground Floor Thermostats</td>
+            <td>
+                <ul>
+                    <li>Kitchen Thermostat</li>
+                    <li>Dining Room Thermostat</li>
+                    <li>Bathroom Thermostat</li>
+                </ul>
+            </td>
+            <td>
+                <button class="btn btn-default btn-xs"> Set Temperature</button>
+                <button class="btn btn-default btn-xs"> Turn On</button>
+                <button class="btn btn-default btn-xs"> Turn Off</button>
+            </td>
         </tr>
         <tr>
-            <td></td>
-            <td> Trigger Actions</td>
-            <td> Dining Room</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td> Temperature Settings</td>
-            <td> Kitchen</td>
+            <td>Bedrooms Motion Sensors</td>
+            <td>
+                <ul>
+                    <li>David's Room Motion Sensor</li>
+                    <li>Ann's Room Motion Sensor</li>
+                </ul>
+            </td>
+            <td>
+                <button class="btn btn-default btn-xs"> Turn On</button>
+                <button class="btn btn-default btn-xs"> Turn Off</button>
+            </td>
         </tr>
     </table>
-    <a href="{{ url_for('.devices') }}"> Create New Group</a>
 {% endblock %}
