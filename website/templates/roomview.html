@@ -31,127 +31,139 @@
                 </div>
             </ul>
         </li>
-      <li role="presentation"><a href="{{ url_for('.devices') }}">Manage Devices</a></li>
+      <li role="presentation" class="active"><a href="{{ url_for('.devices') }}">
+          <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span> Manage Devices</a></li>
     </ul>
 
 
     <br>
-    <table class="table table-inverse">
 
-        <tbody>
-        <tr>
-            <th scope="row"><br></th>
+<div class="row">
+    <div class="col-md-3">
+        <table class="table table-inverse">
+          <tr>
             <td><a href="{{ url_for('.home_actions') }}">Thermostat</a></td>
             <td>24</td>
-        </tr>
+          </tr>
+        </table>
+    </div>
+    <div class="col-md-3">
+        <table class="table table-inverse">
+            <tr>
 
-        <tr>
-            <th scope="row"><br></th>
-            <td>
-                <table>
-                    <tr>
-                        <th>Door/Window Sensor</th>
-                    </tr>
-                    <tr>
-                        <td><a href="{{ url_for('.home_actions') }}">South Window</a></td>
-                    </tr>
-                    <tr>
-                        <td><a href="{{ url_for('.home_actions') }}">East Window</a></td>
-                    </tr>
-                    <tr>
-                        <td><a href="{{ url_for('.home_actions') }}">Door</a></td>
-                    </tr>
-                </table>
-            </td>
-            <td>
-                <table>
-                    <tr>
-                        <td><br></td>
-                    </tr>
-                    <tr>
-                        <td>Closed</td>
-                    </tr>
-                    <tr>
-                        <td>Closed</td>
-                    </tr>
-                    <tr>
-                        <td>Open</td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
+                <td>
+                    <table>
+                        <tr>
+                            <th>Door/Window Sensor</th>
+                        </tr>
+                        <tr>
+                            <td><a href="{{ url_for('.home_actions') }}">South Window</a></td>
+                        </tr>
+                        <tr>
+                            <td><a href="{{ url_for('.home_actions') }}">East Window</a></td>
+                        </tr>
+                        <tr>
+                            <td><a href="{{ url_for('.home_actions') }}">Door</a></td>
+                        </tr>
+                    </table>
+                </td>
+                <td>
+                    <table>
+                        <tr>
+                            <td><br><br></td>
+                        </tr>
+                        <tr>
+                            <td>Closed</td>
+                        </tr>
+                        <tr>
+                            <td>Closed</td>
+                        </tr>
+                        <tr>
+                            <td>Open</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="col-md-3">
+         <table class="table table-inverse">
+            <tr>
+                <td>
+                    <table>
+                        <tr>
+                            <th>Light</th>
+                        </tr>
+                        <tr>
+                            <td><a href="{{ url_for('.home_actions') }}">A</a></td>
+                        </tr>
+                        <tr>
+                            <td><a href="{{ url_for('.home_actions') }}">B</a></td>
+                        </tr>
+                        <tr>
+                            <td><a href="{{ url_for('.home_actions') }}">C</a></td>
+                        </tr>
+                    </table>
+                </td>
+                <td>
+                    <table>
+                        <tr>
+                            <td><br></td>
+                        </tr>
+                        <tr>
+                            <td>On</td>
+                        </tr>
+                        <tr>
+                            <td>On</td>
+                        </tr>
+                        <tr>
+                            <td>Off</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="col-md-3">
+        <table class="table table-inverse">
+             <tr>
+                <td>
+                    <table>
+                        <tr>
+                            <th>Motion Sensor</th>
+                        </tr>
+                        <tr>
+                            <td><a href="{{ url_for('.home_actions') }}">A</a></td>
+                        </tr>
+                        <tr>
+                            <td><a href="{{ url_for('.home_actions') }}">B</a></td>
+                        </tr>
+                        <tr>
+                            <td><a href="{{ url_for('.home_actions') }}">C</a></td>
+                        </tr>
+                    </table>
+                </td>
+                <td>
+                    <table>
+                        <tr>
+                            <th>Last movement detected at:</th>
+                        </tr>
+                        <tr>
+                            <td>4:20</td>
+                        </tr>
+                        <tr>
+                            <td>2:04</td>
+                        </tr>
+                        <tr>
+                            <td>0:42</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
 
-        <tr>
-            <th scope="row"><br></th>
-            <td>
-                <table>
-                    <tr>
-                        <th>Light</th>
-                    </tr>
-                    <tr>
-                        <td><a href="{{ url_for('.home_actions') }}">A</a></td>
-                    </tr>
-                    <tr>
-                        <td><a href="{{ url_for('.home_actions') }}">B</a></td>
-                    </tr>
-                    <tr>
-                        <td><a href="{{ url_for('.home_actions') }}">C</a></td>
-                    </tr>
-                </table>
-            </td>
-            <td>
-                <table>
-                    <tr>
-                        <td><br></td>
-                    </tr>
-                    <tr>
-                        <td>On</td>
-                    </tr>
-                    <tr>
-                        <td>On</td>
-                    </tr>
-                    <tr>
-                        <td>Off</td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
 
-        <tr>
-            <th scope="row"><br></th>
-            <td>
-                <table>
-                    <tr>
-                        <th>Motion Sensor</th>
-                    </tr>
-                    <tr>
-                        <td><a href="{{ url_for('.home_actions') }}">A</a></td>
-                    </tr>
-                    <tr>
-                        <td><a href="{{ url_for('.home_actions') }}">B</a></td>
-                    </tr>
-                    <tr>
-                        <td><a href="{{ url_for('.home_actions') }}">C</a></td>
-                    </tr>
-                </table>
-            </td>
-            <td>
-                <table>
-                    <tr>
-                        <th>Last movement detected at:</th>
-                    </tr>
-                    <tr>
-                        <td>4:20</td>
-                    </tr>
-                    <tr>
-                        <td>2:04</td>
-                    </tr>
-                    <tr>
-                        <td>0:42</td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+
 {% endblock %}

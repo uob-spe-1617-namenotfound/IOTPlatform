@@ -21,7 +21,7 @@
         <li role="presentation" class="dropdown active">
             <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="True"
                aria-expanded="False">
-                <span class="glyphicon glyphicon-minus" aria-hidden="true"></span> Remve Room
+                <span class="glyphicon glyphicon-minus" aria-hidden="true"></span> Remove Room
             </a>
             <ul class="dropdown-menu">
                 <div class="input-group">
@@ -31,7 +31,8 @@
                 </div>
             </ul>
         </li>
-      <li role="presentation"><a href="{{ url_for('.devices') }}">View Devices</a></li>
+      <li role="presentation" class="active"><a href="{{ url_for('.devices') }}">
+          <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span> View Devices</a></li>
     </ul>
 
 
