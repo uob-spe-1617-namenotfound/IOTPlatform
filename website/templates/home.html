@@ -38,6 +38,9 @@
 
     <br>
     <br>
+
+{% if rooms %}
+
     <table class="table">
         <thead>
         <tr>
@@ -48,18 +51,17 @@
         </tr>
         </thead>
         <tbody>
+        {% for room in rooms %}
         <tr>
-            <th scope="row">1</th>
-            <td><a href="{{ url_for('.room_view') }}">Kitchen</a></td>
+            <th scope="row">{{loop.index}}</th>
+            <td><a href="{{ url_for('.room_view') }}">{{room}}</a></td>
         </tr>
-        <tr>
-            <th scope="row">2</th>
-            <td><a href="{{ url_for('.room_view') }}">Bathroom</a></td>
-        </tr>
-        <tr>
-            <th scope="row">3</th>
-            <td><a href="{{ url_for('.room_view') }}">Living Room</a></td>
-        </tr>
+        {% endfor %}
         </tbody>
     </table>
+
+{% else %}
+  <h1>No data to show!</h1>
+{% endif %}
+
 {% endblock %}
