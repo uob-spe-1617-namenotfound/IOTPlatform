@@ -7,9 +7,10 @@ from website import app
 def triggers():
     return render_template("triggers.html")
 
-rooms = ['Kitchen', 'Bathroom']
+
 @app.route('/')
 def index():
+    rooms = ['Kitchen', 'Bathroom']
     return render_template("home.html", rooms=rooms)
 
 
@@ -27,20 +28,29 @@ def account_settings():
 def device_actions():
     return render_template("deviceactions.html")
 
-class Devices:
-    def __init__(self, type, devices, property):
-        self.type = type
-        self.devices = devices
-        self.property = property
-
-
-dev1 = Devices("Thermostat", ["Thermostat"], "24℃")
-dev2 = Devices("Door & Window Sensor", ["South Window","East Window", 'Door'], ['Closed', 'Closed', 'Open'])
-devices = [dev1, dev2]
 
 @app.route('/room')
 def room_view():
-    return render_template("roomview.html", devices=devices)
+    thermostatDict  = {"Name" : "Thermostat", "Property" : "24℃"}
+
+    lightSwitchDict1= {"Name" : "A", "Property" : "On"}
+    lightSwitchDict2 = {"Name": "B", "Property": "On"}
+    lightSwitchDict3 = {"Name": "C", "Property": "Off"}
+
+    doorsensorDict1 = {"Name": "A", "Property" : "4:20am" }
+    doorsensorDict2 = {"Name": "B", "Property": "2:40pm"}
+    doorsensorDict3 = {"Name": "C", "Property": "12:24pm"}
+
+    motionsensorDict1 = {"Name": "South Window", "Property": "Closed"}
+    motionsensorDict2 = {"Name": "East Window", "Property": "Closed"}
+    motionsensorDict3 = {"Name": "Door", "Property": "Open"}
+
+    kitchen_thermostat = {thermostatDict}
+    kitchen_lightswitch = {lightSwitchDict1, lightSwitchDict2, lightSwitchDict3}
+    kitchen_doorsensor = {doorsensorDict1, doorsensorDict2, doorsensorDict3}
+    kitchen_motionsensor = {motionsensorDict1, motionsensorDict2,motionsensorDict3}
+
+    return render_template("roomview.html", kitchen_thermostat, kitchen_lightswitch, kitchen_doorsensor, kitchen_motionsensor)
 
 
 @app.route('/devices')
@@ -48,7 +58,16 @@ def devices():
     return render_template("devices.html")
 
 
-@app.route('/help')
-def help():
-    return render_template("help.html")
+@app.route('/admin')
+def admin():
+    user_dic = {
+        "user_id" : "324123",
+        "user_email_address": "wx15879@my.bristol.ac.uk",
+        "user_is_admin": "Yes",
+        "user_first_name": "Jack",
+        "user_last_name" : "Xia",
+        "user_device_status" : "Fault"}
+    userList = {user_dic}
+    return render_template("admin.html", users = userList)
+
 
