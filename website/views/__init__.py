@@ -70,3 +70,7 @@ def admin():
         "user_device_status": "Fault"}
     userList = [user_dic]
     return render_template("admin.html", users=userList)
+
+@app.route('/admin_map')
+def admin_map():
+    return render_template("admin_maps.html")
