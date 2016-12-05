@@ -44,41 +44,29 @@
     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
         Pair New Device
     </button>
-    <p>
-        Below is a list of all your current devices.
-    </p>
-    <ol>
-        <li>Kitchen Thermostat
-            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
-                <span class="glyphicon glyphicon-remove"></span>
-                Delete
-            </a>
-            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
-                <span class="glyphicon glyphicon-plus"></span>
-                Add to group
-            </a>
-        </li>
-        <li>Living Room Sensor
-            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
-                <span class="glyphicon glyphicon-remove"></span>
-                Delete
-            </a>
-            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
-                <span class="glyphicon glyphicon-plus"></span>
-                Add to group
-            </a>
-        </li>
-        <li>Bathroom Door/Window Sensor
-            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
-                <span class="glyphicon glyphicon-remove"></span>
-                Delete
-            </a>
-            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
-                <span class="glyphicon glyphicon-plus"></span>
-                Add to group
-            </a>
-        </li>
-    </ol>
+    {% if paireddevices %}
+        <p>
+            Below is a list of all your current devices.
+        </p>
+        <ol>
+            {% for devices in paireddevices %}
+                <li>{{ devices.text }}
+                    <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
+                        <span class="glyphicon glyphicon-remove"></span>
+                        Delete
+                    </a>
+                    <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
+                        <span class="glyphicon glyphicon-plus"></span>
+                        Add to group
+                    </a>
+                </li>
+            {% endfor %}
+            {% else %}
+            <h1>No data to show!</h1>
+
+        </ol>
+    {% endif %}
+
     <h2>Device Groups </h2>
 
     <a href="#" class="btn btn-primary"> Create New Device Group</a>
@@ -90,29 +78,19 @@
             <th>Actions</th>
         </tr>
         <tr>
-            <td>Ground Floor Thermostats</td>
+            <td> {% for d in group %}
+                {{ d }}
+            {% endfor %}
+            </td>
             <td>
-                <ul>
-                    <li>Kitchen Thermostat</li>
-                    <li>Dining Room Thermostat</li>
-                    <li>Bathroom Thermostat</li>
-                </ul>
+                {% for r in devicename %}
+                    <ul>
+                        <li>{{ r }}</li>
+                    </ul>
+                {% endfor %}
             </td>
             <td>
                 <button class="btn btn-default btn-xs"> Set Temperature</button>
-                <button class="btn btn-default btn-xs"> Turn On</button>
-                <button class="btn btn-default btn-xs"> Turn Off</button>
-            </td>
-        </tr>
-        <tr>
-            <td>Bedrooms Motion Sensors</td>
-            <td>
-                <ul>
-                    <li>David's Room Motion Sensor</li>
-                    <li>Ann's Room Motion Sensor</li>
-                </ul>
-            </td>
-            <td>
                 <button class="btn btn-default btn-xs"> Turn On</button>
                 <button class="btn btn-default btn-xs"> Turn Off</button>
             </td>

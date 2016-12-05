@@ -1,103 +1,68 @@
 {% extends "base.html" %}
 {% block page_content %}
-<h1> Motion Sensor Action Settings </h1>
-<hr>
-<h5> Motion Sensor (ON/OFF) : </h5>
-<form action="">
-    <input type="radio" name="motionsensor" value="ON" checked/> Motion Sensor is ON<br>
-    <input type="radio" name="motionsensor" value="OFF"> Motion Sensor is OFF<br>
-</form>
-<hr>
-<br>
-<h3> Kitchen Motion Triggers: </h3>
-<hr>
-<div class="dropdown">
-    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> When No Motion is Detected
-        <span class="caret"></span>
-    </button>
-    <ul class="dropdown-menu" role="menu">
-        <li><a href="#lightswitch" data-toggle="modal"> Light Switch </a></li>
-        <li><a href="#"> Thermostat </a></li>
-        <li class="divider"></li>
-        <li><a href="#"> Send E-mail </a></li>
-    </ul>
-</div>
-<div class="modal fade" id="lightswitch" data-target="#lightswitch">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header orange">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                        aria-hidden="true">&times;</span>
-                </button>
-                <h4 class="modal-title"><strong></strong> Light Switch</h4>
-                <ul>
-                    <li>
-                        <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                            value="ON"
-                                                            checked> Turn on </label>
-                    </li>
-                    <li>
-                        <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                            value="OFF">
-                            Turn off </label>
-                    </li>
-                    <li><label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                            value="OFF">
-                        No Action </label>
-                    </li>
-                </ul>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary"> Done</button>
-                </div>
-            </div>
+    <h1> Motion Sensor Action Settings </h1>
+    <hr>
+    <h5> Motion Sensor (ON/OFF) : </h5>
+    <form action="">
+        <li><input type="radio" name="motionsensor" value="ON" checked/> Motion Sensor is ON</li>
+        <br>
+        <li><input type="radio" name="motionsensor" value="OFF"> Motion Sensor is OFF</li>
+        <br>
+    </form>
+    <hr>
+    <br>
+    <h3> Kitchen Motion Triggers: </h3>
+    <hr>
+    {% for trigger in triggers %}
+        <div class="dropdown">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> {{ trigger }}
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                {% for actor in actors %}
+                    <li><a href="#lightswitch" data-toggle="modal"> {{ actor }} </a></li>
+                {% endfor %}
+                <li class="divider"></li>
+                <li><a href="#"> Send E-mail </a></li>
+            </ul>
         </div>
-    </div>
-</div>
-<br>
-<br>
-<div class="dropdown">
-    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> When Motion is Detected
-        <span class="caret"></span>
-    </button>
-    <ul class="dropdown-menu" role="menu">
-        <li><a href="#lightswitch" data-toggle="modal"> Light Switch </a></li>
-        <li><a href="#"> Thermostat </a></li>
-        <li class="divider"></li>
-        <li><a href="#"> Send E-mail </a></li>
-    </ul>
-</div>
-<div class="modal fade" id="lightswitch" data-target="#lightswitch">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header orange">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                        aria-hidden="true">&times;</span>
-                </button>
-                <h4 class="modal-title"><strong></strong> Light Switch</h4>
-                <ul>
-                    <li>
-                        <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                            value="ON"> Turn on </label>
-                    </li>
-                    <li>
-                        <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                            value="OFF">
-                            Turn off </label>
-                    </li>
-                    <li><label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                            value="OFF">
-                        No Action </label>
-                    </li>
+        <br>
+    {% endfor %}
 
-                </ul>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary"> Done</button>
+    <div class="modal fade" id="lightswitch" data-target="#lightswitch">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header orange">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title"><strong></strong> Light Switch</h4>
+                    <ul>
+                        <li>
+                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                                                                value="ON"
+                                                                checked> Turn on </label>
+                        </li>
+                        <li>
+                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                                                                value="OFF">
+                                Turn off </label>
+                        </li>
+                        <li><label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                                                                value="OFF">
+                            No Action </label>
+                        </li>
+                    </ul>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary"> Done</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+    <br>
+    <br>
+
 
 {% endblock %}
