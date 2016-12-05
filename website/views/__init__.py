@@ -68,5 +68,5 @@ def admin():
         "user_first_name": "Jack",
         "user_last_name": "Xia",
         "user_device_status": "Fault"}
-    userList = {user_dic}
+    userList = [user_dic]
     return render_template("admin.html", users=userList)
