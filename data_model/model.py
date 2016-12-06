@@ -180,7 +180,7 @@ class DeviceRepository:
 
 
 class DeviceGroups(Device):
-    def __init__(self, device_id):
+    def __init__(self, devicegroup_id):
         self.device_id = device_id
 
     def get_device_group_attributes(self):
