@@ -49,8 +49,9 @@
             Below is a list of all your current devices.
         </p>
         <ol>
-            {% for devices in paireddevices %}
-                <li>{{ devices.text }}
+            {% for device in paireddevices %}
+                <li>
+                    <a href="{{ url_for('.devices') }}">{{ device.text }}</a>
                     <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
                         <span class="glyphicon glyphicon-remove"></span>
                         Delete
@@ -77,23 +78,31 @@
             <th>Devices</th>
             <th>Actions</th>
         </tr>
-        <tr>
-            <td> {% for d in group %}
-                {{ d }}
-            {% endfor %}
-            </td>
-            <td>
-                {% for r in devicename %}
+
+        {% if group %}
+            {% for groupmember in group %}
+                <tr>
+                <td>
+                    {{ groupmember.name }}
+                </td>
+                <td>
                     <ul>
-                        <li>{{ r }}</li>
+                        {{ groupmember.device }}
                     </ul>
-                {% endfor %}
-            </td>
-            <td>
-                <button class="btn btn-default btn-xs"> Set Temperature</button>
-                <button class="btn btn-default btn-xs"> Turn On</button>
-                <button class="btn btn-default btn-xs"> Turn Off</button>
-            </td>
-        </tr>
+                </td>
+
+                <td>
+                    {% if group.id == 11 %}
+                        <button class="btn btn-default btn-xs"> Set Temperature</button>
+                        <button class="btn btn-default btn-xs"> Turn On</button>
+                        <button class="btn btn-default btn-xs"> Turn Off</button>
+                    {% else %}
+                        <button class="btn btn-default btn-xs"> Turn On</button>
+                        <button class="btn btn-default btn-xs"> Turn Off</button>
+                    {% endif %}
+                </td>
+            {% endfor %}
+        {% endif %}
     </table>
+
 {% endblock %}
