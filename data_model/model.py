@@ -1,6 +1,3 @@
-import json
-
-
 class User(object):
     def __init__(self, user_id, name, password_hash, email_address, is_admin):
         self.user_id = user_id
@@ -19,8 +16,7 @@ class UserRepository:
         self.users = {}
 
     def add_user(self, user):
-        self.users[user.id] = user
-        self.users.update({'id': user})
+        self.users[user.user_id] = user
 
     def remove_user(self, user_id):
         self.users.pop(user_id, None)
@@ -29,7 +25,7 @@ class UserRepository:
         try:
             return self.users[user_id]
         except KeyError:
-            print("User %d not found" % user_id)
+            print("User {} not found".format(user_id))
 
 
 class House(User):
@@ -130,7 +126,7 @@ class RoomRepository:
                 return room
 
 
-class Device(House, Room):
+class Device(object):
     def __init__(self, house_id, room_id, device_id, name, power_state):
         self.house_id = house_id
         self.room_id = room_id
