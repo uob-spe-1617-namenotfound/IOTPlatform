@@ -29,8 +29,9 @@ def device_actions():
     return render_template("deviceactions.html")
 
 
-@app.route('/room')
-def room_view():
+@app.route('/room/<string:room_id>')
+def room_view(room_id):
+    print(room_id)
     thermostatDict = {"Name": "Thermostat", "Property": "24℃"}
 
     lightSwitchDict1 = {"Name": "A", "Property": "On"}
