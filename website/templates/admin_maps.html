@@ -2,32 +2,37 @@
 {% block page_content %}
     <h1>Welcome!</h1>
 
-
-    <style>
-       #map {
-        height: 400px;
-        width: 100%;
-       }
-    </style>
-
-    <h3>My Google Maps Demo</h3>
-    <div id="map"></div>
-    <script>
-      function initMap() {
-        var uluru = {lat: -25.363, lng: 131.044};
-        var map = new google.maps.Map(document.getElementById('map'), {
-          zoom: 4,
-          center: uluru
-        });
-        var marker = new google.maps.Marker({
-          position: uluru,
-          map: map
-        });
-      }
-    </script>
-    <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAhzb5iJ4fJUdLDQKt_SgCSP5_Z2eXhH5k&callback=initMap">
-    </script>
+    {% if house_location %}
+        <style>
+            #map {
+                height: 400px;
+                width: 100%;
+            }
+        </style>
 
 
+        <div id="map"></div>
+        <script>
+
+                function initMap() {
+                    var uluru = {lat: -25.363, lng: 131.044};
+                    var map = new google.maps.Map(document.getElementById('map'), {
+                        zoom: 4,
+                        center: uluru
+                    });
+                    var marker_list = [];
+                    {% for house in house_location %}
+                        marker_list.push(new google.maps.Marker({
+                            position: {{ house|tojson|safe }},
+                            map: map
+                        }));
+                    {% endfor %}
+                }
+
+        </script>
+        <script async defer
+                src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAhzb5iJ4fJUdLDQKt_SgCSP5_Z2eXhH5k&callback=initMap">
+        </script>
+
+    {% endif %}
 {% endblock %}

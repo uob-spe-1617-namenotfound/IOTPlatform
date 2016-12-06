@@ -73,4 +73,8 @@ def admin():
 
 @app.route('/admin_map')
 def admin_map():
-    return render_template("admin_maps.html")
+    house1 = {'lat' : -20.000, 'lng': -179.000}
+    house2 = {'lat' : -50.000, 'lng': 45.000}
+    house3 = {'lat' :  10.000, 'lng': 120.000}
+    house_location = [house1, house2, house3]
+    return render_template("admin_maps.html", house_location = house_location)
