@@ -94,9 +94,7 @@ class RoomRepository:
     #    self.room_groups = {}
 
     def add_room(self, room):
-        self.rooms[room.id] = room
-        self.rooms.update({'id': room})
-
+        self.rooms[room.room_id] = room
     # def add_room_group(self, room_group):
     #    self.room_groups[room_group.id] = room_group
 
