@@ -1,6 +1,3 @@
-import json
-
-
 class User(object):
     def __init__(self, user_id, name, password_hash, email_address, is_admin):
         self.user_id = user_id
@@ -19,8 +16,7 @@ class UserRepository:
         self.users = {}
 
     def add_user(self, user):
-        self.users[user.id] = user
-        self.users.update({'id': user})
+        self.users[user.user_id] = user
 
     def remove_user(self, user_id):
         self.users.pop(user_id, None)
@@ -29,7 +25,7 @@ class UserRepository:
         try:
             return self.users[user_id]
         except KeyError:
-            print("User %d not found" % user_id)
+            print("User {} not found".format(user_id))
 
 
 class House(User):
@@ -46,24 +42,12 @@ class House(User):
 class HouseRepository:
     def __init__(self):
         self.houses = {}
-        self.house_groups = {}
 
     def add_house(self, house):
-        self.houses[house.id] = house
-        self.houses.update({'id': house})
-
-    def add_house_group(self, house_group):
-        self.house_groups[house_group.id] = house_group
-        self.house_groups.update({'id': house_group})
-
-    def add_house_to_group(self, house_group):
-        self.house_groups[house_group.id] += self.house_groups
+        self.houses[house.house_id] = house
 
     def remove_house(self, house_id):
         self.houses.pop(house_id, None)
-
-    def remove_house_group(self, house_group_id):
-        self.house_groups.pop(house_group_id, None)
 
     def get_house_by_id(self, house_id):
         try:
@@ -71,13 +55,37 @@ class HouseRepository:
         except KeyError:
             print("House %d not found" % house_id)
 
-    def add_house_to_user(self, user, house_id):
-        user += self.houses[house_id]
+    def add_house_to_user(self, user, house):
+        house.user_id = user.id
 
     def get_houses_for_user(self, user_id):
+        lst = []
         for house in self.houses:
             if house.user_id == user_id:
-                return house
+                lst += house
+        return lst
+
+
+class HouseGroup(object):
+    def __init__(self, house_id):
+        self.house_id = house_id
+
+    def get_house_group_attributes(self):
+        return {'house_id': self.house_id}
+
+
+class HouseGroupRepository:
+    def __init__(self):
+        self.house_groups = {}
+
+    def add_house_group(self, house_group):
+        self.house_groups[house_group.id] = house_group
+
+    def add_house_to_group(self, house_group):
+        self.house_groups[house_group.id] += self.house_groups
+
+    def remove_house_group(self, house_group_id):
+        self.house_groups.pop(house_group_id, None)
 
 
 class Room(House):
@@ -99,12 +107,12 @@ class RoomRepository:
 
     def add_room(self, room):
         self.rooms[room.id] = room
-        self.rooms.update({'id': room})
 
     # def add_room_group(self, room_group):
     #    self.room_groups[room_group.id] = room_group
 
     # def add_room_to_group(self, room, room_group):
+    #    self.room_groups[room_group.id] = []
     #    self.room_groups[room_group.id] += self.rooms[room.id]
 
     def remove_room(self, room_id):
@@ -117,17 +125,21 @@ class RoomRepository:
             print("Room %d not found" % room_id)
 
     def get_devices_for_room(self, devices, room_id):
+        lst = []
         for device in devices:
             if device.room_id == room_id:
-                return device
+                lst += device
+        return lst
 
     def add_room_to_house(self, house, room_id):
         house += self.rooms[room_id]
 
     def get_rooms_for_house(self, rooms, house_id):
+        lst = []
         for room in rooms:
             if room.house_id == house_id:
-                return room
+                lst += room
+        return lst
 
 
 class Device(House, Room):
@@ -156,7 +168,7 @@ class DeviceRepository:
     def __init__(self):
         self.devices = {}
 
-    def add_device_to_devices(self, device):
+    def add_device(self, device):
         self.devices[device.id] = device
 
     def remove_device(self, device_id):
@@ -172,25 +184,30 @@ class DeviceRepository:
         house += self.devices[device_id]
 
     def get_devices_for_house(self, devices, house_id):
+        lst = []
         for device in devices:
             if device.house_id == house_id:
-                return device
+                lst += device
+        return lst
 
     def add_device_to_room(self, room, device_id):
         room += self.devices[device_id]
 
     def get_devices_for_room(self, devices, room_id):
+        lst = []
         for device in devices:
             if device.room_id == room_id:
-                return device
+                lst += device
+        return lst
 
 
-class DeviceGroups(Device):
-    def __init__(self, device_id):
+class DeviceGroups(object):
+    def __init__(self, device_id, device_group_id):
         self.device_id = device_id
+        self.device_group_id = device_group_id
 
     def get_device_group_attributes(self):
-        return {'device_id': self.device_id}
+        return {'device_id': self.device_id, 'device_group_id': self.device_group_id}
 
 
 class DeviceGroupRepository:
