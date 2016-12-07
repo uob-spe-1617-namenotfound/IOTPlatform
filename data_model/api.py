@@ -59,6 +59,12 @@ def add_device(device_id):
     device = device_repository.get_devices_for_house(device_id)
     return jsonify({"device":device.get_device_attributes(),"errors": None})
 
+@api.route('/room/<string:room_id>')
+def add_room(room_id):
+    room = room_repository.add_room_for_house(room_id)
+    return jsonify({"device":room.add_room_attributes(),"errors": None})
+
+
 def main():
     api.run(debug=True, host=api.config['HOSTNAME'], port=int(api.config['PORT']))
 
