@@ -13,10 +13,10 @@
     <hr>
     {% if motiontriggers %}
 
-        {% for mtrigger in motiontriggers %}
+        {% for trigger in motiontriggers %}
             <div class="dropdown">
                 <button type="button" class="btn btn-primary dropdown-toggle"
-                        data-toggle="dropdown"> {{ mtrigger.name }}
+                        data-toggle="dropdown"> {{ trigger.name }}
                     <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu" role="menu">
@@ -34,17 +34,40 @@
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
                                         aria-hidden="true">&times;</span>
                                 </button>
-                                <h4 class="modal-title"><strong></strong> {{ actor.name }}</h4>
-                                {% for action in motionactions %}
-                                    <ul>
-                                        <li>
-                                            <label class="radio-inline"> <input type="radio" name="MotionSensor"
-                                                                                id="MotionSensor"
-                                                                                value="ON"
-                                                                                checked="checked"> {{ action }}</label>
-                                        </li>
-                                    </ul>
-                                {% endfor %}
+                                <h4 class="modal-title"><strong>{{ actor.name }}</strong></h4>
+                                <div class="modal-body">
+                                    {% if actor.id == 'XXX' %}
+                                        <ul>
+                                            <li>
+                                                <label class="radio-inline"> <input type="radio" name="MotionSensor"
+                                                                                    id="MotionSensor"
+                                                                                    value="ON"
+                                                                                    checked="checked"> {{ motionactions }}
+                                                </label>
+                                            </li>
+                                        </ul>
+                                    {% elif actor.id == 'YYY' %}
+                                        <ul>
+                                            <li>
+                                                <label class="radio-inline"> <input type="radio" name="MotionSensor"
+                                                                                    id="MotionSensor"
+                                                                                    value="ON"
+                                                                                    checked="checked"> {{ lightactions }}
+                                                </label>
+                                            </li>
+                                        </ul>
+                                    {% elif actor.id == 'ZZZ' %}
+                                        <ul>
+                                            <li>
+                                                <label class="radio-inline"> <input type="radio" name="MotionSensor"
+                                                                                    id="MotionSensor"
+                                                                                    value="ON"
+                                                                                    checked="checked"> {{ motionactions }}
+                                                </label>
+                                            </li>
+                                        </ul>
+                                    {% endif %}
+                                </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                                     <button type="button" class="btn btn-primary"> Done</button>
@@ -70,11 +93,10 @@
     <h4> Light Triggers: </h4>
     <hr>
     {% if lighttriggers %}
-
-        {% for ltrigger in lighttriggers %}
+        {% for trigger in lighttriggers %}
             <div class="dropdown">
                 <button type="button" class="btn btn-primary dropdown-toggle"
-                        data-toggle="dropdown"> {{ ltrigger.name }}
+                        data-toggle="dropdown"> {{ trigger.name }}
                     <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu" role="menu">
@@ -94,16 +116,16 @@
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
                                         aria-hidden="true">&times;</span>
                                 </button>
-                                <h4 class="modal-title"><strong></strong> {{ actor.name }}</h4>
-                                {% for action in lightactions %}
-                                    <ul>
+                                <h4 class="modal-title"><strong>{{ actor.name }}</strong></h4>
+                                <ul>
+                                    {% for action in lightactions %}
                                         <li>
                                             <label class="radio-inline"> <input type="radio" name="" id=""
-                                                                                value=""
+                                                                                value="" checked
                                             > {{ action }}</label>
                                         </li>
-                                    </ul>
-                                {% endfor %}
+                                    {% endfor %}
+                                </ul>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                                     <button type="button" class="btn btn-primary"> Done</button>
@@ -130,10 +152,10 @@
     <hr>
     {% if thermostattriggers %}
 
-        {% for ttrigger in thermostattriggers %}
+        {% for trigger in thermostattriggers %}
             <div class="dropdown">
                 <button type="button" class="btn btn-primary dropdown-toggle"
-                        data-toggle="dropdown"> {{ ttrigger.name }}
+                        data-toggle="dropdown"> {{ trigger.name }}
                     <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu" role="menu">
@@ -153,7 +175,7 @@
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
                                         aria-hidden="true">&times;</span>
                                 </button>
-                                <h4 class="modal-title"><strong></strong> {{ actor.name }}</h4>
+                                <h4 class="modal-title"><strong> {{ actor.name }}</strong></h4>
                                 {% for action in thermostatactions %}
                                     <ul>
                                         <li>

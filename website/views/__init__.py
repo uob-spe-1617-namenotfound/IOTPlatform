@@ -27,13 +27,15 @@ def account_settings():
 motionactions = ['Turn on', 'Turn Off', 'No Action']
 lightactions = ['Turn Switch on', 'Turn Switch Off', 'No Action']
 thermostatactions = ['Turn on', 'Turn Off', 'No Action', 'Modify Temperature']
-actors = [{'name': 'Motion Sensor', 'action': [motionactions]}, {'name': 'Light Switch', 'action': [lightactions]},
-          {'name': 'Thermostat', 'action': [thermostatactions]}]
+actors = [{'id': '123', 'name': 'Motion Sensor', 'action': [motionactions]},
+          {'name': 'Light Switch', 'id': '456', 'action': [lightactions]},
+          {'name': 'Thermostat', 'id': '789', 'action': [thermostatactions]}]
 motiontriggers = [{'id': '00', 'name': 'When Motion is Detected', 'trigactor': [actors]},
                   {'id': '01', 'name': 'When No Motion is Detected', 'trigactor': [actors]}]
 thermostattriggers = [{'id': '000', 'name': 'When the temperature is above 22'},
                       {'id': '1111', 'name': 'When temperature is below 15'}]
-lighttriggers = [{'id': '0000', 'name': 'Lights are on for 4 hours'}]
+lighttriggers = [
+    {'id': '0000', 'name': 'Lights are on for 4 hours', 'trigactor': [actors], 'trigaction': [lightactions]}]
 
 
 @app.route('/device/actions')
@@ -61,18 +63,18 @@ def room_view():
 
 
 paireddevices = [{'text': 'Bathroom Thermostat', 'id': '10'}, {'text': 'Kitchen Thermostat', 'id': '20'},
-                 {'text': 'Bedroom Thermostat', 'id': '30'},
+                 {'text': 'Dining Room Thermostat', 'id': '30'},
                  {'text': 'Dining Room Motion Sensor', 'id': '40'}, {'text': 'Bedroom Motion Sensor', 'id': '50'},
                  {'text': 'Bathroom Window/door sensor', 'id': '60'}]
 
-group = [{'id': '11', 'name': 'Ground Floor Thermostats', 'device': [paireddevices[1], paireddevices[2]]},
-         {'id': '21', 'name': 'Motion In Bedrooms', 'device': [paireddevices[3]]},
-         {'id': '31', 'name': 'Lighting in First Floor', 'device': [paireddevices[4]]}]
+groups = [{'id': '11', 'name': 'Ground Floor Thermostats', 'device': [paireddevices[1], paireddevices[2]]},
+          {'id': '21', 'name': 'Motion In Bedrooms', 'device': [paireddevices[3]]},
+          {'id': '31', 'name': 'Lighting in First Floor', 'device': [paireddevices[4]]}]
 
 
 @app.route('/devices')
 def devices():
-    return render_template("devices.html", paireddevices=paireddevices, group=group)
+    return render_template("devices.html", paireddevices=paireddevices, groups=groups)
 
 
 @app.route('/help')
