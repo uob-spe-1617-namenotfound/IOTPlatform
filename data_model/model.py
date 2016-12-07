@@ -13,7 +13,7 @@ class User(object):
 
 class UserRepository:
     def __init__(self):
-        self.users = {}
+        self.users = dict()
 
     def add_user(self, user):
         self.users[user.user_id] = user
@@ -41,86 +41,105 @@ class House(object):
 # House groups are for users with multiple houses, or for Fleet management
 class HouseRepository:
     def __init__(self):
-        self.houses = {}
-        self.house_groups = {}
+        self.houses = dict()
 
     def add_house(self, house):
         self.houses[house.house_id] = house
+
 
     def add_house_group(self, house_group):
         self.house_groups[house_group.id] = house_group
         self.house_groups.update({'id': house_group})
 
+
     def add_house_to_group(self, house_group):
         self.house_groups[house_group.id] += self.house_groups
+
 
     def remove_house(self, house_id):
         self.houses.pop(house_id, None)
 
-    def remove_house_group(self, house_group_id):
-        self.house_groups.pop(house_group_id, None)
 
     def get_house_by_id(self, house_id):
         try:
             return self.houses[house_id]
         except KeyError:
-            print("House %d not found" % house_id)
+            print("House {} not found".format(house_id))
 
-    def add_house_to_user(self, user, house_id):
-        user += self.houses[house_id]
+
+    def add_house_to_user(self, user_id, house_id):
+        self.get_house_by_id(house_id).user_id = user_id
+
 
     def get_houses_for_user(self, user_id):
-        for house in self.houses:
-            if house.user_id == user_id:
-                return house
+        return [house for house in self.houses if house.user_id == user_id]
 
 
-class Room(House):
-    def __init__(self, house_id, room_id, name):
+class HouseGroup(object):
+    def __init__(self, house_group_id):
+        self.house_group_id = house_group_id
+        self.house_ids = []
+
+    def get_house_group_attributes(self):
+        return {'house_group_id': self.house_group_id, 'house_ids': self.house_ids}
+
+
+class HouseGroupRepository:
+    def __init__(self):
+        self.house_groups = {}
+
+    def add_house_group(self, house_group):
+        self.house_groups[house_group.id] = house_group
+
+    def add_house_to_group(self, house_group_id, house_id):
+        self.get_house_group_by_id(house_group_id).house_ids.append(house_id)
+
+    def get_house_group_by_id(self, house_group_id):
+        if house_group_id in self.house_groups:
+            return self.house_groups[house_group_id]
+        return None
+
+    def remove_house_group(self, house_group_id):
+        self.house_groups.pop(house_group_id, None)
+
+
+class Room(object):
+    def __init__(self, room_id, house_id, name):
         self.house_id = house_id
         self.room_id = room_id
         self.name = name
+        self.device_ids = []
 
     def get_room_attributes(self):
-        return {'house_id': self.house_id, 'room_id': self.room_id, 'name': self.name}
+        return {'house_id': self.house_id, 'room_id': self.room_id, 'name': self.name, 'device_ids': self.device_ids}
 
 
 # Room groups could be things like 'Upstairs', or to be used for templates
 class RoomRepository:
     def __init__(self):
-        self.rooms = {}
-
-    #    self.room_groups = {}
+        self.rooms = dict()
 
     def add_room(self, room):
         self.rooms[room.room_id] = room
-    # def add_room_group(self, room_group):
-    #    self.room_groups[room_group.id] = room_group
-
-    # def add_room_to_group(self, room, room_group):
-    #    self.room_groups[room_group.id] += self.rooms[room.id]
 
     def remove_room(self, room_id):
         self.rooms.pop(room_id, None)
 
     def get_room_by_id(self, room_id):
         try:
+
             return self.rooms[room_id]
         except KeyError:
-            print("Room %d not found" % room_id)
+            print("Room {} not found".format(room_id))
 
-    def get_devices_for_room(self, devices, room_id):
-        for device in devices:
-            if device.room_id == room_id:
-                return device
+    def add_room_to_house(self, house_id, room_id):
+        self.rooms[room_id].house_id = house_id
 
-    def add_room_to_house(self, house, room_id):
-        house += self.rooms[room_id]
+    def get_rooms_for_house(self, house_id):
+        return [room for room in self.rooms if room.house_id == house_id]
 
-    def get_rooms_for_house(self, rooms, house_id):
-        for room in rooms:
-            if room.house_id == house_id:
-                return room
+    def add_device_to_room(self, room_id, device_id):
+        self.get_room_by_id(room_id).device_ids.append(device_id)
 
 
 class Device(object):
@@ -129,6 +148,7 @@ class Device(object):
         self.room_id = room_id
         self.device_id = device_id
         self.name = name
+
         self.power_state = power_state
 
     def get_device_attributes(self):
@@ -159,31 +179,27 @@ class DeviceRepository:
         try:
             return self.devices[device_id]
         except KeyError:
-            print("Device %d not found" % device_id)
+            print("Device {} not found".format(device_id))
 
-    def add_device_to_house(self, house, device_id):
-        house += self.devices[device_id]
+    def add_device_to_house(self, house_id, device_id):
+        self.get_device_by_id(device_id).house_id = house_id
 
-    def get_devices_for_house(self, devices, house_id):
-        for device in devices:
-            if device.house_id == house_id:
-                return device
+    def get_devices_for_house(self, house_id):
+        return [device for device in self.devices if device.house_id == house_id]
 
-    def add_device_to_room(self, room, device_id):
-        room += self.devices[device_id]
+def get_devices_for_room(self, devices, room_id):
+    for device in devices:
+        if device.room_id == room_id:
+            return device
 
-    def get_devices_for_room(self, devices, room_id):
-        for device in devices:
-            if device.room_id == room_id:
-                return device
+class DeviceGroup(object):
+    def __init__(self, device_group_id, device_ids):
+        self.device_group_id = device_group_id
+        self.device_ids = device_ids
 
 
-class DeviceGroups(Device):
-    def __init__(self, devicegroup_id):
-        self.device_group_id = devicegroup_id
-
-    def get_device_group_attributes(self):
-        return {'device_id': self.device_id}
+def get_device_group_attributes(self):
+    return {'device_ids': self.device_ids, 'device_group_id': self.device_group_id}
 
 
 class DeviceGroupRepository:
@@ -194,13 +210,13 @@ class DeviceGroupRepository:
         self.device_groups[device_group.device_group_id] = device_group
 
     def add_device_to_group(self, device_id, device_group):
-        self.device_groups[device_group.id] += device_id
+        self.device_groups[device_group.device_group_id].device_ids.append(device_id)
 
     def remove_device_group(self, device_group_id):
-        self.device_groups.pop(device_group_id.id, None)
+        self.device_groups.pop(device_group_id.device_group_id, None)
 
     def get_device_group_by_id(self, device_group_id):
         try:
             return self.device_groups[device_group_id]
         except KeyError:
-            print("Device Group %d not found" % device_group_id)
+            print("Device Group {} not found".format(device_group_id))
