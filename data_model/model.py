@@ -28,7 +28,7 @@ class UserRepository:
             print("User {} not found".format(user_id))
 
 
-class House(User):
+class House(object):
     def __init__(self, user_id, house_id, name):
         self.user_id = user_id
         self.house_id = house_id
@@ -45,8 +45,7 @@ class HouseRepository:
         self.house_groups = {}
 
     def add_house(self, house):
-        self.houses[house.id] = house
-        self.houses.update({'id': house})
+        self.houses[house.house_id] = house
 
     def add_house_group(self, house_group):
         self.house_groups[house_group.id] = house_group
@@ -150,8 +149,8 @@ class DeviceRepository:
     def __init__(self):
         self.devices = {}
 
-    def add_device_to_devices(self, device):
-        self.devices[device.id] = device
+    def add_device(self, device):
+        self.devices[device.device_id] = device
 
     def remove_device(self, device_id):
         self.devices.pop(device_id, None)
@@ -181,7 +180,7 @@ class DeviceRepository:
 
 class DeviceGroups(Device):
     def __init__(self, devicegroup_id):
-        self.device_id = device_id
+        self.device_group_id = devicegroup_id
 
     def get_device_group_attributes(self):
         return {'device_id': self.device_id}
@@ -192,7 +191,7 @@ class DeviceGroupRepository:
         self.device_groups = {}
 
     def add_device_group(self, device_group):
-        self.device_groups[device_group.id] = device_group
+        self.device_groups[device_group.device_group_id] = device_group
 
     def add_device_to_group(self, device_id, device_group):
         self.device_groups[device_group.id] += device_id
