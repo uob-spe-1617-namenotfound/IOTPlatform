@@ -93,13 +93,13 @@
                                 </div>
                                 <div class="modal-body">
                                     <p> Select from the following groups: </p>
-                                    {% for group in groups %}
-                                        <form>
+                                    <form>
+                                        {% for group in groups %}
                                             <input type="radio" name='addtogroup'
-                                                   value="group"><strong> {{ group.name }}</strong></input>
-                                        </form>
-                                        <br>
-                                    {% endfor %}
+                                                   value="group"><strong> {{ group.name }}</strong></input> <br>
+                                        {% endfor %}
+                                    </form>
+                                    <br>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -133,18 +133,17 @@
                 </td>
                 <td>
                     <ul>
-                        {{ group.device }}
+                        {% for device in group.device_ids %}
+                            <li>
+                                {{ device.text }}
+                            </li>
+                        {% endfor %}
                     </ul>
                 </td>
                 <td>
-                    {% if group.id == '11' %}
-                        <button class="btn btn-default btn-xs"> Set Temperature</button>
-                        <button class="btn btn-default btn-xs"> Turn On</button>
-                        <button class="btn btn-default btn-xs"> Turn Off</button>
-                    {% else %}
-                        <button class="btn btn-default btn-xs"> Turn On</button>
-                        <button class="btn btn-default btn-xs"> Turn Off</button>
-                    {% endif %}
+                    {% for group in group.group_actions %}
+                        <button class="btn btn-default btn-xs"> {{ group }}</button>
+                    {% endfor %}
                 </td>
             {% endfor %}
         {% endif %}

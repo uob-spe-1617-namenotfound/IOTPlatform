@@ -32,7 +32,7 @@
         </li>
     </ul>
     <br>
-    {% if themes %}
+    {% if themeinfo %}
         <b><p> Below is a list of all of your set themes. </p></b>
 
         <table class="table table-striped">
@@ -40,12 +40,11 @@
                 <th> Theme Name</th>
                 <th> Theme Status</th>
             </tr>
-            {% for theme in themes %}
+            {% for theme in themeinfo %}
                 <tr>
                     <td><a href="#" class="btn btn-primary" role="button" data-toggle="modal"
                            data-target="#myModal">{{ theme.name }}</a></td>
-                    <td><a href="#" class="btn btn-primary" role="button" data-toggle="modal"
-                           data-target="#myModal">{{ theme.status }}</a></td>
+                    <td> {{ theme.theme_status }} </td>
                 </tr>
             {% endfor %}
         </table>

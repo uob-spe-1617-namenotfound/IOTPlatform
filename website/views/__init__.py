@@ -24,12 +24,19 @@ def account_settings():
     return "To be implemented"
 
 
+paireddevices = [{'text': 'Bathroom Thermostat', 'id': '10', 'type': 'thermostat'},
+                 {'text': 'Kitchen Thermostat', 'id': '20', 'type': 'thermostat'},
+                 {'text': 'Dining Room Thermostat', 'id': '30', 'type': 'thermostat'},
+                 {'text': 'Dining Room Motion Sensor', 'id': '40', 'type': 'motion_sensor'},
+                 {'text': 'Bedroom Motion Sensor', 'id': '50', 'type': 'motion_sensor'},
+                 {'text': 'Bathroom Light Switch', 'id': '60', 'type': 'light_switch'}]
+
 motionactions = ['Turn on', 'Turn Off', 'No Action']
 lightactions = ['Turn Switch on', 'Turn Switch Off', 'No Action']
 thermostatactions = ['Turn on', 'Turn Off', 'No Action', 'Modify Temperature']
-actors = [{'id': '123', 'name': 'Motion Sensor', 'action': [motionactions]},
-          {'name': 'Light Switch', 'id': '456', 'action': [lightactions]},
-          {'name': 'Thermostat', 'id': '789', 'action': [thermostatactions]}]
+actors = [{'id': '123', 'name': 'Motion Sensor', 'action': motionactions},
+          {'name': 'Light Switch', 'id': '456', 'action': lightactions},
+          {'name': 'Thermostat', 'id': '789', 'action': thermostatactions}]
 motiontriggers = [{'id': '00', 'name': 'When Motion is Detected', 'trigactor': [actors]},
                   {'id': '01', 'name': 'When No Motion is Detected', 'trigactor': [actors]}]
 thermostattriggers = [{'id': '000', 'name': 'When the temperature is above 22'},
@@ -40,9 +47,8 @@ lighttriggers = [
 
 @app.route('/device/actions')
 def device_actions():
-    return render_template("deviceactions.html", triggers=triggers, actors=actors, motiontriggers=motiontriggers,
-                           thermostattriggers=thermostattriggers,
-                           lighttriggers=lighttriggers, motionactions=motionactions, lightactions=lightactions,
+    return render_template("deviceactions.html", device=paireddevices[3], triggers=motiontriggers, actors=actors,
+                           motionactions=motionactions, lightactions=lightactions,
                            thermostatactions=thermostatactions)
 
 
@@ -55,26 +61,25 @@ class Devices:
 
 dev1 = Devices("Thermostat", ["Thermostat"], "24℃")
 dev2 = Devices("Door & Window Sensor", ["South Window", "East Window", 'Door'], ['Closed', 'Closed', 'Open'])
-devices = [dev1, dev2]
+device = [dev1, dev2]
 
 @app.route('/room')
 def room_view():
-    return render_template("roomview.html", devices=devices)
+    return render_template("roomview.html", device=device)
 
 
-paireddevices = [{'text': 'Bathroom Thermostat', 'id': '10'}, {'text': 'Kitchen Thermostat', 'id': '20'},
-                 {'text': 'Dining Room Thermostat', 'id': '30'},
-                 {'text': 'Dining Room Motion Sensor', 'id': '40'}, {'text': 'Bedroom Motion Sensor', 'id': '50'},
-                 {'text': 'Bathroom Window/door sensor', 'id': '60'}]
-
-groups = [{'id': '11', 'name': 'Ground Floor Thermostats', 'device': [paireddevices[1], paireddevices[2]]},
-          {'id': '21', 'name': 'Motion In Bedrooms', 'device': [paireddevices[3]]},
-          {'id': '31', 'name': 'Lighting in First Floor', 'device': [paireddevices[4]]}]
+groupactions = ['Turn On', 'Turn Off', 'Set Temperature']
+groups = [{'id': '11', 'name': 'Ground Floor Thermostats', 'device_ids': [paireddevices[1], paireddevices[2]],
+           'group_actions': [groupactions[0], groupactions[1], groupactions[2]]},
+          {'id': '21', 'name': 'Motion In Bedrooms', 'device_ids': [paireddevices[3]],
+           'group_actions': [groupactions[0], groupactions[1]]},
+          {'id': '31', 'name': 'Lighting in First Floor', 'device_ids': [paireddevices[4]],
+           'group_actions': [groupactions[0], groupactions[1]]}]
 
 
 @app.route('/devices')
 def devices():
-    return render_template("devices.html", paireddevices=paireddevices, groups=groups)
+    return render_template("devices.html", paireddevices=paireddevices, groups=groups, groupactions=groupactions)
 
 
 @app.route('/help')
@@ -82,12 +87,13 @@ def help():
     return render_template("help.html")
 
 
-themesinfo = [{'id': '1', 'name': 'Weekend Away Theme', 'status': 'enabled'},
-              {'id': '2', 'name': 'Night Party Theme', 'status': 'disabled'}]
+status = ['Enabled', 'Disabled']
+themeinfo = [{'id': '1', 'name': 'Weekend Away Theme', 'theme_status': status[0]},
+             {'id': '2', 'name': 'Night Party Theme', 'theme_status': status[1]}]
 
 @app.route('/themes')
 def themes():
-    return render_template("themes.html", themes=themesinfo)
+    return render_template("themes.html", themeinfo=themeinfo, status=status)
 
 
 @app.route('/device/<string:id>')
