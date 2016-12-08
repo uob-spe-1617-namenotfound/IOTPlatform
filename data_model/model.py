@@ -19,7 +19,7 @@ class UserRepository:
         self.users = {}
 
     def add_user(self, user):
-        self.users[user.user_id] = user
+        self.users[user.user_id] = User.get_user_attributes(user)
 
     def remove_user(self, user_id):
         self.users.pop(user_id, None)
@@ -145,7 +145,7 @@ class RoomRepository:
         return lst
 
 
-class Device(House, Room):
+class Device(Room):
     def __init__(self, house_id, room_id, device_id, name, device_type, power_state, last_temp, target_temp,
                  sensor_data):
         self.house_id = house_id
@@ -160,7 +160,7 @@ class Device(House, Room):
 
     def get_device_attributes(self):
         return {'house_id': self.house_id, 'room_id': self.room_id, 'device_id': self.device_id, 'name': self.name,
-                'type': self.type, 'power_state': self.power_state, 'last_temp': self.last_temp,
+                'device_type': self.device_type, 'power_state': self.power_state, 'last_temp': self.last_temp,
                 'target_temp': self.target_temp, 'sensor_data': self.sensor_data}
 
     def change_power_state(self):
@@ -175,13 +175,6 @@ class Device(House, Room):
     def set_target_temp(self, target):
         self.target_temp = target
 
-
-
-# class Thermostat(Device):
-#     def __init__(self, house_id, room_id, device_id, name, power_state, last_temp, target_temp):
-#         super(Device, self).__init__(house_id, room_id, device_id, name, power_state)
-#         self.last_temp = last_temp
-#         self.target_temp = target_temp
 
 
 class DeviceRepository:
