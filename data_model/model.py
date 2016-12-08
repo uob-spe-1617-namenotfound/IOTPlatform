@@ -1,3 +1,6 @@
+# import json
+
+
 class User(object):
     def __init__(self, user_id, name, password_hash, email_address, is_admin):
         self.user_id = user_id
@@ -16,7 +19,7 @@ class UserRepository:
         self.users = dict()
 
     def add_user(self, user):
-        self.users[user.user_id] = user
+        self.users[user.user_id] = User.get_user_attributes(user)
 
     def remove_user(self, user_id):
         self.users.pop(user_id, None)
@@ -44,7 +47,7 @@ class HouseRepository:
         self.houses = dict()
 
     def add_house(self, house):
-        self.houses[house.house_id] = house
+        self.houses[house.house_id] = House.get_house_attributes(house)
 
 
     def add_house_group(self, house_group):
@@ -73,6 +76,18 @@ class HouseRepository:
 
     def get_houses_for_user(self, user_id):
         return [house for house in self.houses if house.user_id == user_id]
+
+    def add_house_to_user(self, user, house):
+        self.houses[house.user_id] = user.user_id
+        house.user_id = user.user_id
+
+    def get_houses_for_user(self, user_id):
+        lst = {}
+        for house in self.houses:
+            if house.user_id == user_id:
+                lst += house
+        return lst
+        refs/remotes/benny/data_model
 
 
 class HouseGroup(object):
@@ -144,16 +159,28 @@ class RoomRepository:
 
 class Device(object):
     def __init__(self, house_id, room_id, device_id, name, power_state):
+
+class Device(Room):
+    def __init__(self, house_id, room_id, device_id, name, device_type, power_state, last_temp, target_temp,
+                 sensor_data):
+        refs/remotes/benny/data_model
         self.house_id = house_id
         self.room_id = room_id
         self.device_id = device_id
         self.name = name
 
+
+        self.device_type = device_type
+        refs/remotes/benny/data_model
         self.power_state = power_state
+        self.last_temp = last_temp
+        self.target_temp = target_temp
+        self.sensor_data = sensor_data
 
     def get_device_attributes(self):
         return {'house_id': self.house_id, 'room_id': self.room_id, 'device_id': self.device_id, 'name': self.name,
-                'power_state': self.power_state}
+                'device_type': self.device_type, 'power_state': self.power_state, 'last_temp': self.last_temp,
+                'target_temp': self.target_temp, 'sensor_data': self.sensor_data}
 
     def change_power_state(self):
         try:
@@ -163,6 +190,10 @@ class Device(object):
                 self.power_state = 1
         except:
             return "ERROR: Power State not 1 or 0"
+
+    def set_target_temp(self, target):
+        self.target_temp = target
+
 
 
 class DeviceRepository:
@@ -219,4 +250,8 @@ class DeviceGroupRepository:
         try:
             return self.device_groups[device_group_id]
         except KeyError:
+
             print("Device Group {} not found".format(device_group_id))
+
+            print("Device Group {} not found" % device_group_id)
+
