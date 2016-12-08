@@ -143,16 +143,22 @@ class RoomRepository:
 
 
 class Device(House, Room):
-    def __init__(self, house_id, room_id, device_id, name, power_state):
+    def __init__(self, house_id, room_id, device_id, name, device_type, power_state, last_temp, target_temp,
+                 sensor_data):
         self.house_id = house_id
         self.room_id = room_id
         self.device_id = device_id
         self.name = name
+        self.device_type = device_type
         self.power_state = power_state
+        self.last_temp = last_temp
+        self.target_temp = target_temp
+        self.sensor_data = sensor_data
 
     def get_device_attributes(self):
         return {'house_id': self.house_id, 'room_id': self.room_id, 'device_id': self.device_id, 'name': self.name,
-                'power_state': self.power_state}
+                'type': self.type, 'power_state': self.power_state, 'last_temp': self.last_temp,
+                'target_temp': self.target_temp, 'sensor_data': self.sensor_data}
 
     def change_power_state(self):
         try:
@@ -162,6 +168,17 @@ class Device(House, Room):
                 self.power_state = 1
         except:
             return "ERROR: Power State not 1 or 0"
+
+    def set_target_temp(self, target):
+        self.target_temp = target
+
+
+
+# class Thermostat(Device):
+#     def __init__(self, house_id, room_id, device_id, name, power_state, last_temp, target_temp):
+#         super(Device, self).__init__(house_id, room_id, device_id, name, power_state)
+#         self.last_temp = last_temp
+#         self.target_temp = target_temp
 
 
 class DeviceRepository:
@@ -227,4 +244,4 @@ class DeviceGroupRepository:
         try:
             return self.device_groups[device_group_id]
         except KeyError:
-            print("Device Group %d not found" % device_group_id)
+            print("Device Group {} not found" % device_group_id)
