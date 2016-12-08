@@ -10,7 +10,8 @@ def triggers():
 
 @app.route('/')
 def index():
-    return render_template("home.html")
+    rooms = ['Kitchen', 'Bathroom']
+    return render_template("home.html", rooms=rooms)
 
 
 @app.route('/logout')
@@ -30,7 +31,27 @@ def device_actions():
 
 @app.route('/room')
 def room_view():
-    return render_template("roomview.html")
+    thermostatDict = {"Name": "Thermostat", "Property": "24℃"}
+
+    lightSwitchDict1 = {"Name": "A", "Property": "On"}
+    lightSwitchDict2 = {"Name": "B", "Property": "On"}
+    lightSwitchDict3 = {"Name": "C", "Property": "Off"}
+
+    doorsensorDict1 = {"Name": "A", "Property": "4:20am"}
+    doorsensorDict2 = {"Name": "B", "Property": "2:40pm"}
+    doorsensorDict3 = {"Name": "C", "Property": "12:24pm"}
+
+    motionsensorDict1 = {"Name": "South Window", "Property": "Closed"}
+    motionsensorDict2 = {"Name": "East Window", "Property": "Closed"}
+    motionsensorDict3 = {"Name": "Door", "Property": "Open"}
+
+    thermostats = [thermostatDict]
+    light_switches = [lightSwitchDict1, lightSwitchDict2, lightSwitchDict3]
+    door_sensors = [doorsensorDict1, doorsensorDict2, doorsensorDict3]
+    motion_sensors = [motionsensorDict1, motionsensorDict2, motionsensorDict3]
+
+    return render_template("roomview.html", thermostats=thermostats, light_switches=light_switches,
+                           door_sensors=door_sensors, motion_sensors=motion_sensors)
 
 
 @app.route('/devices')
@@ -38,7 +59,22 @@ def devices():
     return render_template("devices.html")
 
 
-@app.route('/help')
-def help():
-    return render_template("help.html")
+@app.route('/admin')
+def admin():
+    user_dic = {
+        "user_id": "324123",
+        "user_email_address": "wx15879@my.bristol.ac.uk",
+        "user_is_admin": "Yes",
+        "user_first_name": "Jack",
+        "user_last_name": "Xia",
+        "user_device_status": "Fault"}
+    userList = [user_dic]
+    return render_template("admin.html", users=userList)
 
+@app.route('/admin_map')
+def admin_map():
+    house1 = {'lat' : -20.000, 'lng': -179.000}
+    house2 = {'lat' : -50.000, 'lng': 45.000}
+    house3 = {'lat' :  10.000, 'lng': 120.000}
+    house_location = [house1, house2, house3]
+    return render_template("admin_maps.html", house_location = house_location)
