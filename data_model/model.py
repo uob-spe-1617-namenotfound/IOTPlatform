@@ -47,7 +47,7 @@ class HouseRepository:
         self.houses = {}
 
     def add_house(self, house):
-        self.houses[house.house_id] = house
+        self.houses[house.house_id] = House.get_house_attributes(house)
 
     def remove_house(self, house_id):
         self.houses.pop(house_id, None)
@@ -59,10 +59,11 @@ class HouseRepository:
             print("House %d not found" % house_id)
 
     def add_house_to_user(self, user, house):
-        house.user_id = user.id
+        self.houses[house.user_id] = user.user_id
+        house.user_id = user.user_id
 
     def get_houses_for_user(self, user_id):
-        lst = []
+        lst = {}
         for house in self.houses:
             if house.user_id == user_id:
                 lst += house
