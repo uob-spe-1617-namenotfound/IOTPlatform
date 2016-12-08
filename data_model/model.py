@@ -1,3 +1,6 @@
+# import json
+
+
 class User(object):
     def __init__(self, user_id, name, password_hash, email_address, is_admin):
         self.user_id = user_id
