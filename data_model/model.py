@@ -1,5 +1,3 @@
-# import json
-
 
 class User(object):
     def __init__(self, user_id, name, password_hash, email_address, is_admin):
@@ -71,11 +69,12 @@ class HouseRepository:
 
 
 class HouseGroup(object):
-    def __init__(self, house_id):
+    def __init__(self, house_id, name):
         self.house_id = house_id
+        self.name = name
 
     def get_house_group_attributes(self):
-        return {'house_id': self.house_id}
+        return {'house_id': self.house_id, 'name': self.name}
 
 
 class HouseGroupRepository:
@@ -107,17 +106,8 @@ class RoomRepository:
     def __init__(self):
         self.rooms = {}
 
-    #    self.room_groups = {}
-
     def add_room(self, room):
-        self.rooms[room.id] = room
-
-    # def add_room_group(self, room_group):
-    #    self.room_groups[room_group.id] = room_group
-
-    # def add_room_to_group(self, room, room_group):
-    #    self.room_groups[room_group.id] = []
-    #    self.room_groups[room_group.id] += self.rooms[room.id]
+        self.rooms[room.room_id] = Room.get_room_attributes(room)
 
     def remove_room(self, room_id):
         self.rooms.pop(room_id, None)
@@ -144,6 +134,36 @@ class RoomRepository:
             if room.house_id == house_id:
                 lst += room
         return lst
+
+
+class RoomGroup(object):
+    def __init__(self, room_id, room_group_id, name):
+        self.room_id = room_id
+        self.room_group_id = room_group_id
+        self.name = name
+
+    def get_room_group_attributes(self):
+        return {'room_id': self.room_id, 'room_group_id': self.room_group_id, 'name': self.name}
+
+
+class RoomGroupRepository:
+    def __init__(self):
+        self.room_groups = {}
+
+    def add_room_group(self, room_group):
+        self.room_groups[room_group.room_group_id] = RoomGroup.get_room_group_attributes(room_group)
+
+    def add_room_to_group(self, room_id, room_group):
+        self.room_groups[room_group.id] += room_id
+
+    def remove_room_group(self, room_group_id):
+        self.room_groups.pop(room_group_id.id, None)
+
+    def get_room_group_by_id(self, room_group_id):
+        try:
+            return self.room_groups[room_group_id]
+        except KeyError:
+            print("Room Group {} not found" % room_group_id)
 
 
 class Device(Room):
@@ -177,13 +197,12 @@ class Device(Room):
         self.target_temp = target
 
 
-
 class DeviceRepository:
     def __init__(self):
         self.devices = {}
 
     def add_device(self, device):
-        self.devices[device.id] = device
+        self.devices[device.device_id] = Device.get_device_attributes(device)
 
     def remove_device(self, device_id):
         self.devices.pop(device_id, None)
@@ -215,13 +234,14 @@ class DeviceRepository:
         return lst
 
 
-class DeviceGroups(object):
-    def __init__(self, device_id, device_group_id):
+class DeviceGroup(object):
+    def __init__(self, device_id, device_group_id, name):
         self.device_id = device_id
         self.device_group_id = device_group_id
+        self.name = name
 
     def get_device_group_attributes(self):
-        return {'device_id': self.device_id, 'device_group_id': self.device_group_id}
+        return {'device_id': self.device_id, 'device_group_id': self.device_group_id, 'name': self.name}
 
 
 class DeviceGroupRepository:
@@ -229,7 +249,7 @@ class DeviceGroupRepository:
         self.device_groups = {}
 
     def add_device_group(self, device_group):
-        self.device_groups[device_group.id] = device_group
+        self.device_groups[device_group.device_group_id] = DeviceGroup.get_device_group_attributes(device_group)
 
     def add_device_to_group(self, device_id, device_group):
         self.device_groups[device_group.id] += device_id
