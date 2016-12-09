@@ -68,7 +68,6 @@ def room_view():
 def devices():
     return render_template("devices.html")
 
-
 @app.route('/admin')
 def admin():
     user_dic = {
@@ -89,3 +88,7 @@ def admin_map():
     house3 = {'lat' :  10.000, 'lng': 120.000}
     house_location = [house1, house2, house3]
     return render_template("admin_maps.html", house_location = house_location)
+
+@app.route('/help')
+def help():
+    return render_template("help.html")
