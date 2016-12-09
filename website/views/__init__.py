@@ -14,6 +14,12 @@ def index():
     return render_template("home.html", rooms=rooms)
 
 
+@app.route('/admin/user/<string:user_id>')
+def admin_index(user_id):
+    rooms = ['Kitchen', 'Bathroom']
+    return render_template("home.html", admin=True, rooms=rooms)
+
+
 @app.route('/logout')
 def logout():
     return "To be implemented"

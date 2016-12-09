@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block page_content %}
-    <h1>Welcome!</h1>
+    <h1>Welcome! {% if admin %} ADMIN VIEW {% endif %}</h1>
     <br>
 
     <ul class="nav nav-pills">

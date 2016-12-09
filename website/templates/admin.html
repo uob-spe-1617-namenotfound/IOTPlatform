@@ -23,7 +23,7 @@
                         {{user["user_id"]}}
                     </td>
                     <td>
-                        <a href="{{ url_for('.index') }}">{{user["user_first_name"]}} {{user["user_last_name"]}}</a>
+                        <a href="{{ url_for('.admin_index', user_id=user["user_id"]) }}">{{user["user_first_name"]}} {{user["user_last_name"]}}</a>
                     </td>
                     <td>
                         {{user["user_email_address"]}}
