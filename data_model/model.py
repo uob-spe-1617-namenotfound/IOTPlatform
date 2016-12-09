@@ -24,7 +24,7 @@ class UserRepository:
         self.users = dict()
 
     def add_user(self, user):
-        self.users[user.user_id] = User.get_user_attributes(user)
+        self.users[user.user_id] = user
 
     def remove_user(self, user_id):
         self.users.pop(user_id, None)
@@ -52,7 +52,7 @@ class HouseRepository:
         self.houses = dict()
 
     def add_house(self, house):
-        self.houses[house.house_id] = House.get_house_attributes(house)
+        self.houses[house.house_id] = house
 
     def add_house_group(self, house_group):
         self.house_groups[house_group.id] = house_group
@@ -74,18 +74,11 @@ class HouseRepository:
         self.get_house_by_id(house_id).user_id = user_id
 
     def get_houses_for_user(self, user_id):
-        return [house for house in self.houses if house.user_id == user_id]
+        return [house for house in self.houses.values() if house.user_id == user_id]
 
     def add_house_to_user(self, user, house):
         self.houses[house.user_id] = user.user_id
         house.user_id = user.user_id
-
-    def get_houses_for_user(self, user_id):
-        lst = {}
-        for house in self.houses:
-            if house.user_id == user_id:
-                lst += house
-        return lst
 
 
 class HouseGroup(object):
@@ -151,7 +144,7 @@ class RoomRepository:
         self.rooms[room_id].house_id = house_id
 
     def get_rooms_for_house(self, house_id):
-        return [room for room in self.rooms if room.house_id == house_id]
+        return [room for room in self.rooms.values() if room.house_id == house_id]
 
     def add_device_to_room(self, room_id, device_id):
         self.get_room_by_id(room_id).device_ids.append(device_id)
@@ -256,10 +249,10 @@ class DeviceRepository:
         self.get_device_by_id(device_id).house_id = house_id
 
     def get_devices_for_house(self, house_id):
-        return [device for device in self.devices if device.house_id == house_id]
+        return [device for device in self.devices.values() if device.house_id == house_id]
 
     def get_devices_for_room(self, room_id):
-        return [device for device in self.devices if device.room_id == room_id]
+        return [device for device in self.devices.values() if device.room_id == room_id]
 
     def link_device_to_room(self, room_id, device_id):
         device = self.get_device_by_id(device_id)
