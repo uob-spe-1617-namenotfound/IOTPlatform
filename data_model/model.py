@@ -1,3 +1,7 @@
+import random
+import string
+
+
 class User(object):
     def __init__(self, user_id, name, password_hash, email_address, is_admin):
         self.user_id = user_id
@@ -9,6 +13,10 @@ class User(object):
     def get_user_attributes(self):
         return {'user_id': self.user_id, 'name': self.name, 'password_hash': self.password_hash,
                 'email_address': self.email_address, 'is_admin': self.is_admin}
+
+
+def generate_id():
+    return ''.join([random.choice(string.digits + string.ascii_lowercase) for _ in range(10)])
 
 
 class UserRepository:
@@ -125,6 +133,7 @@ class RoomRepository:
     def __init__(self):
         self.rooms = dict()
 
+    # TODO: add_room should generate an ID instead of accepting one (same for all other add_* functions)
     def add_room(self, room):
         self.rooms[room.room_id] = room
 
@@ -146,6 +155,12 @@ class RoomRepository:
 
     def add_device_to_room(self, room_id, device_id):
         self.get_room_by_id(room_id).device_ids.append(device_id)
+
+    def generate_new_room_id(self):
+        while True:
+            key = generate_id()
+            if key not in self.rooms:
+                return key
 
 
 class RoomGroup(object):
@@ -217,6 +232,17 @@ class DeviceRepository:
     def add_device(self, device):
         self.devices[device.device_id] = device
 
+    def add_new_device(self, device_type, house_id, name, access_data):
+        device_id = self.generate_new_device_id()
+        self.devices[device_id] = Device(house_id, None, device_id, name, device_type, 1, None, None, access_data)
+        return self.get_device_by_id(device_id)
+
+    def generate_new_device_id(self):
+        while True:
+            key = generate_id()
+            if key not in self.devices:
+                return key
+
     def remove_device(self, device_id):
         self.devices.pop(device_id, None)
 
@@ -232,10 +258,13 @@ class DeviceRepository:
     def get_devices_for_house(self, house_id):
         return [device for device in self.devices if device.house_id == house_id]
 
-    def get_devices_for_room(self, devices, room_id):
-        for device in devices:
-            if device.room_id == room_id:
-                return device
+    def get_devices_for_room(self, room_id):
+        return [device for device in self.devices if device.room_id == room_id]
+
+    def link_device_to_room(self, room_id, device_id):
+        device = self.get_device_by_id(device_id)
+        device.room_id = room_id
+        return device
 
 
 class DeviceGroup(object):
@@ -266,3 +295,43 @@ class DeviceGroupRepository:
             return self.device_groups[device_group_id]
         except KeyError:
             print("Device Group {} not found".format(device_group_id))
+
+
+class Trigger:
+    def __init__(self, trigger_id, trigger_sensor_id, trigger, actor_id, action):
+        self.trigger_id = trigger_id
+        self.trigger_sensor_id = trigger_sensor_id
+        self.trigger = trigger
+        self.actor_id = actor_id
+        self.action = action
+
+    def get_trigger_attributes(self):
+        return {
+            "trigger_id": self.trigger_id,
+            "trigger_sensor_id": self.trigger_sensor_id,
+            "trigger": self.trigger,
+            "actor_id": self.actor_id,
+            "action": self.action
+        }
+
+
+class TriggerRepository:
+    def __init__(self):
+        self.triggers = dict()
+
+    def add_trigger(self, trigger_sensor_id, trigger, actor_id, action):
+        # TODO: should check trigger_sensor_id and actor_id
+        trigger_id = self.generate_new_trigger_id()
+        self.triggers[trigger_id] = Trigger(trigger_id, trigger_sensor_id, trigger, actor_id, action)
+        return self.get_trigger_by_id(trigger_id)
+
+    def get_trigger_by_id(self, trigger_id):
+        if trigger_id not in self.triggers:
+            return None
+        return self.triggers[trigger_id]
+
+    def generate_new_trigger_id(self):
+        while True:
+            key = generate_id()
+            if key not in self.triggers:
+                return key
