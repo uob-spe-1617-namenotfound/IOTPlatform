@@ -14,8 +14,9 @@ def index():
     return render_template("home.html", rooms=rooms)
 
 
-@app.route('/admin/user/<string:user_id>')
+@app.route('/admin/user/<string:user_id>/<string:user_name>')
 def admin_index(user_id, user_name):
+    #user_name = user_repository.get_user(user_id).user_name
     rooms = ['Kitchen', 'Bathroom']
     return render_template("home.html", admin=True, rooms=rooms, user_name=user_name)
 
