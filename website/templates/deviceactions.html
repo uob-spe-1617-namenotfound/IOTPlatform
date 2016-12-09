@@ -1,157 +1,102 @@
 {% extends "base.html" %}
 {% block page_content %}
     <h1> Motion Sensor Action Settings </h1>
-    <br></br>
-    <hr></hr>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet"/>
-    <div class="container">
-
-        <form class="form-horizontal" role="form">
-
-            <div class="form-group">
-                <label class="col-sm-4 control-label"> Motion detection (on/off): </label>
-                <div class="col-sm-8">
-                    <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor" value="ON"
-                                                        checked> Motion Sensor is ON</label>
-                    <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor" value="OFF">
-                        Motion Sensor is OFF </label>
-
+    <hr>
+    <h5> Motion Sensor (ON/OFF) : </h5>
+    <form action="">
+        <input type="radio" name="motionsensor" value="ON" checked/> Motion Sensor is ON<br>
+        <input type="radio" name="motionsensor" value="OFF"> Motion Sensor is OFF<br>
+    </form>
+    <hr>
+    <br>
+    <h3> Kitchen Motion Triggers: </h3>
+    <hr>
+    <div class="dropdown">
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> When No Motion is Detected
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li><a href="#lightswitch" data-toggle="modal"> Light Switch </a></li>
+            <li><a href="#"> Thermostat </a></li>
+            <li class="divider"></li>
+            <li><a href="#"> Send E-mail </a></li>
+        </ul>
+    </div>
+    <div class="modal fade" id="lightswitch" data-target="#lightswitch">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header orange">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title"><strong></strong> Light Switch</h4>
+                    <ul>
+                        <li>
+                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                                                                value="ON"
+                                                                checked> Turn on </label>
+                        </li>
+                        <li>
+                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                                                                value="OFF">
+                                Turn off </label>
+                        </li>
+                        <li><label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                                                                value="OFF">
+                            No Action </label>
+                        </li>
+                    </ul>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary"> Done</button>
+                    </div>
                 </div>
             </div>
+        </div>
+    </div>
+    <br>
+    <br>
+    <div class="dropdown">
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> When Motion is Detected
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li><a href="#lightswitch" data-toggle="modal"> Light Switch </a></li>
+            <li><a href="#"> Thermostat </a></li>
+            <li class="divider"></li>
+            <li><a href="#"> Send E-mail </a></li>
+        </ul>
+    </div>
+    <div class="modal fade" id="lightswitch" data-target="#lightswitch">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header orange">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title"><strong></strong> Light Switch</h4>
+                    <ul>
+                        <li>
+                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                                                                value="ON"> Turn on </label>
+                        </li>
+                        <li>
+                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                                                                value="OFF">
+                                Turn off </label>
+                        </li>
+                        <li><label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
+                                                                value="OFF">
+                            No Action </label>
+                        </li>
 
-            <ul>
-            </ul>
-            <hr>
-            </hr>
-            <br></br>
-
-
-            </ul>
-
-            <div class="container">
-                <div class="row">
-                    <h4> Kitchen Motion Triggers: </h4>
-                    <hr>
-
-                    <div class="dropdown">
-                        <ul class="nav nav-pills">
-                            <li role="presentation" class="dropdown">
-                                <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button"
-                                   aria-haspopup="True"
-                                   aria-expanded="False">
-
-
-                            When Motion is Detected
-
-                            <span class="caret"></span>
-
-                        </button>
-
-                        <ul class="dropdown-menu" role="menu">
-
-                            <li><a tabindex="0"> Thermostat </a></li>
-
-                            <li class="dropdown-submenu">
-
-                                <a tabindex="0" data-toggle="dropdown"> Light Switch</a>
-
-
-                                <ul class="dropdown-menu">
-
-                                    <li class="dropdown-header">Dropdown header</li>
-
-                                    <li><a tabindex="0">Sub action</a></li>
-
-                                    <li class="disabled"><a tabindex="0">Another sub action</a></li>
-
-                                    <li><a tabindex="0"> jdklj </a></li>
-
-                                </ul>
-
-                            </li>
-
-                            <li><a tabindex="0"> Send Email</a></li>
-
-                            <li class="divider"></li>
-
-                            <li><a tabindex="0"> Remove Trigger</a></li>
-
-                        </ul>
-                        </ul>
+                    </ul>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary"> Done</button>
                     </div>
-
-                    <br></br>
-
-                    <div class="dropdown">
-                        <ul class="nav nav-pills">
-                            <li role="presentation" class="dropdown">
-                                <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button"
-                                   aria-haspopup="True"
-                                   aria-expanded="False">
-
-                            When No Motion is Detected
-
-                            <span class="caret"></span>
-
-                        </button>
-
-
-                        <ul class="dropdown-menu" role="menu">
-
-                            <li><a tabindex="0"> Thermostat </a></li>
-
-                            <li class="dropdown-submenu">
-
-                                <a tabindex="0" data-toggle="dropdown"> Light Switch</a>
-
-
-                                <ul class="dropdown-menu">
-
-                                    <li class="dropdown-header">Dropdown header</li>
-
-                                    <li><a tabindex="0">Sub action</a></li>
-
-                                    <li class="disabled"><a tabindex="0">Another sub action</a></li>
-
-                                    <li><a tabindex="0"> </a></li>
-
-                                </ul>
-
-                            </li>
-
-                            <li><a tabindex="0"> Send Email</a></li>
-
-                            <li class="divider"></li>
-
-                            <li><a tabindex="0"> Remove Trigger</a></li>
-
-                        </ul>
-                        </ul>
-                    </div>
-                    <br></br>
-                    <br></br>
-                    <br></br>
-                    <br></br>
-
-                    <form class="form-horizontal">
-                        <fieldset>
-                            <div class="form-group">
-                                <label class="col-xs-3 control-label">Light Switch</label>
-                                <div class="col-xs-9">
-                                    <div class="radio">
-                                        <label>
-                                            <input id="inlineradio1" name="sampleinlineradio" value="option1"
-                                                   type="radio">
-                                            Turn Lights On</label>
-                                    </div>
-                                    <div class="radio">
-                                        <label>
-                                            <input id="inlineradio1" name="sampleinlineradio" value="option1"
-                                                   type="radio">
-                                            Turn Lights Off</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </fieldset>
-                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

@@ -1,3 +1,9 @@
 from website import app
 
-app.run(debug=True,host=app.config['HOSTNAME'], port=int(app.config['PORT']))
+
+def main():
+    app.run(host=app.config['HOSTNAME'], port=int(app.config['PORT']))
+
+
+if __name__ == "__main__":
+    main()
