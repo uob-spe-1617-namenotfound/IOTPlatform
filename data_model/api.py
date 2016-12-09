@@ -64,7 +64,8 @@ def add_device(device):
     device = model.Device("whatever house id exists", "a room id", device, "name of the device", 0)
     device_repository.add_device(device)
     #device = device_repository.get_devices_for_house(device_id)
-    return jsonify({"a device has been added")
+    return jsonify({"a device has been added":)
+    request.json(add_device)
 
 @api.route('/device/<string:device_id>/remove',methods = ['POST'])
 def remove_device(device_id):
@@ -74,22 +75,23 @@ def remove_device(device_id):
     if device is None:
         return jsonify({"user": None, "error": {"code": 404, "messaage": "No such device found"}})
     return jsonify({"device":device.remove_device_attributes(),"errors": None})
+    request.json(remove_device()
 
 @api.route('/room/<string:room_id>/add',methods = ['POST'])
 def add_room(room):
     room = model.Room(room, "house_id", "name of the room")
     room_repository.add_room(room)
     return jsonify("a room has been added")
+    request.json(add_room)
 
 @api.route('/device/<string:device_id>/remove',methods = ['POST'])
 def remove_room(room_id):
-    room = model.Room(room_id, "a house id",  "name of the room")
-    device_repository.remove_room(room_id)
+    result = room_repository.remove_room(room_id)
     #device = device_repository.remove_devices_for_house(device_id)
-    if room is None:
-        return jsonify({"user": None, "error": {"code": 404, "messaage": "No such device found"}})
+    if remove_room is None:
+        return jsonify({"user": None, "error": {"code": 404, "messaage": "No such room found"}})
     return jsonify({"device":room.remove_room_attributes(),"errors": None})
-
+    request.json(remove_room)
 
 
 def main():

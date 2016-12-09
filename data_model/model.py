@@ -138,7 +138,8 @@ class RoomRepository:
         self.rooms[room.room_id] = room
 
     def remove_room(self, room_id):
-        self.rooms.pop(room_id, None)
+        return self.rooms.pop(room_id, None)
+
 
     def get_room_by_id(self, room_id):
         try:
@@ -163,7 +164,6 @@ class Device(object):
 class Device(Room):
     def __init__(self, house_id, room_id, device_id, name, device_type, power_state, last_temp, target_temp,
                  sensor_data):
-        refs/remotes/benny/data_model
         self.house_id = house_id
         self.room_id = room_id
         self.device_id = device_id
@@ -171,7 +171,6 @@ class Device(Room):
 
 
         self.device_type = device_type
-        refs/remotes/benny/data_model
         self.power_state = power_state
         self.last_temp = last_temp
         self.target_temp = target_temp
