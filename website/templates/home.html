@@ -54,7 +54,7 @@
         {% for room in rooms %}
         <tr>
             <th scope="row">{{loop.index}}</th>
-            <td><a href="{{ url_for('.room_view') }}">{{room}}</a></td>
+            <td><a href="{{ url_for('.room_view', room_id=room.room_id) }}">{{room.name}}</a></td>
         </tr>
         {% endfor %}
         </tbody>

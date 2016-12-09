@@ -1,7 +1,7 @@
 from flask import render_template
 
 from website import app
-
+from website import data_interface
 
 @app.route('/triggers')
 def triggers():
@@ -10,7 +10,8 @@ def triggers():
 
 @app.route('/')
 def index():
-    rooms = ['Kitchen', 'Bathroom']
+    #rooms = ['Kitchen', 'Bathroom']
+    rooms = data_interface.get_user_default_rooms()
     return render_template("home.html", rooms=rooms)
 
 
@@ -36,8 +37,8 @@ def device_actions():
     return render_template("deviceactions.html")
 
 
-@app.route('/room')
-def room_view():
+@app.route('/room/<string:room_id>')
+def room_view(room_id):
     thermostatDict = {"Name": "Thermostat", "Property": "24℃", "Device_type" : "Thermostat"}
 
     lightSwitchDict1 = {"Name": "A", "Property": "On", "Device_type" : "Light Swtich"}
