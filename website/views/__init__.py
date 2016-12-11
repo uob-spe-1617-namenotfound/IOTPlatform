@@ -2,13 +2,9 @@ from flask import render_template
 
 from website import app
 
-
-@app.route('/triggers')
-def triggers():
-    return render_template("triggers.html")
-
-
 rooms = ['Kitchen', 'Bathroom']
+
+
 @app.route('/')
 def index():
     return render_template("home.html", rooms=rooms)
@@ -24,13 +20,38 @@ def account_settings():
     return "To be implemented"
 
 
-paireddevices = [{'text': 'Bathroom Thermostat', 'id': '10', 'type': 'thermostat'},
-                 {'text': 'Kitchen Thermostat', 'id': '20', 'type': 'thermostat'},
-                 {'text': 'Dining Room Thermostat', 'id': '30', 'type': 'thermostat'},
-                 {'text': 'Dining Room Motion Sensor', 'id': '40', 'type': 'motion_sensor'},
-                 {'text': 'Bedroom Motion Sensor', 'id': '50', 'type': 'motion_sensor'},
-                 {'text': 'Bathroom Light Switch', 'id': '60', 'type': 'light_switch'}]
+thermostatDict = {"Name": "Thermostat", "Property": "24℃", "Device_type": "Thermostat", "device_id": "10"}
 
+lightSwitchDict1 = {"Name": "A", "Property": "On", "Device_type": "Light Swtich", "device_id": "11"}
+lightSwitchDict2 = {"Name": "B", "Property": "On", "Device_type": "Light Switch", "device_id": "12"}
+lightSwitchDict3 = {"Name": "C", "Property": "Off", "Device_type": "Light Switch", "device_id": "13"}
+
+doorsensorDict1 = {"Name": "A", "Property": "4:20am", "Device_type": "Close Sensor", "device_id": "14"}
+doorsensorDict2 = {"Name": "B", "Property": "2:40pm", "Device_type": "Close Sensor", "device_id": "15"}
+doorsensorDict3 = {"Name": "C", "Property": "12:24pm", "Device_type": "Close Sensor", "device_id": "16"}
+
+motionsensorDict1 = {"Name": "South Window", "Property": "Closed", "Device_type": "Motion Sensor", "device_id": "17"}
+motionsensorDict2 = {"Name": "East Window", "Property": "Closed", "Device_type": "Motion Sensor", "device_id": "18"}
+motionsensorDict3 = {"Name": "Door", "Property": "Open", "Device_type": "Motion Sensor", "device_id": "19"}
+
+thermostats = [thermostatDict]
+light_switches = [lightSwitchDict1, lightSwitchDict2]
+door_sensors = [doorsensorDict1]
+motion_sensors = [motionsensorDict1, motionsensorDict2]
+
+unlinked_devices = [lightSwitchDict3, motionsensorDict3]
+linked_devices = [thermostats, light_switches, door_sensors, motion_sensors]
+
+
+@app.route('/room')
+def room_view():
+    return render_template("roomview.html", thermostats=thermostats, light_switches=light_switches,
+                           door_sensors=door_sensors, motion_sensors=motion_sensors, unlinked_devices=unlinked_devices,
+                           linked_devices=linked_devices)
+
+
+deviceactions = [thermostatDict, lightSwitchDict1, lightSwitchDict2, doorsensorDict1, motionsensorDict1,
+                 motionsensorDict2]
 motionactions = ['Turn on', 'Turn Off', 'No Action']
 lightactions = ['Turn Switch on', 'Turn Switch Off', 'No Action']
 thermostatactions = ['Turn on', 'Turn Off', 'No Action', 'Modify Temperature']
@@ -45,28 +66,35 @@ lighttriggers = [
     {'id': '0000', 'name': 'Lights are on for 4 hours', 'trigactor': [actors], 'trigaction': [lightactions]}]
 
 
-@app.route('/device/actions')
+@app.route('/device/actions/')
 def device_actions():
-    return render_template("deviceactions.html", device=paireddevices[3], triggers=motiontriggers, actors=actors,
+    triggers = None
+    device = deviceactions[0]
+    if device['Device_type'] == "Thermostat":
+        triggers = thermostattriggers
+    elif device['Device_type'] == "Motion Sensor":
+        triggers = motiontriggers
+    elif device['Device_type'] == "Light Switch":
+        triggers = lighttriggers
+    return render_template("deviceactions.html", device=deviceactions[0], triggers=triggers, actors=actors,
                            motionactions=motionactions, lightactions=lightactions,
-                           thermostatactions=thermostatactions)
+                           thermostatactions=thermostatactions, thermostats=thermostats, light_switches=light_switches,
+                           door_sensors=door_sensors, motion_sensors=motion_sensors, unlinked_devices=unlinked_devices,
+                           linked_devices=linked_devices)
 
 
-class Devices:
-    def __init__(self, type, devices, property):
-        self.type = type
-        self.devices = devices
-        self.property = property
+@app.route('/device/<string:device_id>')
+def show_device(device_id):
+    return "This is device {}".format(device_id)
 
 
-dev1 = Devices("Thermostat", ["Thermostat"], "24℃")
-dev2 = Devices("Door & Window Sensor", ["South Window", "East Window", 'Door'], ['Closed', 'Closed', 'Open'])
-device = [dev1, dev2]
-
-@app.route('/room')
-def room_view():
-    return render_template("roomview.html", device=device)
-
+paireddevices = [
+    {'text': 'Bathroom Thermostat', 'device_id': '10', 'type': 'thermostat', 'trigger': thermostattriggers},
+    {'text': 'Kitchen Thermostat', 'device_id': '20', 'type': 'thermostat', 'trigger': thermostattriggers},
+    {'text': 'Dining Room Thermostat', 'device_id': '30', 'type': 'thermostat', 'trigger': thermostattriggers},
+    {'text': 'Dining Room Motion Sensor', 'id': '40', 'type': 'motion_sensor', 'trigger': motiontriggers},
+    {'text': 'Bedroom Motion Sensor', 'id': '50', 'type': 'motion_sensor', 'trigger': motiontriggers},
+    {'text': 'Bathroom Light Switch', 'id': '60', 'type': 'light_switch', 'trigger': lighttriggers}]
 
 groupactions = ['Turn On', 'Turn Off', 'Set Temperature']
 groups = [{'id': '11', 'name': 'Ground Floor Thermostats', 'device_ids': [paireddevices[1], paireddevices[2]],
@@ -91,11 +119,7 @@ status = ['Enabled', 'Disabled']
 themeinfo = [{'id': '1', 'name': 'Weekend Away Theme', 'theme_status': status[0]},
              {'id': '2', 'name': 'Night Party Theme', 'theme_status': status[1]}]
 
+
 @app.route('/themes')
 def themes():
     return render_template("themes.html", themeinfo=themeinfo, status=status)
-
-
-@app.route('/device/<string:id>')
-def show_device(id):
-    return "This is device {}".format(id)

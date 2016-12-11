@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block page_content %}
-    {% if device.type == 'motion_sensor' %}
+    {% if device.Device_type == 'Motion Sensor' %}
         <h1> Motion Sensor Action Settings </h1>
         <hr>
         <h5> Motion Sensor (ON/OFF) : </h5>
@@ -10,8 +10,7 @@
             <li><input type="radio" name="motionsensor" value="OFF"> Motion Sensor is OFF</li>
             <br>
         </form>
-
-    {% elif device.type == 'light_switch' %}
+    {% elif device.Device_type == 'Light Switch' %}
         <h1> Light Switch Action Settings </h1>
         <hr>
         <h5> Lights (ON/OFF) : </h5>
@@ -31,6 +30,9 @@
             <li><input type="radio" name="motionsensor" value="OFF">Thermostat is OFF</li>
             <br>
         </form>
+        <label for="thermostat"><h4>Choose targert temperature in ℃: </h4></label>
+        <input id="thermostat" type="number" value="22"/>
+        <hr>
     {% endif %}
     <h4>Triggers</h4>
     {% for trigger in triggers %}
@@ -42,7 +44,7 @@
             <ul class="dropdown-menu" role="menu">
                 {% for actor in actors %}
                     <li><a href="" data-toggle="modal"
-                           data-target="#actor_{{ actor.id }}"> {{ actor.name }} </a>
+                           data-target="#modal_actor_{{ actor.id }}"> {{ actor.name }} </a>
                     </li>
                 {% endfor %}
             </ul>
@@ -50,7 +52,7 @@
         <br>
     {% endfor %}
     {% for actor in actors %}
-        <div class="modal fade" id="actor_{{ actor.id }}">
+        <div class="modal fade" id="modal_actor_{{ actor.id }}">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header orange">
