@@ -3,8 +3,8 @@
     <h1>Welcome!</h1>
 
     <ul class="nav nav-pills">
-        <li role="presentation"><a href="{{ url_for('.admin_map') }}">Map</a></li>
         <li role="presentation" class="active"><a href="#">List of Users</a></li>
+        <li role="presentation"><a href="{{ url_for('.admin_map') }}">Map</a></li>
     </ul>
 
 
@@ -23,7 +23,7 @@
                         {{user["user_id"]}}
                     </td>
                     <td>
-                        <a href="{{ url_for('.index') }}">{{user["user_first_name"]}} {{user["user_last_name"]}}</a>
+                        <a href="{{ url_for('.admin_index', user_id=user["user_id"], user_name=user['user_full_name']) }}">{{user["user_first_name"]}} {{user["user_last_name"]}}</a>
                     </td>
                     <td>
                         {{user["user_email_address"]}}

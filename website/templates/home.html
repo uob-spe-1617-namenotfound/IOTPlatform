@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block page_content %}
-    <h1>Welcome!</h1>
+    <h1> {% if admin %} User: {{ user_name }} {% else %}Welcome!{% endif %}</h1>
     <br>
 
     <ul class="nav nav-pills">
@@ -54,7 +54,7 @@
         {% for room in rooms %}
         <tr>
             <th scope="row">{{loop.index}}</th>
-            <td><a href="{{ url_for('.room_view') }}">{{room}}</a></td>
+            <td><a href="{{ url_for('.room_view', room_id=room.room_id) }}">{{room.name}}</a></td>
         </tr>
         {% endfor %}
         </tbody>

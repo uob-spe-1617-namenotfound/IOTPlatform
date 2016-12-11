@@ -4,32 +4,42 @@
     <br>
 
     <ul class="nav nav-pills">
-        <li role="presentation" class="dropdown active">
-            <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="True"
-               aria-expanded="False">
-                <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Link Device to Room
-            </a>
-            <ul class="dropdown-menu">
-                <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Room Name" aria-describedby="basic-addon2">
-                    <span class="input-group-addon" id="basic-addon2"> <span
-                            class="glyphicon glyphicon-plus"></span></span>
-                </div>
-            </ul>
-        </li>
+    <li role="presentation" class="dropdown active">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="True"
+       aria-expanded="False">
+        <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Link Device to Room
+    </a>
+    {% if unlinked_devices %}
+        <ul class="dropdown-menu" role="menu">
+        {% for dev in unlinked_devices %}
+            <li><a href="#" data-toggle="modal"> {{ dev['Device_type'] }}: {{ dev['Name'] }} </a></li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <ul class="dropdown-menu" role="menu">
+            <li><a href="#" data-toggle="modal"> No unlinked devies</a></li>
+        </ul>
+    {% endif %}
+</li>
 
         <li role="presentation" class="dropdown active">
             <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="True"
                aria-expanded="False">
                 <span class="glyphicon glyphicon-minus" aria-hidden="true"></span> Unlink Device
             </a>
-            <ul class="dropdown-menu">
-                <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Room Name" aria-describedby="basic-addon2">
-                    <span class="input-group-addon" id="basic-addon2"> <span
-                            class="glyphicon glyphicon-minus"></span></span>
-                </div>
-            </ul>
+            {% if linked_devices %}
+                <ul class="dropdown-menu" role="menu">
+                    {% for subdev in linked_devices %}
+                        {% for dev in subdev %}
+                        <li><a href="#" data-toggle="modal">{{ dev['Device_type'] }}: {{ dev['Name'] }} </a></li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <ul class="dropdown-menu" role="menu">
+                    <li><a href="#" data-toggle="modal"> No linked devies</a></li>
+                </ul>
+            {% endif %}
         </li>
         <li role="presentation" class="active"><a href="{{ url_for('.devices') }}">
             <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span> Manage Devices</a></li>

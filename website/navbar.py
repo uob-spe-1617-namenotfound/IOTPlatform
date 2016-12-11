@@ -8,4 +8,5 @@ navbar = Navbar(
              View('Log out', '.logout')
              ),
     View('Admin', '.admin')
+
 )

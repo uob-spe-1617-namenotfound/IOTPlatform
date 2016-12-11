@@ -2,3 +2,4 @@ Flask==0.11.1
 Flask-Bootstrap==3.3.7.0
 Flask-Nav==0.5
 python-crontab==2.1.1
+requests==2.12.3
