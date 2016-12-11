@@ -1,4 +1,4 @@
-from data_model import model
+import model
 import unittest
 
 
