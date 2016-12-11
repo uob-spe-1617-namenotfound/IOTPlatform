@@ -1,17 +1,18 @@
 from flask import Flask, jsonify, request
 from flask_pymongo import PyMongo
 
-from data_model import api
+#import api
 
-api.config['MONGO_DBNAME'] = 'iotdb'
-api.config['MONGO_URI'] = 'mongodb://localhost:27017/iotdb'
+#api.config['MONGO_DBNAME'] = 'iotdb'
+#api.config['MONGO_URI'] = 'mongodb://localhost:27017/iotdb'
 
 # Connector to running database
-mongo = PyMongo(api)
+mongo = PyMongo()
+
 
 class User(object):
-    def __init__(self, name, password_hash, email_address, is_admin):
-        self.user_id = None
+    def __init__(self, user_id, name, password_hash, email_address, is_admin):
+        self.user_id = user_id
         self.name = name
         self.password_hash = password_hash
         self.email_address = email_address
@@ -24,7 +25,8 @@ class User(object):
     def set_user_id(self, user_id):
         setattr(self, 'user_id', user_id)
 
-class UserRepository:
+
+class UserRepository():
     def _init_(self):
         self.users = mongo.db.users
 
@@ -64,6 +66,7 @@ class House(object):
     def set_user(self, user_id):
         setattr(self, 'user_id', user_id)
 
+
 class HouseRepository:
     def _init_(self):
         self.houses = mongo.db.houses
@@ -95,6 +98,7 @@ class HouseRepository:
     def get_houses_for_user(self, user_id):
         return self.houses.find({'user_id': user_id})
 
+
 # House groups could be used for fleet management or for people with multiple houses
 class HouseGroup(object):
     def __init__(self, name):
@@ -110,6 +114,7 @@ class HouseGroup(object):
 
     def add_house_to_group(self, house_id):
         self.house_ids.append(house_id)
+
 
 class HouseGroupRepository:
     def _init_(self):
@@ -149,6 +154,7 @@ class Room(object):
     def set_house(self, house_id):
         setattr(self, 'house_id', house_id)
 
+
 class RoomRepository:
     def __init__(self):
         self.rooms = mongo.db.rooms
@@ -180,6 +186,7 @@ class RoomRepository:
     def get_rooms_for_house(self, house_id):
         rooms = self.rooms.find({'house_id': house_id})
 
+
 # Room groups could be things like 'Upstairs', or to be used for templates
 class RoomGroup(object):
     def __init__(self, name):
@@ -195,6 +202,7 @@ class RoomGroup(object):
 
     def add_room_to_group(self, room_id):
         self.room_ids.append(room_id)
+
 
 class RoomGroupRepository:
     def __init__(self):
@@ -226,7 +234,7 @@ class RoomGroupRepository:
             RoomGroup.add_room_to_group(target_room_group, room_id)
         return target_room_group
 
-
+""""
 class Device:
     def __init__(self, name, device_type, power_state):
         self.house_id = None
@@ -318,4 +326,4 @@ class TriggerRepository:
 
     def get_trigger_by_id(self, trigger_id):
 
-    def generate_new_trigger_id(self):
+    def generate_new_trigger_id(self): """

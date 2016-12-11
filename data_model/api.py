@@ -1,13 +1,14 @@
 from flask import Flask, jsonify, request
 
-from data_model import model
+import model
+from model import UserRepository, User
 
 # TODO: better error handling
 api = Flask("SPE-IoT-API")
-api.config.from_pyfile('data_model/config.cfg')
+api.config.from_pyfile('config.cfg')
 
-user_repository = model.UserRepository()
-user1 = model.User("user_id_1", "Jack Xia", "xxxxxxxx", "nobody@gmail.com", False)
+user_repository = UserRepository()
+user1 = User("user_id_1", "Jack Xia", "xxxxxxxx", "nobody@gmail.com", False)
 user_repository.add_user(user1)
 house_repository = model.HouseRepository()
 house1 = model.House("user_id_1", "house_id_1", "Jack's house")
