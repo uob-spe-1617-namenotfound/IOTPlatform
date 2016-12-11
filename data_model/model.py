@@ -9,7 +9,7 @@ api.config['MONGO_URI'] = 'mongodb://localhost:27017/iotdb'
 mongo = PyMongo(api)
 
 class User(object):
-    def _init_(self, name, password_hash, email_address, is_admin):
+    def __init__(self, name, password_hash, email_address, is_admin):
         self.user_id = None
         self.name = name
         self.password_hash = password_hash
@@ -21,7 +21,7 @@ class User(object):
                 'email_address': self.email_address, 'is_admin': self.is_admin}
 
     def set_user_id(self, user_id):
-        setattr(self, user_id, user_id)
+        setattr(self, 'user_id', user_id)
 
 class UserRepository:
     def _init_(self):
@@ -35,14 +35,14 @@ class UserRepository:
         is_admin = new_user['is_admin']
         user_id = self.users.insert_one({'name': name, 'password_hash': password_hash,
                                         'email_address': email_address, 'is_admin': is_admin})
-        User.set_user_id(user, 'user_id', user_id)
+        User.set_user_id(user, user_id)
 
     def remove_user(self, user_id):
         self.users.delete_one({'_id': user_id})
 
     def get_user_by_id(self, user_id):
-        user = self.users.find_one_or_404({'_id': user_id})
-        return user
+        return self.users.find_one_or_404({'_id': user_id})
+
 
 class House(User):
     def _init_(self, name):
@@ -73,8 +73,7 @@ class HouseRepository:
         self.houses.delete_one({'_id': house_id})
 
     def get_house_by_id(self, house_id):
-        house = self.houses.find_one_or_404({'_id': house_id})
-        return house
+        return self.houses.find_one_or_404({'_id': house_id})
 
     def add_house_to_user(self, user, house):
         target_house = House.get_house_attributes(house)
@@ -87,8 +86,9 @@ class HouseRepository:
     def get_houses_for_user(self, user_id):
         return self.houses.find({'user_id': user_id})
 
+# House groups could be used for fleet management or for people with multiple houses
 class HouseGroup(object):
-    def _init_(self, house__group_id, name):
+    def __init__(self, name):
         self.house_group_id = None
         self.house_ids = []
         self.name = name
@@ -123,3 +123,105 @@ class HouseGroupRepository:
 
     def remove_house_group(self, house_group_id):
         self.house_groups.delete_one({'_id': house_group_id})
+
+
+class Room(object):
+    def __init__(self, room_id, house_id, name):
+
+    def get_room_attributes(self):
+
+class RoomRepository:
+    def __init__(self):
+
+    def add_room(self, room):
+
+    def remove_room(self, room_id):
+
+    def get_room_by_id(self, room_id):
+
+    def add_room_to_house(self, house_id, room_id):
+
+    def get_rooms_for_house(self, house_id):
+
+    def add_device_to_room(self, room_id, device_id):
+
+    def generate_new_room_id(self):
+
+# Room groups could be things like 'Upstairs', or to be used for templates
+class RoomGroup(object):
+    def __init__(self, room_id, room_group_id, name):
+
+    def get_room_group_attributes(self):
+
+class RoomGroupRepository:
+    def __init__(self):
+
+    def add_room_group(self, room_group):
+
+    def add_room_to_group(self, room_id, room_group):
+
+    def remove_room_group(self, room_group_id):
+
+    def get_room_group_by_id(self, room_group_id):
+
+
+class Device:
+    def __init__(self, house_id, room_id, device_id, name, device_type, power_state, last_temp, target_temp,
+                 sensor_data):
+
+    def get_device_attributes(self):
+
+    def change_power_state(self):
+
+    def set_target_temp(self, target):
+
+class DeviceRepository:
+    def __init__(self):
+
+    def add_device(self, device):
+
+    def add_new_device(self, device_type, house_id, name, access_data):
+
+    def generate_new_device_id(self):
+
+    def remove_device(self, device_id):
+
+    def get_device_by_id(self, device_id):
+
+    def add_device_to_house(self, house_id, device_id):
+
+    def get_devices_for_house(self, house_id):
+
+    def get_devices_for_room(self, room_id):
+
+    def link_device_to_room(self, room_id, device_id):
+
+class DeviceGroup(object):
+    def __init__(self, device_group_id, device_ids, name):
+
+    def get_device_group_attributes(self):
+
+class DeviceGroupRepository:
+    def __init__(self):
+
+    def add_device_group(self, device_group):
+
+    def add_device_to_group(self, device_id, device_group):
+
+    def remove_device_group(self, device_group_id):
+
+    def get_device_group_by_id(self, device_group_id):
+
+
+class Trigger:
+    def __init__(self, trigger_id, trigger_sensor_id, trigger, actor_id, action):
+
+    def get_trigger_attributes(self):
+
+class TriggerRepository:
+
+    def add_trigger(self, trigger_sensor_id, trigger, actor_id, action):
+
+    def get_trigger_by_id(self, trigger_id):
+
+    def generate_new_trigger_id(self):
