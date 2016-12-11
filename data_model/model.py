@@ -1,13 +1,9 @@
-from flask import Flask, jsonify, request
-from flask_pymongo import PyMongo
-
-#import api
-
-#api.config['MONGO_DBNAME'] = 'iotdb'
-#api.config['MONGO_URI'] = 'mongodb://localhost:27017/iotdb'
+import pymongo
+from pymongo import MongoClient
 
 # Connector to running database
-mongo = PyMongo()
+mongo = MongoClient()
+db = mongo.db
 
 
 class User(object):
@@ -28,7 +24,7 @@ class User(object):
 
 class UserRepository():
     def _init_(self):
-        self.users = mongo.db.users
+        self.users = db.users
 
     def add_user(self, user):
         new_user = User.get_user_attributes(user)
@@ -69,7 +65,7 @@ class House(object):
 
 class HouseRepository:
     def _init_(self):
-        self.houses = mongo.db.houses
+        self.houses = db.houses
 
     def add_house(self, house):
         new_house = House.get_house_attributes(house)
@@ -82,7 +78,8 @@ class HouseRepository:
 
     def get_house_by_id(self, house_id):
         house = self.houses.find_one_or_404({'_id': house_id})
-        target_house = House(house['name'])
+        name = house['name']
+        target_house = House(name)
         House.set_house_id(target_house, house_id)
         House.set_user(target_house, house['user_id'])
         return target_house
@@ -118,7 +115,7 @@ class HouseGroup(object):
 
 class HouseGroupRepository:
     def _init_(self):
-        self.house_groups = mongo.db.housegroups
+        self.house_groups = db.housegroups
 
     def add_house_group(self, house_group):
         new_house_group = HouseGroup.get_house_group_attributes(house_group)
@@ -157,7 +154,7 @@ class Room(object):
 
 class RoomRepository:
     def __init__(self):
-        self.rooms = mongo.db.rooms
+        self.rooms = db.rooms
 
     def add_room(self, room):
         new_room = Room.get_room_attributes(room)
@@ -206,7 +203,7 @@ class RoomGroup(object):
 
 class RoomGroupRepository:
     def __init__(self):
-        self.room_groups = mongo.db.roomgroups
+        self.room_groups = db.roomgroups
 
     def add_room_group(self, room_group):
         new_room_group = RoomGroup.get_room_group_attributes(room_group)
@@ -266,7 +263,7 @@ class Device:
 
 class DeviceRepository:
     def __init__(self):
-        self.devices = mongo.db.devices
+        self.devices = db.devices
 
     def add_device(self, device):
 
@@ -295,7 +292,7 @@ class DeviceGroup(object):
 
 class DeviceGroupRepository:
     def __init__(self):
-        self.device_groups = mongo.db.devicegroups
+        self.device_groups = db.devicegroups
 
     def add_device_group(self, device_group):
 
@@ -320,7 +317,7 @@ class Trigger:
 
 class TriggerRepository:
     def _init_(self):
-        self.triggers = mongo.db.triggers
+        self.triggers = db.triggers
 
     def add_trigger(self, trigger_sensor_id, trigger, actor_id, action):
 

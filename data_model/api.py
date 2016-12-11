@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 
 import model
-from model import UserRepository, User
+from model import *
 
 # TODO: better error handling
 api = Flask("SPE-IoT-API")
