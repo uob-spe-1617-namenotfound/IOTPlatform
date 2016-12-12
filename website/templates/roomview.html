@@ -4,24 +4,23 @@
     <br>
 
     <ul class="nav nav-pills">
-    <li role="presentation" class="dropdown active">
-    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="True"
-       aria-expanded="False">
-        <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Link Device to Room
-    </a>
-    {% if unlinked_devices %}
-        <ul class="dropdown-menu" role="menu">
-        {% for dev in unlinked_devices %}
-            <li><a href="#" data-toggle="modal"> {{ dev['Device_type'] }}: {{ dev['Name'] }} </a></li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <ul class="dropdown-menu" role="menu">
-            <li><a href="#" data-toggle="modal"> No unlinked devies</a></li>
-        </ul>
-    {% endif %}
-</li>
-
+        <li role="presentation" class="dropdown active">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="True"
+               aria-expanded="False">
+                <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Link Device to Room
+            </a>
+            {% if unlinked_devices %}
+                <ul class="dropdown-menu" role="menu">
+                    {% for dev in unlinked_devices %}
+                        <li><a href="{{ url_for('.link_device_to_room', room_id=room.room_id, device_id=dev.device_id) }}" data-toggle="modal"> {{ dev['device_type'] }}: {{ dev['name'] }} </a></li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <ul class="dropdown-menu" role="menu">
+                    <li><a href="#" data-toggle="modal"> No unlinked devies</a></li>
+                </ul>
+            {% endif %}
+        </li>
         <li role="presentation" class="dropdown active">
             <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="True"
                aria-expanded="False">
@@ -31,7 +30,7 @@
                 <ul class="dropdown-menu" role="menu">
                     {% for subdev in linked_devices %}
                         {% for dev in subdev %}
-                        <li><a href="#" data-toggle="modal">{{ dev['Device_type'] }}: {{ dev['Name'] }} </a></li>
+                            <li><a href="#" data-toggle="modal">{{ dev['device_type'] }}: {{ dev['Name'] }} </a></li>
                         {% endfor %}
                     {% endfor %}
                 </ul>
@@ -41,7 +40,7 @@
                 </ul>
             {% endif %}
         </li>
-        <li role="presentation" class="active"><a href="{{ url_for('.devices') }}">
+        <li role="presentation" class="active"><a href="{{ url_for('.show_devices') }}">
             <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span> Manage Devices</a></li>
     </ul>
 
@@ -58,16 +57,17 @@
                         </tr>
                         {% for dev in thermostats %}
                             <tr>
-                                <td><a href="{{ url_for('.device_actions') }}">{{ dev["Name"] }}</a></td>
+                                <td>
+                                    <a href="{{ url_for('.show_device', device_id=dev.device_id) }}">{{ dev["name"] }}</a>
+                                </td>
                                 <td>{{ dev["Property"] }}</td>
                             </tr>
                         {% endfor %}
                     </table>
                 </div>
-            {% else %}
             {% endif %}
 
-            {% if motion_sensors %}
+            {% if door_sensors %}
                 <div class="col-md-6">
                     <h3>Door &amp; window sensors</h3>
                     <table class="table table-striped">
@@ -77,16 +77,16 @@
                         </tr>
                         {% for dev in motion_sensors %}
                             <tr>
-                                <td><a href="{{ url_for('.device_actions') }}">{{ dev["Name"] }}</a></td>
+                                <td>
+                                    <a href="{{ url_for('.show_device', device_id=dev.device_id) }}">{{ dev["name"] }}</a>
+                                </td>
                                 <td>{{ dev["Property"] }}</td>
                             </tr>
                             <tr>
                         {% endfor %}
                     </table>
                 </div>
-            {% else %}
             {% endif %}
-
 
             {% if light_switches %}
                 <div class="col-md-6">
@@ -98,15 +98,15 @@
                         </tr>
                         {% for dev in light_switches %}
                             <tr>
-                                <td><a href="{{ url_for('.device_actions') }}">{{ dev["Name"] }}</a></td>
+                                <td>
+                                    <a href="{{ url_for('.show_device', device_id=dev.device_id) }}">{{ dev["name"] }}</a>
+                                </td>
                                 <td>{{ dev["Property"] }}</td>
                             </tr>
                         {% endfor %}
                     </table>
                 </div>
-            {% else %}
             {% endif %}
-
 
             {% if motion_sensors %}
                 <div class="col-md-6">
@@ -118,7 +118,9 @@
                         </tr>
                         {% for dev in motion_sensors %}
                             <tr>
-                                <td><a href="{{ url_for('.device_actions') }}">{{ dev["Name"] }}</a></td>
+                                <td>
+                                    <a href="{{ url_for('.show_device', device_id=dev.device_id) }}">{{ dev["name"] }}</a>
+                                </td>
                                 <td>
                                     {{ dev["Property"] }} <span class="text-info">(2 hours ago)</span>
                                 </td>
@@ -132,4 +134,3 @@
         </div>
     </div>
 {% endblock %}
-
