@@ -3,7 +3,6 @@ from flask_wtf import FlaskForm
 from wtforms import SelectField, StringField, SubmitField, DecimalField
 from wtforms.validators import URL
 from website import data_interface
-from website.views import thermostattriggers, motiontriggers, lighttriggers
 from website import app
 
 
@@ -16,13 +15,20 @@ class PairNewDeviceForm(FlaskForm):
     submit = SubmitField()
 
 
+motion_triggers = [{'id': '00', 'name': 'When Motion is Detected'},
+                   {'id': '01', 'name': 'When No Motion is Detected'}]
+thermostat_triggers = [{'id': '000', 'name': 'When the temperature is above 22'},
+                       {'id': '1111', 'name': 'When temperature is below 15'}]
+light_triggers = [{'id': '0000', 'name': 'Lights are on for 4 hours'}]
+door_triggers = [{'id': 'opens', 'name': "Opens"}, {'id': 'closes', 'name': "Closes"}]
+
 paireddevices = [
-    {'text': 'Bathroom Thermostat', 'device_id': '10', 'type': 'thermostat', 'trigger': thermostattriggers},
-    {'text': 'Kitchen Thermostat', 'device_id': '20', 'type': 'thermostat', 'trigger': thermostattriggers},
-    {'text': 'Dining Room Thermostat', 'device_id': '30', 'type': 'thermostat', 'trigger': thermostattriggers},
-    {'text': 'Dining Room Motion Sensor', 'id': '40', 'type': 'motion_sensor', 'trigger': motiontriggers},
-    {'text': 'Bedroom Motion Sensor', 'id': '50', 'type': 'motion_sensor', 'trigger': motiontriggers},
-    {'text': 'Bathroom Light Switch', 'id': '60', 'type': 'light_switch', 'trigger': lighttriggers}]
+    {'text': 'Bathroom Thermostat', 'device_id': '10', 'type': 'thermostat', 'trigger': thermostat_triggers},
+    {'text': 'Kitchen Thermostat', 'device_id': '20', 'type': 'thermostat', 'trigger': thermostat_triggers},
+    {'text': 'Dining Room Thermostat', 'device_id': '30', 'type': 'thermostat', 'trigger': thermostat_triggers},
+    {'text': 'Dining Room Motion Sensor', 'id': '40', 'type': 'motion_sensor', 'trigger': motion_triggers},
+    {'text': 'Bedroom Motion Sensor', 'id': '50', 'type': 'motion_sensor', 'trigger': motion_triggers},
+    {'text': 'Bathroom Light Switch', 'id': '60', 'type': 'light_switch', 'trigger': light_triggers}]
 
 groupactions = ['Turn On', 'Turn Off', 'Set Temperature']
 groups = [{'id': '11', 'name': 'Ground Floor Thermostats', 'device_ids': [paireddevices[1], paireddevices[2]],
@@ -36,13 +42,6 @@ actions = {"door_sensor": ['Turn on', 'Turn Off', 'No Action'],
            "light_switch": ['Turn Switch on', 'Turn Switch Off', 'No Action'],
            "thermostat": ['Turn on', 'Turn Off', 'No Action', 'Modify Temperature'],
            "motion_sensor": ['Turn on', 'Turn Off', 'No Action']}
-
-motion_triggers = [{'id': '00', 'name': 'When Motion is Detected'},
-                   {'id': '01', 'name': 'When No Motion is Detected'}]
-thermostat_triggers = [{'id': '000', 'name': 'When the temperature is above 22'},
-                       {'id': '1111', 'name': 'When temperature is below 15'}]
-light_triggers = [{'id': '0000', 'name': 'Lights are on for 4 hours'}]
-door_triggers = [{'id': 'opens', 'name': "Opens"}, {'id': 'closes', 'name': "Closes"}]
 
 
 @app.route('/devices')

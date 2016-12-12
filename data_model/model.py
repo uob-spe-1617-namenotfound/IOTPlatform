@@ -30,6 +30,9 @@ class UserRepository:
     def remove_user(self, user_id):
         self.users.pop(user_id, None)
 
+    def get_all_users(self):
+        return self.users.values()
+
     def get_user_by_id(self, user_id):
         try:
             return self.users[user_id]

@@ -4,43 +4,6 @@ from website import app
 
 from website import data_interface
 
-thermostatDict = {"Name": "Thermostat", "Property": "24℃", "Device_type": "Thermostat", "device_id": "10"}
-
-lightSwitchDict1 = {"Name": "A", "Property": "On", "Device_type": "Light Swtich", "device_id": "11"}
-lightSwitchDict2 = {"Name": "B", "Property": "On", "Device_type": "Light Switch", "device_id": "12"}
-lightSwitchDict3 = {"Name": "C", "Property": "Off", "Device_type": "Light Switch", "device_id": "13"}
-
-doorsensorDict1 = {"Name": "A", "Property": "4:20am", "Device_type": "Close Sensor", "device_id": "14"}
-doorsensorDict2 = {"Name": "B", "Property": "2:40pm", "Device_type": "Close Sensor", "device_id": "15"}
-doorsensorDict3 = {"Name": "C", "Property": "12:24pm", "Device_type": "Close Sensor", "device_id": "16"}
-
-motionsensorDict1 = {"Name": "South Window", "Property": "Closed", "Device_type": "Motion Sensor", "device_id": "17"}
-motionsensorDict2 = {"Name": "East Window", "Property": "Closed", "Device_type": "Motion Sensor", "device_id": "18"}
-motionsensorDict3 = {"Name": "Door", "Property": "Open", "Device_type": "Motion Sensor", "device_id": "19"}
-
-thermostats = [thermostatDict]
-light_switches = [lightSwitchDict1, lightSwitchDict2]
-door_sensors = [doorsensorDict1]
-motion_sensors = [motionsensorDict1, motionsensorDict2]
-
-unlinked_devices = [lightSwitchDict3, motionsensorDict3]
-linked_devices = [thermostats, light_switches, door_sensors, motion_sensors]
-
-deviceactions = [thermostatDict, lightSwitchDict1, lightSwitchDict2, doorsensorDict1, motionsensorDict1,
-                 motionsensorDict2]
-motionactions = ['Turn on', 'Turn Off', 'No Action']
-lightactions = ['Turn Switch on', 'Turn Switch Off', 'No Action']
-thermostatactions = ['Turn on', 'Turn Off', 'No Action', 'Modify Temperature']
-actors = [{'id': '123', 'name': 'Motion Sensor', 'action': motionactions},
-          {'name': 'Light Switch', 'id': '456', 'action': lightactions},
-          {'name': 'Thermostat', 'id': '789', 'action': thermostatactions}]
-motiontriggers = [{'id': '00', 'name': 'When Motion is Detected', 'trigactor': [actors]},
-                  {'id': '01', 'name': 'When No Motion is Detected', 'trigactor': [actors]}]
-thermostattriggers = [{'id': '000', 'name': 'When the temperature is above 22'},
-                      {'id': '1111', 'name': 'When temperature is below 15'}]
-lighttriggers = [
-    {'id': '0000', 'name': 'Lights are on for 4 hours', 'trigactor': [actors], 'trigaction': [lightactions]}]
-
 import website.views.devices
 import website.views.rooms
 
@@ -56,10 +19,11 @@ def index():
     return render_template("home.html", rooms=rooms)
 
 
-@app.route('/admin/user/<string:user_id>/<string:user_name>')
-def admin_index(user_id, user_name):
-    rooms = ['Kitchen', 'Bathroom']
-    return render_template("home.html", admin=True, rooms=rooms, user_name=user_name)
+@app.route('/admin/user/<string:user_id>')
+def admin_index(user_id):
+    rooms = data_interface.get_default_rooms_for_user(user_id)
+    user_info = data_interface.get_user_info(user_id)
+    return render_template("home.html", admin=True, rooms=rooms, user_name=user_info["name"])
 
 
 @app.route('/logout')
@@ -74,16 +38,9 @@ def account_settings():
 
 @app.route('/admin')
 def admin():
-    user_dic = {
-        "user_id": "324123",
-        "user_email_address": "wx15879@my.bristol.ac.uk",
-        "user_is_admin": "Yes",
-        "user_first_name": "Jack",
-        "user_last_name": "Xia",
-        "user_full_name": "Jack Xia",
-        "user_device_status": "Fault"}
-    userList = [user_dic]
-    return render_template("admin.html", users=userList)
+    users = data_interface.get_all_users()
+    print(users)
+    return render_template("admin.html", users=users)
 
 
 @app.route('/admin_map')

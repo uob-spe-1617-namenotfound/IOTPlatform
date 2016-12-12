@@ -41,6 +41,12 @@ def get_user_info(user_id):
     return jsonify({"user": user.get_user_attributes(), "error": None})
 
 
+@api.route('/users')
+def get_all_users():
+    users = user_repository.get_all_users()
+    return jsonify({"users": [user.get_user_attributes() for user in users], "error": None})
+
+
 @api.route('/user/<string:user_id>/houses')
 def get_houses_for_user(user_id):
     houses = house_repository.get_houses_for_user(user_id)
@@ -164,6 +170,7 @@ def configure_thermostat(device_id):
         "device": device.get_device_attributes(),
         "error": None
     })
+
 
 def main():
     api.run(debug=True, host=api.config['HOSTNAME'], port=int(api.config['PORT']))
