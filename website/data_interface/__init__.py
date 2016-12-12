@@ -4,7 +4,6 @@ from flask import session
 from website import app
 
 
-
 def get_api_url(endpoint):
     return "http://{}:{}{}".format(app.config['API_HOSTNAME'], app.config['API_PORT'], endpoint)
 
@@ -32,3 +31,20 @@ def get_user_default_rooms():
     if data['error'] is not None:
         raise Exception("Error!")
     return data['rooms']
+
+
+def add_new_device(name, device_type, vendor, configuration):
+    r = requests.post(get_api_url('/house/{}/devices/add'.format(get_user_houses()[0]["house_id"])),
+                      json={"name": name, "configuration": configuration, "device_type": device_type, "vendor": vendor})
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['device']['device_id']
+
+
+def get_user_default_devices():
+    r = requests.get(get_api_url('/house/{}/devices'.format(get_user_houses()[0]["house_id"])))
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data["devices"]

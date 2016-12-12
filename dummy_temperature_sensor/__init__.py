@@ -7,10 +7,14 @@ app.config.from_pyfile('config.cfg')
 
 
 @app.route('/read')
-def read():
+@app.route('/<int:device_id>/read')
+def read(device_id=None):
+    temperature = 21.6
+    if device_id is not None:
+        temperature += device_id
     return jsonify({
         "data": {
-            "temperature": 21.6,
+            "temperature": temperature,
             "timestamp": datetime.now()
         },
         "error": None

@@ -20,8 +20,9 @@ room_repository.add_room(room2)
 room3 = model.Room("room_id_3", "house_id_1", "Living Room")
 room_repository.add_room(room3)
 device_repository = model.DeviceRepository()
-#device1 = model.Device("house_id_1", "'room_id_1", "device_id_1", "Thermostat", 1)
-#device_repository.add_device(device1)
+device1 = model.Device("device_id_1", "house_id_1", "room_id_1", "Thermostat 1", "thermostat",
+                       {"url": "http://localhost:5050/1/read"}, vendor="OWN")
+device_repository.add_device(device1)
 devicegroup_repository = model.DeviceGroupRepository()
 devicegroup = model.DeviceGroup("devicegroup_id_1", [], "Group 1")
 devicegroup_repository.add_device_group(devicegroup)
@@ -77,6 +78,14 @@ def get_devices_for_room(room_id):
     return jsonify({"devices": [device.get_device_attributes() for device in devices], "error": None})
 
 
+@api.route('/house/<string:house_id>/devices')
+def get_devices_for_house(house_id):
+    devices = device_repository.get_devices_for_house(house_id)
+    if devices is None:
+        return jsonify({"devices": None, "error": {"code": 404, "message": "No such house found"}})
+    return jsonify({"devices": [device.get_device_attributes() for device in devices], "error": None})
+
+
 @api.route('/device/<string:device_id>')
 def get_device_info(device_id):
     device = device_repository.get_device_by_id(device_id)
@@ -95,8 +104,10 @@ def get_devicegroup_info(device_group_id):
 
 @api.route('/house/<string:house_id>/devices/add', methods=['POST'])
 def add_device(house_id):
+    print(request.get_json())
     data = request.get_json()
-    device = device_repository.add_new_device(data['device_type'], house_id, data['name'], data['access_data'])
+    device = device_repository.add_new_device(data['device_type'], house_id, data['name'], data['configuration'],
+                                              data['vendor'])
     if device is None:
         return jsonify({"device": None, "error": {"code": 400, "message": "Device could not be added"}})
     return jsonify({"device": device.get_device_attributes(), "error": None})

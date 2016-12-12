@@ -1,66 +1,9 @@
 {% extends "base.html" %}
 {% block page_content %}
-    <!-- Modal -->
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-         xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                            aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="myModalLabel">Pair New Device</h4>
-                </div>
-                <div class="modal-body">
-                    <label class="control-label"> Devices to pair: </label>
-                    <ul>
-                        <li>
-                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                                value="ON"
-                                                                checked> Motion Sensor </label>
-                        </li>
-                        <input type="text"
-                               id="device_id"
-                               placeholder="Insert Device URL"
-                               value=""/>
-                        </input>
-                        <li>
-                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                                value="OFF">
-                                Thermostat </label>
-                        </li>
-                        <input type="text"
-                               id="device_id"
-                               value=""/>
-                        </input>
-                        <li><label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                                value="OFF">
-                            Switch </label>
-                        </li>
-                        <input type="text"
-                               id="device_id"
-                               value=""/>
-                        </input>
-                        <li><label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                                value="OFF">Door/Window Sensor </label>
-                        </li>
-                        <input type="text"
-                               id="device_id"
-                               value=""/>
-                        </input>
-                    </ul>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Pair New Device</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <h2>Devices</h2>
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+    <a type="button" class="btn btn-primary" href="{{ url_for('.add_new_device') }}">
         Pair New Device
-    </button>
+    </a>
     {% if paireddevices %}
         <p>
             Below is a list of all your current devices.
@@ -68,7 +11,7 @@
         <ol>
             {% for device in paireddevices %}
                 <li>
-                    <a href="{{ url_for('.show_device', device_id=device.device_id) }}">{{ device.text }}</a>
+                    <a href="{{ url_for('.show_device', device_id=device.device_id) }}">{{ device.name }}</a>
                     <a href="#" class="btn btn-xs btn-default" data-toggle="modal" data-target="#delete">
                         <span class="glyphicon glyphicon-remove"></span>
                         Delete
@@ -126,10 +69,9 @@
                     </div>
                 </li>
             {% endfor %}
-            {% else %}
-            <h1>No data to show!</h1>
-
         </ol>
+    {% else %}
+        <h1>No data to show!</h1>
     {% endif %}
 
     <h2>Device Groups </h2>

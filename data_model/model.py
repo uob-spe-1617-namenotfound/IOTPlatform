@@ -187,23 +187,24 @@ class RoomGroupRepository:
 
 
 class Device:
-    def __init__(self, house_id, room_id, device_id, name, device_type, power_state, last_temp, target_temp,
-                 sensor_data):
+    def __init__(self, device_id, house_id, room_id, name, device_type, configuration, vendor):
         self.house_id = house_id
         self.room_id = room_id
         self.device_id = device_id
         self.name = name
+        self.configuration = configuration
+        self.vendor = vendor
 
         self.device_type = device_type
-        self.power_state = power_state
-        self.last_temp = last_temp
-        self.target_temp = target_temp
-        self.sensor_data = sensor_data
+        self.power_state = 1
+        self.last_temp = None
+        self.target_temp = None
+        self.sensor_data = None
 
     def get_device_attributes(self):
         return {'house_id': self.house_id, 'room_id': self.room_id, 'device_id': self.device_id, 'name': self.name,
                 'device_type': self.device_type, 'power_state': self.power_state, 'last_temp': self.last_temp,
-                'target_temp': self.target_temp, 'sensor_data': self.sensor_data}
+                'target_temp': self.target_temp, 'configuration': self.configuration, "vendor": self.vendor}
 
     def change_power_state(self):
         try:
@@ -225,9 +226,9 @@ class DeviceRepository:
     def add_device(self, device):
         self.devices[device.device_id] = device
 
-    def add_new_device(self, device_type, house_id, name, access_data):
+    def add_new_device(self, device_type, house_id, name, configuration, vendor):
         device_id = self.generate_new_device_id()
-        self.devices[device_id] = Device(house_id, None, device_id, name, device_type, 1, None, None, access_data)
+        self.devices[device_id] = Device(device_id, house_id, None, name, device_type, configuration, vendor)
         return self.get_device_by_id(device_id)
 
     def generate_new_device_id(self):
