@@ -20,8 +20,12 @@ room_repository.add_room(room2)
 room3 = model.Room("room_id_3", "house_id_1", "Living Room")
 room_repository.add_room(room3)
 device_repository = model.DeviceRepository()
-#device1 = model.Device("house_id_1", "'room_id_1", "device_id_1", "Thermostat", 1)
-#device_repository.add_device(device1)
+device1 = model.Device("device_id_1", "house_id_1", "room_id_1", "Thermostat 1", "thermostat",
+                       {"url": "http://localhost:5010/thermostat/1"}, vendor="OWN")
+device_repository.add_device(device1)
+device1 = model.Device("device_id_2", "house_id_1", None, "Unlinked motion sensor", "motion_sensor",
+                       {"url": "http://localhost:5010/motion_sensor/2"}, vendor="OWN")
+device_repository.add_device(device1)
 devicegroup_repository = model.DeviceGroupRepository()
 devicegroup = model.DeviceGroup("devicegroup_id_1", [], "Group 1")
 devicegroup_repository.add_device_group(devicegroup)
@@ -35,6 +39,12 @@ def get_user_info(user_id):
     if user is None:
         return jsonify({"user": None, "error": {"code": 404, "message": "No such user found"}})
     return jsonify({"user": user.get_user_attributes(), "error": None})
+
+
+@api.route('/users')
+def get_all_users():
+    users = user_repository.get_all_users()
+    return jsonify({"users": [user.get_user_attributes() for user in users], "error": None})
 
 
 @api.route('/user/<string:user_id>/houses')
@@ -77,12 +87,20 @@ def get_devices_for_room(room_id):
     return jsonify({"devices": [device.get_device_attributes() for device in devices], "error": None})
 
 
+@api.route('/house/<string:house_id>/devices')
+def get_devices_for_house(house_id):
+    devices = device_repository.get_devices_for_house(house_id)
+    if devices is None:
+        return jsonify({"devices": None, "error": {"code": 404, "message": "No such house found"}})
+    return jsonify({"devices": [device.get_device_attributes() for device in devices], "error": None})
+
+
 @api.route('/device/<string:device_id>')
 def get_device_info(device_id):
     device = device_repository.get_device_by_id(device_id)
     if device is None:
         return jsonify({"user": None, "error": {"code": 404, "message": "No such device found"}})
-    return jsonify({"device": device.get_device_attributes(), "errors": None})
+    return jsonify({"device": device.get_device_attributes(), "error": None})
 
 
 @api.route('/devicegroup/<string:device_group_id>')
@@ -95,8 +113,10 @@ def get_devicegroup_info(device_group_id):
 
 @api.route('/house/<string:house_id>/devices/add', methods=['POST'])
 def add_device(house_id):
+    print(request.get_json())
     data = request.get_json()
-    device = device_repository.add_new_device(data['device_type'], house_id, data['name'], data['access_data'])
+    device = device_repository.add_new_device(data['device_type'], house_id, data['name'], data['configuration'],
+                                              data['vendor'])
     if device is None:
         return jsonify({"device": None, "error": {"code": 400, "message": "Device could not be added"}})
     return jsonify({"device": device.get_device_attributes(), "error": None})
@@ -125,7 +145,7 @@ def link_device_to_room(room_id, device_id):
     result = device_repository.link_device_to_room(room_id, device_id)
     if result is None:
         return jsonify({"device": None, "error": {"code": 404, "message": "No such device found."}})
-    return jsonify({"device": result, "error": None})
+    return jsonify({"device": result.get_device_attributes(), "error": None})
 
 
 @api.route('/device/<string:device_id>/triggers/add', methods=['POST'])
@@ -138,6 +158,18 @@ def add_trigger(device_id):
     if result is None:
         return jsonify({"trigger": None, "error": {"code": 404, "message": "Trigger couldn't be created."}})
     return jsonify({"trigger": result.get_trigger_attributes(), "error": None})
+
+
+@api.route('/device/<string:device_id>/thermostat/configure', methods=['POST'])
+def configure_thermostat(device_id):
+    data = request.get_json()
+    target_temperature = data['target_temperature']
+    device = device_repository.get_device_by_id(device_id)
+    device.set_target_temp(target_temperature)
+    return jsonify({
+        "device": device.get_device_attributes(),
+        "error": None
+    })
 
 
 def main():
