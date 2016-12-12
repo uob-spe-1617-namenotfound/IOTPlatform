@@ -30,7 +30,7 @@
                 <ul class="dropdown-menu" role="menu">
                     {% for subdev in linked_devices %}
                         {% for dev in subdev %}
-                            <li><a href="#" data-toggle="modal">{{ dev['Device_type'] }}: {{ dev['Name'] }} </a></li>
+                            <li><a href="#" data-toggle="modal">{{ dev['device_type'] }}: {{ dev['Name'] }} </a></li>
                         {% endfor %}
                     {% endfor %}
                 </ul>
@@ -40,7 +40,7 @@
                 </ul>
             {% endif %}
         </li>
-        <li role="presentation" class="active"><a href="{{ url_for('.devices') }}">
+        <li role="presentation" class="active"><a href="{{ url_for('.show_devices') }}">
             <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span> Manage Devices</a></li>
     </ul>
 

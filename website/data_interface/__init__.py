@@ -84,3 +84,21 @@ def get_room_info(room_id):
     if data['error'] is not None:
         raise Exception("Error!")
     return data['room']
+
+
+def get_device_info(device_id):
+    r = requests.get(get_api_url('/device/{}'.format(device_id)))
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['device']
+
+
+def set_thermostat_target(device_id, target_temperature):
+    r = requests.post(get_api_url('/device/{}/thermostat/configure'.format(device_id)),
+                     json={"target_temperature": target_temperature})
+    print(r.content)
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception('Error!')
+    return data['device']

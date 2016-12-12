@@ -21,10 +21,10 @@ room3 = model.Room("room_id_3", "house_id_1", "Living Room")
 room_repository.add_room(room3)
 device_repository = model.DeviceRepository()
 device1 = model.Device("device_id_1", "house_id_1", "room_id_1", "Thermostat 1", "thermostat",
-                       {"url": "http://localhost:5050/1/read"}, vendor="OWN")
+                       {"url": "http://localhost:5010/thermostat/1"}, vendor="OWN")
 device_repository.add_device(device1)
 device1 = model.Device("device_id_2", "house_id_1", None, "Unlinked motion sensor", "motion_sensor",
-                       {"url": "http://localhost:5050/2/read"}, vendor="OWN")
+                       {"url": "http://localhost:5010/motion_sensor/2"}, vendor="OWN")
 device_repository.add_device(device1)
 devicegroup_repository = model.DeviceGroupRepository()
 devicegroup = model.DeviceGroup("devicegroup_id_1", [], "Group 1")
@@ -94,7 +94,7 @@ def get_device_info(device_id):
     device = device_repository.get_device_by_id(device_id)
     if device is None:
         return jsonify({"user": None, "error": {"code": 404, "message": "No such device found"}})
-    return jsonify({"device": device.get_device_attributes(), "errors": None})
+    return jsonify({"device": device.get_device_attributes(), "error": None})
 
 
 @api.route('/devicegroup/<string:device_group_id>')
@@ -153,6 +153,17 @@ def add_trigger(device_id):
         return jsonify({"trigger": None, "error": {"code": 404, "message": "Trigger couldn't be created."}})
     return jsonify({"trigger": result.get_trigger_attributes(), "error": None})
 
+
+@api.route('/device/<string:device_id>/thermostat/configure', methods=['POST'])
+def configure_thermostat(device_id):
+    data = request.get_json()
+    target_temperature = data['target_temperature']
+    device = device_repository.get_device_by_id(device_id)
+    device.set_target_temp(target_temperature)
+    return jsonify({
+        "device": device.get_device_attributes(),
+        "error": None
+    })
 
 def main():
     api.run(debug=True, host=api.config['HOSTNAME'], port=int(api.config['PORT']))

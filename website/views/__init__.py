@@ -44,6 +44,7 @@ lighttriggers = [
 import website.views.devices
 import website.views.rooms
 
+
 @app.route('/triggers')
 def triggers():
     return render_template("triggers.html")
@@ -71,38 +72,6 @@ def account_settings():
     return "To be implemented"
 
 
-@app.route('/room')
-def room_view():
-    return render_template("roomview.html", thermostats=thermostats, light_switches=light_switches,
-                           door_sensors=door_sensors, motion_sensors=motion_sensors, unlinked_devices=unlinked_devices,
-                           linked_devices=linked_devices)
-
-
-
-
-@app.route('/device/actions/')
-def device_actions():
-    triggers = None
-    device = deviceactions[0]
-    if device['Device_type'] == "Thermostat":
-        triggers = thermostattriggers
-    elif device['Device_type'] == "Motion Sensor":
-        triggers = motiontriggers
-    elif device['Device_type'] == "Light Switch":
-        triggers = lighttriggers
-    return render_template("deviceactions.html", device=deviceactions[0], triggers=triggers, actors=actors,
-                           motionactions=motionactions, lightactions=lightactions,
-                           thermostatactions=thermostatactions, thermostats=thermostats, light_switches=light_switches,
-                           door_sensors=door_sensors, motion_sensors=motion_sensors, unlinked_devices=unlinked_devices,
-                           linked_devices=linked_devices)
-
-
-@app.route('/device/<string:device_id>')
-def show_device(device_id):
-    return "This is device {}".format(device_id)
-
-
-
 @app.route('/admin')
 def admin():
     user_dic = {
@@ -116,17 +85,20 @@ def admin():
     userList = [user_dic]
     return render_template("admin.html", users=userList)
 
+
 @app.route('/admin_map')
 def admin_map():
-    house1 = {'lat' : -20.000, 'lng': -179.000}
-    house2 = {'lat' : -50.000, 'lng': 45.000}
-    house3 = {'lat' :  10.000, 'lng': 120.000}
+    house1 = {'lat': -20.000, 'lng': -179.000}
+    house2 = {'lat': -50.000, 'lng': 45.000}
+    house3 = {'lat': 10.000, 'lng': 120.000}
     house_location = [house1, house2, house3]
-    return render_template("admin_maps.html", house_location = house_location)
+    return render_template("admin_maps.html", house_location=house_location)
+
 
 @app.route('/help')
 def help():
     return render_template("help.html")
+
 
 status = ['Enabled', 'Disabled']
 themeinfo = [{'id': '1', 'name': 'Weekend Away Theme', 'theme_status': status[0]},

@@ -1,5 +1,6 @@
 import random
 import string
+import requests
 
 
 class User(object):
@@ -202,6 +203,7 @@ class Device:
         self.sensor_data = None
 
     def get_device_attributes(self):
+        self.update_reading()
         return {'house_id': self.house_id, 'room_id': self.room_id, 'device_id': self.device_id, 'name': self.name,
                 'device_type': self.device_type, 'power_state': self.power_state, 'last_temp': self.last_temp,
                 'target_temp': self.target_temp, 'configuration': self.configuration, "vendor": self.vendor}
@@ -216,7 +218,27 @@ class Device:
             return "ERROR: Power State not 1 or 0"
 
     def set_target_temp(self, target):
-        self.target_temp = target
+        url = "{}/write".format(self.configuration['url'])
+        r = requests.post(url, json={
+            "target_temperature":target
+        })
+        print(r.content)
+        data = r.json()
+        if data['error'] is not None:
+            raise Exception("Error!")
+        self.update_reading()
+
+    def update_reading(self):
+        self.last_temp = None
+        self.target_temp = None
+        if self.vendor == "OWN":
+            print(self.configuration)
+            r = requests.get(self.configuration['url'])
+            print(r.content)
+            data = r.json()
+            if 'data' in data and self.device_type == "thermostat":
+                self.last_temp = data['data']['temperature']
+                self.target_temp = data['data']['target']
 
 
 class DeviceRepository:

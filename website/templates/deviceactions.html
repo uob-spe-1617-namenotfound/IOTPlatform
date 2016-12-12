@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block page_content %}
-    {% if device.Device_type == 'Motion Sensor' %}
+    {% if device.device_type == 'motion_sensor' %}
         <h1> Motion Sensor Action Settings </h1>
         <hr>
         <h5> Motion Sensor (ON/OFF) : </h5>
@@ -10,7 +10,32 @@
             <li><input type="radio" name="motionsensor" value="OFF"> Motion Sensor is OFF</li>
             <br>
         </form>
-    {% elif device.Device_type == 'Light Switch' %}
+    {% elif device.device_type == 'light_switch' %}
+        <h1> Light Switch Action Settings </h1>
+        <hr>
+        <h5> Lights (ON/OFF) : </h5>
+        <form action="">
+            <li><input type="radio" name="motionsensor" value="ON" checked/> Light switch is ON</li>
+            <br>
+            <li><input type="radio" name="motionsensor" value="OFF"> Light switch is OFF</li>
+            <br>
+        </form>
+    {% elif device.device_type == "thermostat" %}
+        <h1> Thermostat Action Settings </h1>
+        <hr>
+        <h5> Thermostat (ON/OFF) : </h5>
+        <form action="">
+            <li><input type="radio" name="motionsensor" value="ON" checked/>Thermostat is ON</li>
+            <br>
+            <li><input type="radio" name="motionsensor" value="OFF">Thermostat is OFF</li>
+            <br>
+        </form>
+
+        <h4>Current temperature: {{ device.last_temp }}℃</h4>
+        <h4>Target temperature: {{ device.target_temp }}℃</h4>
+        {{ wtf.quick_form(change_settings_form, action=url_for('.set_device_settings', device_id=device.device_id)) }}
+        <hr>
+    {% elif device.device_type == "door_sensor" %}
         <h1> Light Switch Action Settings </h1>
         <hr>
         <h5> Lights (ON/OFF) : </h5>
@@ -21,18 +46,7 @@
             <br>
         </form>
     {% else %}
-        <h1> Thermostat Action Settings </h1>
-        <hr>
-        <h5> Thermostat (ON/OFF) : </h5>
-        <form action="">
-            <li><input type="radio" name="motionsensor" value="ON" checked/>Thermostat is ON</li>
-            <br>
-            <li><input type="radio" name="motionsensor" value="OFF">Thermostat is OFF</li>
-            <br>
-        </form>
-        <label for="thermostat"><h4>Choose target temperature in ℃: </h4></label>
-        <input id="thermostat" type="number" value="22"/>
-        <hr>
+        <div class="alert alert-danger">Unknown device type!</div>
     {% endif %}
     <h4>Triggers</h4>
     {% for trigger in triggers %}
