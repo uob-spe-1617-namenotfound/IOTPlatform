@@ -23,6 +23,9 @@ device_repository = model.DeviceRepository()
 device1 = model.Device("device_id_1", "house_id_1", "room_id_1", "Thermostat 1", "thermostat",
                        {"url": "http://localhost:5050/1/read"}, vendor="OWN")
 device_repository.add_device(device1)
+device1 = model.Device("device_id_2", "house_id_1", None, "Unlinked motion sensor", "motion_sensor",
+                       {"url": "http://localhost:5050/2/read"}, vendor="OWN")
+device_repository.add_device(device1)
 devicegroup_repository = model.DeviceGroupRepository()
 devicegroup = model.DeviceGroup("devicegroup_id_1", [], "Group 1")
 devicegroup_repository.add_device_group(devicegroup)
@@ -136,7 +139,7 @@ def link_device_to_room(room_id, device_id):
     result = device_repository.link_device_to_room(room_id, device_id)
     if result is None:
         return jsonify({"device": None, "error": {"code": 404, "message": "No such device found."}})
-    return jsonify({"device": result, "error": None})
+    return jsonify({"device": result.get_device_attributes(), "error": None})
 
 
 @api.route('/device/<string:device_id>/triggers/add', methods=['POST'])

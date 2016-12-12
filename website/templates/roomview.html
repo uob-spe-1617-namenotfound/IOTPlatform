@@ -12,7 +12,7 @@
             {% if unlinked_devices %}
                 <ul class="dropdown-menu" role="menu">
                     {% for dev in unlinked_devices %}
-                        <li><a href="#" data-toggle="modal"> {{ dev['Device_type'] }}: {{ dev['Name'] }} </a></li>
+                        <li><a href="{{ url_for('.link_device_to_room', room_id=room.room_id, device_id=dev.device_id) }}" data-toggle="modal"> {{ dev['device_type'] }}: {{ dev['name'] }} </a></li>
                     {% endfor %}
                 </ul>
             {% else %}
@@ -58,7 +58,7 @@
                         {% for dev in thermostats %}
                             <tr>
                                 <td>
-                                    <a href="{{ url_for('.device_actions', device_id=dev.device_id) }}">{{ dev["Name"] }}</a>
+                                    <a href="{{ url_for('.show_device', device_id=dev.device_id) }}">{{ dev["name"] }}</a>
                                 </td>
                                 <td>{{ dev["Property"] }}</td>
                             </tr>
@@ -67,7 +67,7 @@
                 </div>
             {% endif %}
 
-            {% if motion_sensors %}
+            {% if door_sensors %}
                 <div class="col-md-6">
                     <h3>Door &amp; window sensors</h3>
                     <table class="table table-striped">
@@ -78,7 +78,7 @@
                         {% for dev in motion_sensors %}
                             <tr>
                                 <td>
-                                    <a href="{{ url_for('.device_actions', device_id=dev.device_id) }}">{{ dev["Name"] }}</a>
+                                    <a href="{{ url_for('.show_device', device_id=dev.device_id) }}">{{ dev["name"] }}</a>
                                 </td>
                                 <td>{{ dev["Property"] }}</td>
                             </tr>
@@ -99,7 +99,7 @@
                         {% for dev in light_switches %}
                             <tr>
                                 <td>
-                                    <a href="{{ url_for('.device_actions', device_id=dev.device_id) }}">{{ dev["Name"] }}</a>
+                                    <a href="{{ url_for('.show_device', device_id=dev.device_id) }}">{{ dev["name"] }}</a>
                                 </td>
                                 <td>{{ dev["Property"] }}</td>
                             </tr>
@@ -119,7 +119,7 @@
                         {% for dev in motion_sensors %}
                             <tr>
                                 <td>
-                                    <a href="{{ url_for('.device_actions', device_id=dev.device_id) }}">{{ dev["Name"] }}</a>
+                                    <a href="{{ url_for('.show_device', device_id=dev.device_id) }}">{{ dev["name"] }}</a>
                                 </td>
                                 <td>
                                     {{ dev["Property"] }} <span class="text-info">(2 hours ago)</span>

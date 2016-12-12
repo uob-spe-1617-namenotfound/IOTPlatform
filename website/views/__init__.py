@@ -42,6 +42,7 @@ lighttriggers = [
     {'id': '0000', 'name': 'Lights are on for 4 hours', 'trigactor': [actors], 'trigaction': [lightactions]}]
 
 import website.views.devices
+import website.views.rooms
 
 @app.route('/triggers')
 def triggers():
