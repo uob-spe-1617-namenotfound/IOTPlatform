@@ -22,7 +22,7 @@
             </tr>
             </thead>
             <tbody>
-            {% for room in rooms %}
+            {% for room in rooms | sort(attribute='name') %}
                 <tr>
                     <th scope="row">{{ loop.index }}</th>
                     <td><a href="{{ url_for('.view_room', room_id=room.room_id) }}">{{ room.name }}</a></td>
