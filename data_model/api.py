@@ -26,7 +26,7 @@ device_repository.add_device(device1)
 device2 = model.Device("device_id_2", "house_id_1", None, "Backyard motion sensor", "motion_sensor",
                        {"url": "http://localhost:5010/motion_sensor/2"}, vendor="OWN")
 device_repository.add_device(device2)
-device3 = model.Device("device_id_3", "house_id_1", None, "Backyard motion sensor", "motion_sensor",
+device3 = model.Device("device_id_3", "house_id_1", None, "Kitchen lightswitch", "light_switch",
                        {"url": "http://localhost:5010/motion_sensor/2"}, vendor="OWN")
 device_repository.add_device(device3)
 devicegroup_repository = model.DeviceGroupRepository()
