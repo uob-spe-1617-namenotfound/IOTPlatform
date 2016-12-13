@@ -20,12 +20,15 @@ room_repository.add_room(room2)
 room3 = model.Room("room_id_3", "house_id_1", "Living Room")
 room_repository.add_room(room3)
 device_repository = model.DeviceRepository()
-device1 = model.Device("device_id_1", "house_id_1", "room_id_1", "Thermostat 1", "thermostat",
+device1 = model.Device("device_id_1", "house_id_1", "room_id_1", "Bedroom thermostat", "thermostat",
                        {"url": "http://localhost:5010/thermostat/1"}, vendor="OWN")
 device_repository.add_device(device1)
-device1 = model.Device("device_id_2", "house_id_1", None, "Unlinked motion sensor", "motion_sensor",
+device2 = model.Device("device_id_2", "house_id_1", None, "Backyard motion sensor", "motion_sensor",
                        {"url": "http://localhost:5010/motion_sensor/2"}, vendor="OWN")
-device_repository.add_device(device1)
+device_repository.add_device(device2)
+device3 = model.Device("device_id_3", "house_id_1", None, "Backyard motion sensor", "motion_sensor",
+                       {"url": "http://localhost:5010/motion_sensor/2"}, vendor="OWN")
+device_repository.add_device(device3)
 devicegroup_repository = model.DeviceGroupRepository()
 devicegroup = model.DeviceGroup("devicegroup_id_1", [], "Group 1")
 devicegroup_repository.add_device_group(devicegroup)
