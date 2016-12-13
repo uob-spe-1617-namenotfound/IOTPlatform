@@ -1,10 +1,10 @@
 from flask import Flask, jsonify, request
 
-import model
+from data_model import model
 
 # TODO: better error handling
 api = Flask("SPE-IoT-API")
-api.config.from_pyfile('config.cfg')
+api.config.from_pyfile('data_model/config.cfg')
 
 user_repository = model.UserRepository()
 user1 = model.User("user_id_1", "Jack Xia", "xxxxxxxx", "nobody@gmail.com", False)
