@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block page_content %}
-    <h1> Kitchen </h1>
+    <h1> {{ room.name }} </h1>
     <br>
 
     <ul class="nav nav-pills">
@@ -12,7 +12,7 @@
             {% if unlinked_devices %}
                 <ul class="dropdown-menu" role="menu">
                     {% for dev in unlinked_devices %}
-                        <li><a href="{{ url_for('.link_device_to_room', room_id=room.room_id, device_id=dev.device_id) }}" data-toggle="modal"> {{ dev['device_type'] }}: {{ dev['name'] }} </a></li>
+                        <li><a href="{{ url_for('.link_device_to_room', room_id=room.room_id, device_id=dev.device_id) }}" data-toggle="modal">{{ dev['name'] }} </a></li>
                     {% endfor %}
                 </ul>
             {% else %}
@@ -30,7 +30,7 @@
                 <ul class="dropdown-menu" role="menu">
                     {% for subdev in linked_devices %}
                         {% for dev in subdev %}
-                            <li><a href="#" data-toggle="modal">{{ dev['device_type'] }}: {{ dev['Name'] }} </a></li>
+                            <li><a href="#" data-toggle="modal">{{ dev['Name'] }} </a></li>
                         {% endfor %}
                     {% endfor %}
                 </ul>
