@@ -2,8 +2,15 @@ import pymongo
 from pymongo import MongoClient
 
 # Connector to running database
-mongo = MongoClient()
-db = mongo.db
+mongo = MongoClient('localhost', 27017)
+db = mongo.database
+
+#Define database collections
+users = db.users
+houses = db.houses
+house_groups = db.housegroups
+rooms = db.rooms
+room_groups = db.roomgroups
 
 
 class User(object):
@@ -23,24 +30,21 @@ class User(object):
 
 
 class UserRepository():
-    def _init_(self):
-        self.users = db.users
-
     def add_user(self, user):
         new_user = User.get_user_attributes(user)
         name = new_user['name']
         password_hash = new_user['password_hash']
         email_address = new_user['email_address']
         is_admin = new_user['is_admin']
-        user_id = self.users.insert_one({'name': name, 'password_hash': password_hash,
+        user_id = users.insert_one({'name': name, 'password_hash': password_hash,
                                         'email_address': email_address, 'is_admin': is_admin})
         User.set_user_id(user, user_id)
 
     def remove_user(self, user_id):
-        self.users.delete_one({'_id': user_id})
+        users.delete_one({'_id': user_id})
 
     def get_user_by_id(self, user_id):
-        user = self.users.find_one_or_404({'_id': user_id})
+        user = users.find_one_or_404({'_id': user_id})
         target_user = User(user['Name'], user['password_hash'],
                            user['email_address'], user['is_admin'])
         User.set_user_id(target_user, user_id)
@@ -48,7 +52,7 @@ class UserRepository():
 
 
 class House(object):
-    def _init_(self, name):
+    def __init__(self, name):
         self.user_id = None
         self.house_id = None
         self.name = name
@@ -64,20 +68,17 @@ class House(object):
 
 
 class HouseRepository:
-    def _init_(self):
-        self.houses = db.houses
-
     def add_house(self, house):
         new_house = House.get_house_attributes(house)
         name = new_house['name']
-        house_id = self.houses.insert_one({'name': name})
+        house_id = houses.insert_one({'name': name})
         House.set_house_id(house, house_id)
 
     def remove_house(self, house_id):
-        self.houses.delete_one({'_id': house_id})
+        houses.delete_one({'_id': house_id})
 
     def get_house_by_id(self, house_id):
-        house = self.houses.find_one_or_404({'_id': house_id})
+        house = houses.find_one_or_404({'_id': house_id})
         name = house['name']
         target_house = House(name)
         House.set_house_id(target_house, house_id)
@@ -90,10 +91,10 @@ class HouseRepository:
         house_id = target_house['house_id']
         user_id = target_user['user_id']
         House.set_user(house, user_id)
-        self.houses.update({'_id': house_id}, {"$set": {'user_id': user_id}}, upsert = False)
+        houses.update({'_id': house_id}, {"$set": {'user_id': user_id}}, upsert = False)
 
     def get_houses_for_user(self, user_id):
-        return self.houses.find({'user_id': user_id})
+        return houses.find({'user_id': user_id})
 
 
 # House groups could be used for fleet management or for people with multiple houses
@@ -114,14 +115,11 @@ class HouseGroup(object):
 
 
 class HouseGroupRepository:
-    def _init_(self):
-        self.house_groups = db.housegroups
-
     def add_house_group(self, house_group):
         new_house_group = HouseGroup.get_house_group_attributes(house_group)
         house_ids = new_house_group['house_ids']
         name = new_house_group['name']
-        house_group_id = self.house_groups.insert_one({'house_ids': house_ids, 'name': name})
+        house_group_id = house_groups.insert_one({'house_ids': house_ids, 'name': name})
         HouseGroup.set_house_group_id(house_group, house_group_id)
 
 
@@ -130,10 +128,10 @@ class HouseGroupRepository:
         target_house_group = HouseGroup.get_house_group_attributes(house_group)
         house_id = target_house['house_id']
         house_group_id = target_house_group['house_group_id']
-        self.house_groups.update({'_id': house_group_id}, {"$push": {'house_ids': house_id}}, upsert = False)
+        house_groups.update({'_id': house_group_id}, {"$push": {'house_ids': house_id}}, upsert = False)
 
     def remove_house_group(self, house_group_id):
-        self.house_groups.delete_one({'_id': house_group_id})
+        house_groups.delete_one({'_id': house_group_id})
 
 
 class Room(object):
@@ -153,20 +151,17 @@ class Room(object):
 
 
 class RoomRepository:
-    def __init__(self):
-        self.rooms = db.rooms
-
     def add_room(self, room):
         new_room = Room.get_room_attributes(room)
         name = new_room['name']
-        room_id = self.rooms.insert_one({'name': name})
+        room_id = rooms.insert_one({'name': name})
         Room.set_room_id(room, room_id)
 
     def remove_room(self, room_id):
-        self.rooms.delete_one({'_id': room_id})
+        rooms.delete_one({'_id': room_id})
 
     def get_room_by_id(self, room_id):
-        room = self.rooms.find_one_or_404({'_id': room_id})
+        room = rooms.find_one_or_404({'_id': room_id})
         target_room = Room(room['name'])
         Room.set_room_id(target_room, room_id)
         Room.set_house(target_room, room['house_id'])
@@ -178,10 +173,10 @@ class RoomRepository:
         room_id = target_room['room_id']
         house_id = target_house['house_id']
         Room.set_house(room, house_id)
-        self.rooms.update({'_id': room_id}, {"$set": {'house_id': house_id}}, upsert = False)
+        rooms.update({'_id': room_id}, {"$set": {'house_id': house_id}}, upsert = False)
 
     def get_rooms_for_house(self, house_id):
-        rooms = self.rooms.find({'house_id': house_id})
+        return rooms.find({'house_id': house_id})
 
 
 # Room groups could be things like 'Upstairs', or to be used for templates
@@ -202,14 +197,11 @@ class RoomGroup(object):
 
 
 class RoomGroupRepository:
-    def __init__(self):
-        self.room_groups = db.roomgroups
-
     def add_room_group(self, room_group):
         new_room_group = RoomGroup.get_room_group_attributes(room_group)
         room_ids = new_room_group['room_ids']
         name = new_room_group['name']
-        room_group_id = self.room_groups.insert({'room_ids': room_ids, 'name': name})
+        room_group_id = room_groups.insert({'room_ids': room_ids, 'name': name})
         RoomGroup.set_room_group_id(room_group, room_group_id)
 
     def add_room_to_group(self, room_group, room):
@@ -217,13 +209,13 @@ class RoomGroupRepository:
         target_room_group = RoomGroup.get_room_group_attributes(room_group)
         room_id = target_room['room_id']
         room_group_id = target_room_group['room_group_id']
-        self.room_groups.update({'_id': room_group_id}, {"$push": {'room)ids': room_id}}, upsert = False)
+        room_groups.update({'_id': room_group_id}, {"$push": {'room)ids': room_id}}, upsert = False)
 
     def remove_room_group(self, room_group_id):
-        self.room_groups.delete_one({'_id': room_group_id})
+        room_groups.delete_one({'_id': room_group_id})
 
     def get_room_group_by_id(self, room_group_id):
-        room_group = self.room_groups.find_one_or_404({'_id': room_group_id})
+        room_group = room_groups.find_one_or_404({'_id': room_group_id})
         target_room_group = RoomGroup(room_group['name'])
         RoomGroup.set_room_group_id(target_room_group, room_group_id)
         rooms = room_group['room_ids']
@@ -231,7 +223,7 @@ class RoomGroupRepository:
             RoomGroup.add_room_to_group(target_room_group, room_id)
         return target_room_group
 
-""""
+
 class Device:
     def __init__(self, name, device_type, power_state):
         self.house_id = None
@@ -240,17 +232,11 @@ class Device:
         self.name = name
         self.device_type = device_type
         self.power_state = power_state
-        self.configuration = None
-        self.last_temp = None
-        self.target_temp = None
-        self.sensor_data = None
 
     def get_device_attributes(self):
         return {'house_id': self.house_id, 'room_id': self.room_id,
                 'device_id': self.device_id, 'name': self.name,
-                'device_type': self.device_type, 'power_state': self.power_state,
-                'configuration': self.configuration, 'last_temp': self.last_temp,
-                'target_temp': self.target_temp, 'sensor_data': self.sensor_data}
+                'device_type': self.device_type, 'power_state': self.power_state}
 
     def change_power_state(self):
         if self.power_state == 0:
@@ -258,14 +244,76 @@ class Device:
         else:
             setattr(self, 'power_state', 0)
 
-    def set_target_temp(self, target):
-        setattr(self, 'target_temp', target)
+
+class Thermostat(Device):
+    def __init__(self):
+        Device.__init__(self, name, "Thermostat", power_state)
+        self.last_temperature = None
+        self.target_temperature = None
+        self.locked_max_temp = None
+        self.locked_min_temp = None
+        self.temperature_scale = "C"
+
+    def get_device_attributes(self):
+        return {'house_id': self.house_id, 'room_id': self.room_id,
+                'device_id': self.device_id, 'name': self.name,
+                'device_type': self.device_type, 'power_state': self.power_state,
+                'last_temperature': self.last_temperature, 'target_temperature': self.target_temperature,
+                'locked_max_temp': self.locked_max_temp, 'locked_min_temp': self.locked_min_temp,
+                'temperature_scale': self.temperature_scale}
+
+    def get_reading(self):
+        return {'last_temperature': self.last_temperature}
+
+    def change_temperature_scale(self):
+        if self.temperature_scale == "C":
+            setattr(self, 'temperature_scale', "F")
+        else:
+            setattr(self, 'temperature_scale', "C")
+
+
+class MotionSensor(Device):
+    def __init__(self):
+        Device.__init__(self, name, "Motion Sensor", power_state)
+        self.sensor_data = None
+
+    def get_device_attributes(self):
+        return {'house_id': self.house_id, 'room_id': self.room_id,
+                'device_id': self.device_id, 'name': self.name,
+                'device_type': self.device_type, 'power_state': self.power_state,
+                'sensor_data': self.sensor_data}
+
+    def get_reading(self):
+        return {'sensor_data': self.sensor_data}
+
+
+class PlugSocket(Device):
+    def __init__(self):
+        Device.__init__(self, name, "Plug Socket", power_state)
+
+    def get_device_attributes(self):
+        return {'house_id': self.house_id, 'room_id': self.room_id,
+                'device_id': self.device_id, 'name': self.name,
+                'device_type': self.device_type, 'power_state': self.power_state}
+
+
+class OpenSensor(Device):
+    def __init__(self):
+        Device.__init__(self, name, "Door/Window Sensor", power_state)
+        self.sensor_data = None
+
+    def get_device_attributes(self):
+        return {'house_id': self.house_id, 'room_id': self.room_id,
+                'device_id': self.device_id, 'name': self.name,
+                'device_type': self.device_type, 'power_state': self.power_state,
+                'sensor_data': self.sensor_data}
+
+    def get_reading(self):
+        return {'sensor_data': self.sensor_data}
+
 
 class DeviceRepository:
-    def __init__(self):
-        self.devices = db.devices
-
-    def add_device(self, device):
+    #def add_device(self, device):
 
     def add_new_device(self, device_type, house_id, name, access_data):
 
@@ -280,6 +328,7 @@ class DeviceRepository:
     def get_devices_for_room(self, room_id):
 
     def link_device_to_room(self, room_id, device_id):
+
 
 class DeviceGroup(object):
     def __init__(self, name):
@@ -302,7 +351,7 @@ class DeviceGroupRepository:
 
     def get_device_group_by_id(self, device_group_id):
 
-
+"""
 class Trigger:
     def __init__(self, trigger, action):
         self.trigger_id = None

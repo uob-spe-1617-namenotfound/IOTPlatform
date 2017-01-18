@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 
 import model
-from model import *
+#from model import *
 
 # TODO: better error handling
 api = Flask("SPE-IoT-API")
@@ -10,17 +10,17 @@ api.config.from_pyfile('config.cfg')
 user_repository = UserRepository()
 user1 = User("user_id_1", "Jack Xia", "xxxxxxxx", "nobody@gmail.com", False)
 user_repository.add_user(user1)
-house_repository = model.HouseRepository()
-house1 = model.House("user_id_1", "house_id_1", "Jack's house")
+house_repository = HouseRepository()
+house1 = House("Jack's house")
 house_repository.add_house(house1)
-room_repository = model.RoomRepository()
-room1 = model.Room("room_id_1", "house_id_1", "Kitchen")
+room_repository = RoomRepository()
+room1 = model.Room("Kitchen")
 room_repository.add_room(room1)
-room2 = model.Room("room_id_2", "house_id_1", "Bathroom")
+room2 = model.Room("Bathroom")
 room_repository.add_room(room2)
-room3 = model.Room("room_id_3", "house_id_1", "Living Room")
+room3 = model.Room("Living Room")
 room_repository.add_room(room3)
-device_repository = model.DeviceRepository()
+device_repository = DeviceRepository()
 #device1 = model.Device("house_id_1", "'room_id_1", "device_id_1", "Thermostat", 1)
 #device_repository.add_device(device1)
 devicegroup_repository = model.DeviceGroupRepository()
