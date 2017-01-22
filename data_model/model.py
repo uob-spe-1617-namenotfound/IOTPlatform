@@ -11,6 +11,8 @@ houses = db.houses
 house_groups = db.housegroups
 rooms = db.rooms
 room_groups = db.roomgroups
+devices = db.devices
+device_groups = db.devicegroups
 
 
 class User(object):
@@ -30,8 +32,9 @@ class User(object):
 
 
 class UserRepository():
-    def add_user(self, user):
-        new_user = User.get_user_attributes(user)
+    @staticmethod
+    def add_user(user):
+        new_user = user.get_user_attributes()
         name = new_user['name']
         password_hash = new_user['password_hash']
         email_address = new_user['email_address']
@@ -40,10 +43,12 @@ class UserRepository():
                                         'email_address': email_address, 'is_admin': is_admin})
         User.set_user_id(user, user_id)
 
-    def remove_user(self, user_id):
+    @staticmethod
+    def remove_user(user_id):
         users.delete_one({'_id': user_id})
 
-    def get_user_by_id(self, user_id):
+    @staticmethod
+    def get_user_by_id(user_id):
         user = users.find_one_or_404({'_id': user_id})
         target_user = User(user['Name'], user['password_hash'],
                            user['email_address'], user['is_admin'])
@@ -68,16 +73,19 @@ class House(object):
 
 
 class HouseRepository:
-    def add_house(self, house):
-        new_house = House.get_house_attributes(house)
+    @staticmethod
+    def add_house(house):
+        new_house = house.get_house_attributes()
         name = new_house['name']
         house_id = houses.insert_one({'name': name})
         House.set_house_id(house, house_id)
 
-    def remove_house(self, house_id):
+    @staticmethod
+    def remove_house(house_id):
         houses.delete_one({'_id': house_id})
 
-    def get_house_by_id(self, house_id):
+    @staticmethod
+    def get_house_by_id(house_id):
         house = houses.find_one_or_404({'_id': house_id})
         name = house['name']
         target_house = House(name)
@@ -85,15 +93,17 @@ class HouseRepository:
         House.set_user(target_house, house['user_id'])
         return target_house
 
-    def add_house_to_user(self, user, house):
-        target_house = House.get_house_attributes(house)
-        target_user = User.get_user_attributes(user)
+    @staticmethod
+    def add_house_to_user(user, house):
+        target_house = house.get_house_attributes()
+        target_user = user.get_user_attributes()
         house_id = target_house['house_id']
         user_id = target_user['user_id']
         House.set_user(house, user_id)
         houses.update({'_id': house_id}, {"$set": {'user_id': user_id}}, upsert = False)
 
-    def get_houses_for_user(self, user_id):
+    @staticmethod
+    def get_houses_for_user(user_id):
         return houses.find({'user_id': user_id})
 
 
@@ -115,22 +125,24 @@ class HouseGroup(object):
 
 
 class HouseGroupRepository:
-    def add_house_group(self, house_group):
-        new_house_group = HouseGroup.get_house_group_attributes(house_group)
+    @staticmethod
+    def add_house_group(house_group):
+        new_house_group = house_group.get_house_group_attributes()
         house_ids = new_house_group['house_ids']
         name = new_house_group['name']
         house_group_id = house_groups.insert_one({'house_ids': house_ids, 'name': name})
         HouseGroup.set_house_group_id(house_group, house_group_id)
 
-
-    def add_house_to_group(self, house_group, house):
+    @staticmethod
+    def add_house_to_group(house_group, house):
         target_house = House.get_house_attributes(house)
-        target_house_group = HouseGroup.get_house_group_attributes(house_group)
+        target_house_group = house_group.get_house_group_attributes()
         house_id = target_house['house_id']
         house_group_id = target_house_group['house_group_id']
         house_groups.update({'_id': house_group_id}, {"$push": {'house_ids': house_id}}, upsert = False)
 
-    def remove_house_group(self, house_group_id):
+    @staticmethod
+    def remove_house_group(house_group_id):
         house_groups.delete_one({'_id': house_group_id})
 
 
@@ -151,31 +163,36 @@ class Room(object):
 
 
 class RoomRepository:
-    def add_room(self, room):
-        new_room = Room.get_room_attributes(room)
+    @staticmethod
+    def add_room(room):
+        new_room = room.get_room_attributes()
         name = new_room['name']
         room_id = rooms.insert_one({'name': name})
         Room.set_room_id(room, room_id)
 
-    def remove_room(self, room_id):
+    @staticmethod
+    def remove_room(room_id):
         rooms.delete_one({'_id': room_id})
 
-    def get_room_by_id(self, room_id):
+    @staticmethod
+    def get_room_by_id(room_id):
         room = rooms.find_one_or_404({'_id': room_id})
         target_room = Room(room['name'])
         Room.set_room_id(target_room, room_id)
         Room.set_house(target_room, room['house_id'])
         return target_room
 
-    def add_room_to_house(self, house, room):
-        target_room = Room.get_room_attributes(room)
-        target_house = House.get_house_attributes(house)
+    @staticmethod
+    def add_room_to_house(house, room):
+        target_room = room.get_room_attributes()
+        target_house = house.get_house_attributes()
         room_id = target_room['room_id']
         house_id = target_house['house_id']
         Room.set_house(room, house_id)
         rooms.update({'_id': room_id}, {"$set": {'house_id': house_id}}, upsert = False)
 
-    def get_rooms_for_house(self, house_id):
+    @staticmethod
+    def get_rooms_for_house(house_id):
         return rooms.find({'house_id': house_id})
 
 
@@ -197,24 +214,28 @@ class RoomGroup(object):
 
 
 class RoomGroupRepository:
-    def add_room_group(self, room_group):
-        new_room_group = RoomGroup.get_room_group_attributes(room_group)
+    @staticmethod
+    def add_room_group(room_group):
+        new_room_group = room_group.get_room_group_attributes()
         room_ids = new_room_group['room_ids']
         name = new_room_group['name']
         room_group_id = room_groups.insert({'room_ids': room_ids, 'name': name})
         RoomGroup.set_room_group_id(room_group, room_group_id)
 
-    def add_room_to_group(self, room_group, room):
-        target_room = Room.get_room_attributes(room)
-        target_room_group = RoomGroup.get_room_group_attributes(room_group)
+    @staticmethod
+    def add_room_to_group(room_group, room):
+        target_room = room.get_room_attributes()
+        target_room_group = room_group.get_room_group_attributes()
         room_id = target_room['room_id']
         room_group_id = target_room_group['room_group_id']
         room_groups.update({'_id': room_group_id}, {"$push": {'room)ids': room_id}}, upsert = False)
 
-    def remove_room_group(self, room_group_id):
+    @staticmethod
+    def remove_room_group(room_group_id):
         room_groups.delete_one({'_id': room_group_id})
 
-    def get_room_group_by_id(self, room_group_id):
+    @staticmethod
+    def get_room_group_by_id(room_group_id):
         room_group = room_groups.find_one_or_404({'_id': room_group_id})
         target_room_group = RoomGroup(room_group['name'])
         RoomGroup.set_room_group_id(target_room_group, room_group_id)
@@ -243,6 +264,15 @@ class Device:
             setattr(self, 'power_state', 1)
         else:
             setattr(self, 'power_state', 0)
+
+    def set_device_id(self, device_id):
+        setattr(self, 'device_id', device_id)
+
+    def set_house(self, house_id):
+        setattr(self, 'house_id', house_id)
+
+    def set_room(self, room_id):
+        setattr(self, 'room_id', room_id)
 
 
 class Thermostat(Device):
@@ -313,21 +343,39 @@ class OpenSensor(Device):
 
 
 class DeviceRepository:
-    #def add_device(self, device):
+    def add_device(self, device):
+        new_device = device.get_device_attributes()
+        name = new_device['name']
+        device_type = new_device['device_type']
+        power_state = new_device['power_state']
+        device_id = devices.insert_one({'name': name, 'device_type': device_type,
+                                        'power_state': power_state})
+        Device.set_device_id(self, device_id)
 
-    def add_new_device(self, device_type, house_id, name, access_data):
+    #def add_new_device(self, device_type, house_id, name, access_data):
 
     def remove_device(self, device_id):
+        devices.delete_one({'_id': device_id})
 
     def get_device_by_id(self, device_id):
+        device = devices.find_one_or_404({'_id': device_id})
+        target_device = Device(device['name'], device['device_type'], device['power_state'])
+        target_device.set_device_id(device_id)
+        target_device.set_house(device['house_id'])
+        target_device.set_room(device['room_id'])
+        return target_device
 
     def add_device_to_house(self, house_id, device_id):
+        devices.update({'_id': device_id}, {"$set": {'house_id': house_id}}, upsert = False)
 
     def get_devices_for_house(self, house_id):
-
-    def get_devices_for_room(self, room_id):
+        return devices.find({'house_id': house_id})
 
     def link_device_to_room(self, room_id, device_id):
+        devices.update({'_id': device_id}, {"$set": {'room_id': room_id}}, upsert = False)
+
+    def get_devices_for_room(self, room_id):
+        return devices.find({'room_id': room_id})
 
 
 class DeviceGroup(object):
@@ -339,13 +387,23 @@ class DeviceGroup(object):
     def get_device_group_attributes(self):
         return {'device_group_id': self.device_group_id, 'device_ids': self.device_ids, 'name': self.name}
 
+    def set_device_group_id(self, device_group_id):
+        setattr(self, 'device_group_id', device_group_id)
+
+    def add_device_to_group(self, device_id):
+        self.device_ids.append(device_id)
+
 class DeviceGroupRepository:
-    def __init__(self):
-        self.device_groups = db.devicegroups
+    @staticmethod
+    def add_device_group(device_group):
+        new_device_group = device_group.get_device_attributes()
+        device_ids = new_device_group['device_ids']
+        name = new_device_group['name']
+        device_group_id = device_groups.insert({'device_ids': device_ids, 'name': name})
+        device_group.set_device_group_id(device_group_id)
 
-    def add_device_group(self, device_group):
-
-    def add_device_to_group(self, device_id, device_group):
+    @staticmethod
+    def add_device_to_group(device_id, device_group):
 
     def remove_device_group(self, device_group_id):
 
