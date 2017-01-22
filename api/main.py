@@ -1,33 +1,54 @@
-from flask import Flask, jsonify, request
+import json
+import logging
 
-import model
-#from model import *
+from bson.objectid import ObjectId
+from flask import Flask, jsonify, request
+from pymongo import MongoClient
 
 # TODO: better error handling
 api = Flask("SPE-IoT-API")
 api.config.from_pyfile('config.cfg')
+logging.basicConfig(level=logging.DEBUG)
+# Connector to running database
+mongo = MongoClient(api.config['MONGO_HOST'], api.config['MONGO_PORT'])
+db = mongo.database
 
-user_repository = UserRepository()
-user1 = User("user_id_1", "Jack Xia", "xxxxxxxx", "nobody@gmail.com", False)
-user_repository.add_user(user1)
-house_repository = HouseRepository()
-house1 = House("Jack's house")
-house_repository.add_house(house1)
-room_repository = RoomRepository()
-room1 = model.Room("Kitchen")
-room_repository.add_room(room1)
-room2 = model.Room("Bathroom")
-room_repository.add_room(room2)
-room3 = model.Room("Living Room")
-room_repository.add_room(room3)
-device_repository = DeviceRepository()
-#device1 = model.Device("house_id_1", "'room_id_1", "device_id_1", "Thermostat", 1)
-#device_repository.add_device(device1)
-devicegroup_repository = model.DeviceGroupRepository()
-devicegroup = model.DeviceGroup("devicegroup_id_1", [], "Group 1")
-devicegroup_repository.add_device_group(devicegroup)
 
-trigger_repository = model.TriggerRepository()
+class JSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        return json.JSONEncoder.default(self, o)
+
+
+api.json_encoder = JSONEncoder
+
+import model
+import repositories
+
+user_repository = repositories.UserRepository(db.users)
+house_repository = repositories.HouseRepository(db.houses)
+room_repository = repositories.RoomRepository(db.rooms)
+device_repository = repositories.DeviceRepository(db.devices)
+devicegroup_repository = repositories.DeviceGroupRepository(db.device_groups)
+trigger_repository = repositories.TriggerRepository(db.triggers)
+
+
+def init_hardcoded_data():
+    user1 = model.User("user_id_1", "Jack Xia", "xxxxxxxx", "nobody@gmail.com", False)
+    user_repository.add_user(user1)
+    house1 = model.House("Jack's house", user1.get_user_id())
+    house_repository.add_house(house1)
+    room1 = model.Room("Kitchen", house1.get_house_id())
+    room_repository.add_room(room1)
+    room2 = model.Room("Bathroom", house1.get_house_id())
+    room_repository.add_room(room2)
+    room3 = model.Room("Living Room", house1.get_house_id())
+    room_repository.add_room(room3)
+    # device1 = model.Device("house_id_1", "'room_id_1", "device_id_1", "Thermostat", 1)
+    # device_repository.add_device(device1)
+    devicegroup = model.DeviceGroup("devicegroup_id_1", [], "Group 1")
+    devicegroup_repository.add_device_group(devicegroup)
 
 
 @api.route('/user/<string:user_id>')
@@ -40,7 +61,8 @@ def get_user_info(user_id):
 
 @api.route('/user/<string:user_id>/houses')
 def get_houses_for_user(user_id):
-    houses = house_repository.get_houses_for_user(user_id)
+    logging.warning("Getting houses for user {}".format(user_id))
+    houses = house_repository.get_houses_for_user(ObjectId(user_id))
     if houses is None:
         return jsonify({"houses": None, "error": {"code": 404, "message": "No such user found"}})
     return jsonify({"houses": [house.get_house_attributes() for house in houses], "error": None})
@@ -142,6 +164,7 @@ def add_trigger(device_id):
 
 
 def main():
+    init_hardcoded_data()
     api.run(debug=True, host=api.config['HOSTNAME'], port=int(api.config['PORT']))
 
 
