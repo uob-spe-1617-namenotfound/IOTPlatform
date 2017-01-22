@@ -7,6 +7,9 @@ class Repository(object):
     def __init__(self, mongo_collection):
         self.collection = mongo_collection
 
+    def clear_db(self):
+        self.collection.delete_many({})
+
 
 class HouseGroupRepository(Repository):
     def __init__(self, mongo_collection):
@@ -171,7 +174,6 @@ class HouseRepository(Repository):
         Repository.__init__(self, mongo_collection)
 
     def add_house(self, house):
-        logging.debug("adding house: {}".format(house.get_house_attributes()))
         result = self.collection.insert_one({'name': house.get_name(), 'user_id': house.get_user_id()})
         house_id = result.inserted_id
         house.set_house_id(house_id)
