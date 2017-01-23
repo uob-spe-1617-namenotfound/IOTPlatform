@@ -16,16 +16,16 @@ class HouseGroupRepository(Repository):
         Repository.__init__(self, mongo_collection)
 
     def add_house_group(self, house_group):
-        new_house_group = HouseGroup.get_house_group_attributes(house_group)
+        new_house_group = house_group.get_house_group_attributes()
         house_ids = new_house_group['house_ids']
         name = new_house_group['name']
         result = self.collection.insert_one({'house_ids': house_ids, 'name': name})
         house_group_id = result.inserted_id
-        HouseGroup.set_house_group_id(house_group, house_group_id)
+        house_group.set_house_group_id(house_group_id)
 
     def add_house_to_group(self, house_group, house):
-        target_house = House.get_house_attributes(house)
-        target_house_group = HouseGroup.get_house_group_attributes(house_group)
+        target_house = house.get_house_attributes()
+        target_house_group = house_group.get_house_group_attributes()
         house_id = target_house['house_id']
         house_group_id = target_house_group['house_group_id']
         self.collection.update({'_id': house_group_id}, {"$push": {'house_ids': house_id}}, upsert=False)
@@ -39,28 +39,28 @@ class RoomRepository(Repository):
         Repository.__init__(self, mongo_collection)
 
     def add_room(self, room):
-        new_room = Room.get_room_attributes(room)
+        new_room = room.get_room_attributes()
         name = new_room['name']
         result = self.collection.insert_one({'name': name})
         room_id = result.inserted_id
-        Room.set_room_id(room, room_id)
+        room.set_room_id(room_id)
 
     def remove_room(self, room_id):
         self.collection.delete_one({'_id': room_id})
 
     def get_room_by_id(self, room_id):
         room = self.collection.find_one_or_404({'_id': room_id})
-        target_room = Room(room['name'])
-        Room.set_room_id(target_room, room_id)
-        Room.set_house(target_room, room['house_id'])
+        target_room = room(room['name'])
+        target_room.set_room_id(room_id)
+        target_room.set_house(room['house_id'])
         return target_room
 
     def add_room_to_house(self, house, room):
-        target_room = Room.get_room_attributes(room)
-        target_house = House.get_house_attributes(house)
+        target_room = room.get_room_attributes()
+        target_house = house.get_house_attributes()
         room_id = target_room['room_id']
         house_id = target_house['house_id']
-        Room.set_house(room, house_id)
+        room.set_house(house_id)
         self.collection.update({'_id': room_id}, {"$set": {'house_id': house_id}}, upsert=False)
 
     def get_rooms_for_house(self, house_id):
@@ -72,15 +72,15 @@ class RoomGroupRepository(Repository):
         Repository.__init__(self, mongo_collection)
 
     def add_room_group(self, room_group):
-        new_room_group = RoomGroup.get_room_group_attributes(room_group)
+        new_room_group = room_group.get_room_group_attributes()
         room_ids = new_room_group['room_ids']
         name = new_room_group['name']
         room_group_id = self.collection.insert({'room_ids': room_ids, 'name': name})
-        RoomGroup.set_room_group_id(room_group, room_group_id)
+        room_group.set_room_group_id(room_group_id)
 
     def add_room_to_group(self, room_group, room):
         target_room = Room.get_room_attributes(room)
-        target_room_group = RoomGroup.get_room_group_attributes(room_group)
+        target_room_group = room_group.get_room_group_attributes()
         room_id = target_room['room_id']
         room_group_id = target_room_group['room_group_id']
         self.collection.update({'_id': room_group_id}, {"$push": {'room)ids': room_id}}, upsert=False)
@@ -94,7 +94,7 @@ class RoomGroupRepository(Repository):
         RoomGroup.set_room_group_id(target_room_group, room_group_id)
         rooms = room_group['room_ids']
         for room_id in rooms:
-            RoomGroup.add_room_to_group(target_room_group, room_id)
+            target_room_group.add_room_to_group(room_id)
         return target_room_group
 
 
@@ -156,7 +156,7 @@ class UserRepository(Repository):
         result = self.collection.insert_one({'name': name, 'password_hash': password_hash,
                                              'email_address': email_address, 'is_admin': is_admin})
         user_id = result.inserted_id
-        User.set_user_id(user, user_id)
+        user.set_user_id(user_id)
 
     def remove_user(self, user_id):
         self.collection.delete_one({'_id': user_id})
@@ -165,7 +165,7 @@ class UserRepository(Repository):
         user = self.collection.find_one_or_404({'_id': user_id})
         target_user = User(user['Name'], user['password_hash'],
                            user['email_address'], user['is_admin'])
-        User.set_user_id(target_user, user_id)
+        target_user.set_user_id(user_id)
         return target_user
 
 
@@ -185,8 +185,8 @@ class HouseRepository(Repository):
         house = self.collection.find_one_or_404({'_id': house_id})
         name = house['name']
         target_house = House(name)
-        House.set_house_id(target_house, house_id)
-        House.set_user(target_house, house['user_id'])
+        target_house.set_house_id(house_id)
+        target_house.set_user(house['user_id'])
         return target_house
 
     def add_house_to_user(self, user, house):
@@ -194,7 +194,7 @@ class HouseRepository(Repository):
         target_user = User.get_user_attributes(user)
         house_id = target_house['house_id']
         user_id = target_user['user_id']
-        House.set_user(house, user_id)
+        house.set_user(user_id)
         self.collection.update({'_id': house_id}, {"$set": {'user_id': user_id}}, upsert=False)
 
     def get_houses_for_user(self, user_id):

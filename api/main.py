@@ -33,6 +33,13 @@ api.devicegroup_repository = repositories.DeviceGroupRepository(db.device_groups
 api.trigger_repository = repositories.TriggerRepository(db.triggers)
 
 
+@api.route('/user/default_user')
+def get_first_user_id():
+    users = api.user_repository.find()
+    first_user = users[0]
+    return first_user['_id']
+
+
 @api.route('/user/<string:user_id>')
 def get_user_info(user_id):
     user = api.user_repository.get_user_by_id(user_id)

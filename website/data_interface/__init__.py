@@ -14,7 +14,7 @@ def get_user_id():
     session['user_id'] = 'user_id_1'
     if "user_id" in session:
         return session['user_id']
-    return None
+    return requests.get(get_api_url('/user/default_user'))
 
 
 def get_user_houses():
