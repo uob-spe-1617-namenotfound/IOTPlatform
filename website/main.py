@@ -2,7 +2,7 @@ from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_nav import Nav
 
-from website.navbar import navbar
+from navbar import navbar
 
 app = Flask("SPE-IoT-Energy", template_folder="website/templates")
 app.config.from_pyfile('config.cfg')
@@ -12,4 +12,10 @@ nav = Nav(app)
 
 nav.register_element('navbar', navbar)
 
-import website.views
+from views import *
+
+def main():
+    app.run(host=app.config['HOSTNAME'], port=int(app.config['PORT']))
+        
+if __name__ == "__main__":
+    main()
