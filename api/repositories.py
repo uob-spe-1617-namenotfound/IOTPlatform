@@ -1,6 +1,6 @@
 import logging
 
-from model import HouseGroup, House, Room, RoomGroup, User
+from model import HouseGroup, House, Room, RoomGroup, User, Device, DeviceGroup
 
 
 class Repository(object):
@@ -91,7 +91,7 @@ class RoomGroupRepository(Repository):
     def get_room_group_by_id(self, room_group_id):
         room_group = self.collection.find_one_or_404({'_id': room_group_id})
         target_room_group = RoomGroup(room_group['name'])
-        RoomGroup.set_room_group_id(target_room_group, room_group_id)
+        target_room_group.set_room_group_id(room_group_id)
         rooms = room_group['room_ids']
         for room_id in rooms:
             target_room_group.add_room_to_group(room_id)
@@ -102,28 +102,41 @@ class DeviceRepository(Repository):
     def __init__(self, mongo_collection):
         Repository.__init__(self, mongo_collection)
 
-    # def add_device(self, device):
+    def add_device(self, device):
+        new_device = device.get_device_attributes()
+        name = new_device['name']
+        device_type = new_device['device_type']
+        power_state = new_device['power_state']
+        device_id = self.collection.insert_one({'name': name, 'device_type': device_type,
+                                        'power_state': power_state})
+        device.set_device_id(device_id)
 
-    def add_new_device(self, device_type, house_id, name, access_data):
-        pass
+    #def add_new_device(self, device_type, house_id, name, access_data):
 
     def remove_device(self, device_id):
-        pass
+        self.collection.delete_one({'_id': device_id})
 
     def get_device_by_id(self, device_id):
-        pass
+        device = self.collection.find_one_or_404({'_id': device_id})
+        target_device = Device(device['name'], device['device_type'], device['power_state'])
+        target_device.set_device_id(device_id)
+        target_device.set_house(device['house_id'])
+        target_device.set_room(device['room_id'])
+        return target_device
 
     def add_device_to_house(self, house_id, device_id):
-        pass
+        self.collection.update({'_id': device_id}, {"$set": {'house_id': house_id}}, upsert = False)
 
     def get_devices_for_house(self, house_id):
-        pass
-
-    def get_devices_for_room(self, room_id):
-        pass
+        return self.collection.find({'house_id': house_id})
 
     def link_device_to_room(self, room_id, device_id):
-        pass
+        self.collection.update({'_id': device_id}, {"$set": {'room_id': room_id}}, upsert = False)
+
+    def get_devices_for_room(self, room_id):
+        return self.collection.find({'room_id': room_id})
+
+
 
 
 class DeviceGroupRepository(Repository):
@@ -131,7 +144,11 @@ class DeviceGroupRepository(Repository):
         Repository.__init__(self, mongo_collection)
 
     def add_device_group(self, device_group):
-        pass
+        new_device_group = device_group.get_device_group_attributes()
+        device_ids = new_device_group['device_ids']
+        name = new_device_group['name']
+        device_group_id = self.collection.insert_one({'device_ids': device_ids, 'name': name})
+        device_group.set_device_group_id(device_group_id)
 
     def add_device_to_group(self, device_id, device_group):
         pass
