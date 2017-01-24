@@ -18,8 +18,7 @@ def clear_db():
 def init_hardcoded_data():
     user1 = model.User("Jack Xia", "xxxxxxxx", "nobody@gmail.com", False)
     api.user_repository.add_user(user1)
-    user_1_id = user1.get_user_id()
-    house1 = model.House("Jack's house", user_1_id)
+    house1 = model.House("Jack's house", user1.get_user_id())
     api.house_repository.add_house(house1)
     room1 = model.Room("Kitchen", house1.get_house_id())
     api.room_repository.add_room(room1)
