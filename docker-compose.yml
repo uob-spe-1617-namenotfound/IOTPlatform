@@ -1,8 +1,33 @@
 version: '2'
 services:
   web:
-    build: .
+    build: ./website
+    command: python -u main.py
     ports:
-     - "12000:5000"
+      - "12000:5000"
     volumes:
-     - .:/code
+      - ./website:/code
+    links:
+      - api
+  api:
+    build: ./api
+    command: python -u main.py
+    expose:
+      - "5000"
+    ports:
+      - "12100:5000"
+    volumes:
+      - ./api:/code
+    links:
+      - db
+      - dummy_sensor
+  db:
+    image: mongo:3.4
+    command: --smallfiles --rest
+  dummy_sensor:
+    build: ./dummy_sensor
+    command: python -u main.py
+    expose:
+      - "5000"
+    volumes:
+      - ./dummy_sensor:/code

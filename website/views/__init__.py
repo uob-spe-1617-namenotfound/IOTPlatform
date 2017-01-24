@@ -1,8 +1,7 @@
 from flask import render_template
 
-from website import app
-
-from website import data_interface
+from main import app
+import data_interface
 
 import website.views.devices
 import website.views.rooms

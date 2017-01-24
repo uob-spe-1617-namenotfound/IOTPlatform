@@ -1,5 +1,5 @@
 import requests
-from data_model import model
+from api import model
 
 r = requests.get("http://localhost:5010/read")
 x = r.json().get('data')

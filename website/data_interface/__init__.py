@@ -1,7 +1,7 @@
 import requests
 from flask import session
 
-from website import app
+from main import app
 
 
 def get_api_url(endpoint):

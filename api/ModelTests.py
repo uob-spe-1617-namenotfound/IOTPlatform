@@ -1,11 +1,11 @@
-from data_model import model
+from api import model
 import unittest
 
 
 class UserTests(unittest.TestCase):
     user_repository = model.UserRepository()
-    user1 = model.User("user_id_1", "Benny Clark", "xxxxxxxx", "benny1152@gmail.com", False)
-    user2 = model.User("user_id_2", "Floris Kint", "xxxxxxxx", "nobody@gmail.com", True)
+    user1 = model.User("Benny Clark", "xxxxxxxx", "benny1152@gmail.com", False)
+    user2 = model.User("Floris Kint", "xxxxxxxx", "nobody@gmail.com", True)
 
     def testIs_AdminIsABool(self):
         admin = UserTests.user1.is_admin
@@ -40,10 +40,9 @@ class UserTests(unittest.TestCase):
 
 
 class HouseTests(unittest.TestCase):
-
-    house1 = model.House("user_id_1", "1", "Benny's Home")
-    house2 = model.House("user_id_2", "2", "Example Home")
-    house3 = model.House("user_id_1", "1", "John's Home")
+    house1 = model.House("Benny's Home")
+    house2 = model.House("Example Home")
+    house3 = model.House("John's Home")
 
     house_repository = model.HouseRepository()
     user1 = model.User("user_id_1", "Benny Clark", "xxxxxxxx", "benny1152@gmail.com", False)
