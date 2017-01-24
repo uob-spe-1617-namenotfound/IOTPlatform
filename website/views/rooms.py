@@ -1,8 +1,8 @@
 from flask import redirect, url_for, flash, render_template
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
-from website import app
-from website import data_interface
+from main import app
+import data_interface
 
 
 class AddNewRoomForm(FlaskForm):

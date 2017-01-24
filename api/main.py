@@ -25,12 +25,22 @@ api.json_encoder = JSONEncoder
 
 import model
 import repositories
+
 api.user_repository = repositories.UserRepository(db.users)
 api.house_repository = repositories.HouseRepository(db.houses)
 api.room_repository = repositories.RoomRepository(db.rooms)
 api.device_repository = repositories.DeviceRepository(db.devices)
 api.devicegroup_repository = repositories.DeviceGroupRepository(db.device_groups)
 api.trigger_repository = repositories.TriggerRepository(db.triggers)
+
+
+@api.route('/user/default_user')
+def get_first_user_id():
+    # TODO: don't access the collection field
+    users = api.user_repository.collection.find({})
+    first_user = users[0]
+    user_id = first_user['_id']
+    return jsonify({"user_id": user_id})
 
 
 @api.route('/user/<string:user_id>')
@@ -49,7 +59,7 @@ def get_all_users():
 
 @api.route('/user/<string:user_id>/houses')
 def get_houses_for_user(user_id):
-    logging.warning("Getting houses for user {}".format(user_id))
+    logging.debug("Getting houses for user {}".format(user_id))
     houses = api.house_repository.get_houses_for_user(ObjectId(user_id))
     if houses is None:
         return jsonify({"houses": None, "error": {"code": 404, "message": "No such user found"}})
@@ -171,12 +181,11 @@ def configure_thermostat(device_id):
         "error": None
     })
 
+from admin import *
 
 def main():
     api.run(debug=True, host=api.config['HOSTNAME'], port=int(api.config['PORT']))
 
-
-import admin
 
 if __name__ == "__main__":
     main()

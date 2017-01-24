@@ -2,8 +2,8 @@ from flask import render_template, flash, redirect, url_for
 from flask_wtf import FlaskForm
 from wtforms import SelectField, StringField, SubmitField, DecimalField
 from wtforms.validators import URL
-from website import data_interface
-from website import app
+import data_interface
+from main import app
 
 
 class PairNewDeviceForm(FlaskForm):

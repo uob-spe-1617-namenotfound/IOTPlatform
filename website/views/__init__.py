@@ -3,8 +3,8 @@ from flask import render_template
 from main import app
 import data_interface
 
-import website.views.devices
-import website.views.rooms
+import views.devices
+import views.rooms
 
 
 @app.route('/triggers')
