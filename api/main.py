@@ -25,6 +25,7 @@ api.json_encoder = JSONEncoder
 
 import model
 import repositories
+
 api.user_repository = repositories.UserRepository(db.users)
 api.house_repository = repositories.HouseRepository(db.houses)
 api.room_repository = repositories.RoomRepository(db.rooms)
@@ -38,7 +39,7 @@ def get_first_user_id():
     users = api.user_repository.get_all_users()
     first_user = users[0]
     user_id = first_user['_id']
-    return str(user_id)
+    return jsonify({"user_id": user_id})
 
 
 @api.route('/user/<string:user_id>')
@@ -51,8 +52,8 @@ def get_user_info(user_id):
 
 @api.route('/user/<string:user_id>/houses')
 def get_houses_for_user(user_id):
-    logging.warning("Getting houses for user {}".format(user_id))
-    houses = api.house_repository.get_houses_for_user(user_id)
+    logging.debug("Getting houses for user {}".format(user_id))
+    houses = api.house_repository.get_houses_for_user(ObjectId(user_id))
     if houses is None:
         return jsonify({"houses": None, "error": {"code": 404, "message": "No such user found"}})
     return jsonify({"houses": [house.get_house_attributes() for house in houses], "error": None})
@@ -156,8 +157,6 @@ def add_trigger(device_id):
 def main():
     api.run(debug=True, host=api.config['HOSTNAME'], port=int(api.config['PORT']))
 
-
-import admin
 
 if __name__ == "__main__":
     main()
