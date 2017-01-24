@@ -36,7 +36,7 @@ api.trigger_repository = repositories.TriggerRepository(db.triggers)
 
 @api.route('/user/default_user')
 def get_first_user_id():
-    users = api.user_repository.get_all_users()
+    users = api.user_repository.find()
     first_user = users[0]
     user_id = first_user['_id']
     return jsonify({"user_id": user_id})
@@ -44,7 +44,7 @@ def get_first_user_id():
 
 @api.route('/user/<string:user_id>')
 def get_user_info(user_id):
-    user = api.user_repository.get_user_by_id(user_id).toString()
+    user = api.user_repository.get_user_by_id(user_id)
     if user is None:
         return jsonify({"user": None, "error": {"code": 404, "message": "No such user found"}})
     return jsonify({"user": user.get_user_attributes(), "error": None})
