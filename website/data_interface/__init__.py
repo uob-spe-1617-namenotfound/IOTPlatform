@@ -11,9 +11,9 @@ def get_api_url(endpoint):
 
 def get_user_id():
     # TODO: remove once login functionality has been made
-    #session['user_id'] = 'user_id_1'
-    #if "user_id" in session:
-    #    return session['user_id']
+    session['user_id'] = 'user_id_1'
+    if "user_id" in session:
+        return session['user_id']
     return requests.get(get_api_url('/user/default_user'))
 
 
@@ -27,7 +27,7 @@ def get_user_houses():
 
 
 def get_user_default_rooms():
-    r = requests.get(get_api_url('/house/{}/rooms'.format(get_user_houses()[0]['house_id'])))
+    r = requests.get(get_api_url('/house/{}/rooms'.format(get_user_houses()[0]["house_id"])))
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")

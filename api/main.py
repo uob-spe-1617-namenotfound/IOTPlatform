@@ -35,15 +35,14 @@ api.trigger_repository = repositories.TriggerRepository(db.triggers)
 
 @api.route('/user/default_user')
 def get_first_user_id():
-    users = api.user_repository.get_all_users()
+    users = api.user_repository.find()
     first_user = users[0]
-    user_id = first_user['_id']
-    return str(user_id)
+    return first_user['_id']
 
 
 @api.route('/user/<string:user_id>')
 def get_user_info(user_id):
-    user = api.user_repository.get_user_by_id(user_id).toString()
+    user = api.user_repository.get_user_by_id(user_id)
     if user is None:
         return jsonify({"user": None, "error": {"code": 404, "message": "No such user found"}})
     return jsonify({"user": user.get_user_attributes(), "error": None})
@@ -52,7 +51,7 @@ def get_user_info(user_id):
 @api.route('/user/<string:user_id>/houses')
 def get_houses_for_user(user_id):
     logging.warning("Getting houses for user {}".format(user_id))
-    houses = api.house_repository.get_houses_for_user(user_id)
+    houses = api.house_repository.get_houses_for_user(ObjectId(user_id))
     if houses is None:
         return jsonify({"houses": None, "error": {"code": 404, "message": "No such user found"}})
     return jsonify({"houses": [house.get_house_attributes() for house in houses], "error": None})
