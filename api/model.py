@@ -100,9 +100,9 @@ class RoomGroup(object):
 
 
 class Device:
-    def __init__(self, name, device_type, power_state):
-        self.house_id = None
-        self.room_id = None
+    def __init__(self, house_id, room_id, name, device_type, power_state):
+        self.house_id = house_id
+        self.room_id = room_id
         self.device_id = None
         self.name = name
         self.device_type = device_type
@@ -113,11 +113,8 @@ class Device:
                 'device_id': self.device_id, 'name': self.name,
                 'device_type': self.device_type, 'power_state': self.power_state}
 
-    def change_power_state(self):
-        if self.power_state == 0:
-            setattr(self, 'power_state', 1)
-        else:
-            setattr(self, 'power_state', 0)
+    def set_device_id(self, device_id):
+        self.device_id = device_id
 
 
 class Thermostat(Device):
