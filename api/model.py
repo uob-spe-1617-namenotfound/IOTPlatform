@@ -1,6 +1,6 @@
 class User(object):
-    def __init__(self, user_id, name, password_hash, email_address, is_admin):
-        self.user_id = user_id
+    def __init__(self, name, password_hash, email_address, is_admin):
+        self.user_id = None
         self.name = name
         self.password_hash = password_hash
         self.email_address = email_address
@@ -188,13 +188,19 @@ class OpenSensor(Device):
 
 
 class DeviceGroup(object):
-    def __init__(self, device_group_id, name, device_ids):
+    def __init__(self, name):
         self.device_group_id = None
         self.device_ids = []
         self.name = name
 
     def get_device_group_attributes(self):
         return {'device_group_id': self.device_group_id, 'device_ids': self.device_ids, 'name': self.name}
+
+    def set_device_group_id(self, device_group_id):
+        setattr(self, 'device_group_id', device_group_id)
+
+    def add_device_to_group(self, device_id):
+        self.device_ids.append(device_id)
 
 
 """

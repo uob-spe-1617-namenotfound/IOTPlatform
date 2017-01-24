@@ -7,6 +7,7 @@ navbar = Navbar(
              View('Settings', '.account_settings'),
              View('Log out', '.logout')
              ),
+    View('Help', '.help'),
+    View('Themes', '.themes'),
     View('Admin', '.admin')
-
 )
