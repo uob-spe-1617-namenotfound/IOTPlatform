@@ -147,7 +147,9 @@ class DeviceRepository(Repository):
     def set_target_temperature(self, device_id, temp):
         device = self.collection.find_one_or_404({'_id': device_id})
         assert (device['device_type'] == "Thermostat"), "Device is not a thermostat."
-        pass
+        assert (device['locked_min_temp'] <= temp), "Chosen temperature is too low."
+        assert (device['locked_max_temp'] >= temp), "Chosen temperature is too high."
+        self.collection.update({'_id': device_id}, {"$set": {'target_temperature': temp}}, upsert=False)
 
 
 class DeviceGroupRepository(Repository):
