@@ -191,6 +191,9 @@ class UserRepository(Repository):
         target_user.set_user_id(user_id)
         return target_user
 
+    def get_all_users(self):
+        return self.collection.find()
+
 
 class HouseRepository(Repository):
     def __init__(self, mongo_collection):

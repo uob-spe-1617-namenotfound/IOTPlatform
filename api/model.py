@@ -103,7 +103,7 @@ class RoomGroup(object):
 
 
 class Device:
-    def __init__(self, name, device_type, power_state):
+    def __init__(self, house_id, room_id, name, device_type, power_state):
         self.house_id = None
         self.room_id = None
         self.device_id = None
@@ -117,6 +117,9 @@ class Device:
                 'device_id': self.device_id, 'name': self.name,
                 'device_type': self.device_type, 'power_state': self.power_state,
                 'last_read': self.last_read}
+
+    def set_device_id(self, device_id):
+        self.device_id = device_id
 
     def change_power_state(self):
         if self.power_state == 0:
