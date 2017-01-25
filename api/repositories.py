@@ -125,24 +125,17 @@ class DeviceRepository(Repository):
         return target_device
 
     def add_device_to_house(self, house_id, device_id):
-        self.collection.update({'_id': device_id}, {"$set": {'house_id': house_id}}, upsert=False)
+        self.collection.update({'_id': device_id}, {"$set": {'house_id': house_id}}, upsert = False)
 
     def get_devices_for_house(self, house_id):
         return self.collection.find({'house_id': house_id})
 
     def link_device_to_room(self, room_id, device_id):
-        self.collection.update({'_id': device_id}, {"$set": {'room_id': room_id}}, upsert=False)
+        self.collection.update({'_id': device_id}, {"$set": {'room_id': room_id}}, upsert = False)
 
     def get_devices_for_room(self, room_id):
         return self.collection.find({'room_id': room_id})
 
-    def change_temperature_scale(self, device_id):
-        device = self.collection.find_one_or_404({'_id': device_id})
-        assert (device['device_type'] == "Thermostat"), "Device is not a thermostat."
-        if device['temperature_scale'] == "C":
-            self.collection.update({'_id': device_id}, {"$set": {'temperature_scale': "F"}}, upsert=False)
-        else:
-            self.collection.update({'_id': device_id}, {"$set": {'temperature_scale': "C"}}, upsert=False)
 
     def set_target_temperature(self, device_id, temp):
         device = self.collection.find_one_or_404({'_id': device_id})
@@ -198,9 +191,6 @@ class UserRepository(Repository):
         target_user.set_user_id(user_id)
         return target_user
 
-    def get_all_users(self):
-        return self.collection.find()
-
 
 class HouseRepository(Repository):
     def __init__(self, mongo_collection):
@@ -226,8 +216,8 @@ class HouseRepository(Repository):
         target_house = House.get_house_attributes(house)
         target_user = User.get_user_attributes(user)
         house_id = target_house['house_id']
-        user_id = target_user.get_user_id()
-        house.set_user_id(user_id)
+        user_id = target_user['user_id']
+        house.set_user(user_id)
         self.collection.update({'_id': house_id}, {"$set": {'user_id': user_id}}, upsert=False)
 
     def get_houses_for_user(self, user_id):

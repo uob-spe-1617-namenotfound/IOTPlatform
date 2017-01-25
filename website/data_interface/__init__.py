@@ -25,7 +25,7 @@ def get_user_houses():
 
 
 def get_user_default_rooms():
-    r = requests.get(get_api_url('/house/{}/rooms'.format(get_user_houses()[0]['house_id'])))
+    r = requests.get(get_api_url('/house/{}/rooms'.format(get_user_houses()[0]["house_id"])))
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
