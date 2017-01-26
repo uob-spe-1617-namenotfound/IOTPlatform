@@ -38,30 +38,21 @@ class RoomRepository(Repository):
     def __init__(self, mongo_collection):
         Repository.__init__(self, mongo_collection)
 
-    def add_room(self, room):
-        new_room = room.get_room_attributes()
-        house_id = new_room['house_id']
-        name = new_room['name']
-        result = self.collection.insert_one({'house_id': house_id, 'name': name})
-        room_id = result.inserted_id
-        room.set_room_id(room_id)
+    def add_room(self, house_id, name):
+        room = self.collection.insert_one({'house_id': house_id, 'name': name})
+        room_id = room.inserted_id
+        self.add_room_to_house(house_id, room_id)
 
     def remove_room(self, room_id):
         self.collection.delete_one({'_id': room_id})
 
     def get_room_by_id(self, room_id):
         room = self.collection.find_one_or_404({'_id': room_id})
-        target_room = room(room['name'])
-        target_room.set_room_id(room_id)
-        target_room.set_house(room['house_id'])
+        target_room = room(room['house_id'], room['name'])
+        target_room.room_id = room_id
         return target_room
 
-    def add_room_to_house(self, house, room):
-        target_room = room.get_room_attributes()
-        target_house = house.get_house_attributes()
-        room_id = target_room['room_id']
-        house_id = target_house['house_id']
-        room.set_house(house_id)
+    def add_room_to_house(self, house_id, room_id):
         self.collection.update({'_id': room_id}, {"$set": {'house_id': house_id}}, upsert=False)
 
     def get_rooms_for_house(self, house_id):

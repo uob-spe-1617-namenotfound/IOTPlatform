@@ -67,7 +67,7 @@ class HouseGroup(object):
 
 
 class Room(object):
-    def __init__(self, name, house_id):
+    def __init__(self, house_id, name):
         self.room_id = None
         self.house_id = house_id
         self.name = name
@@ -77,12 +77,6 @@ class Room(object):
 
     def get_room_id(self):
         return self.room_id
-
-    def set_room_id(self, room_id):
-        self.room_id = room_id
-
-    def set_house(self, house_id):
-        self.house_id = house_id
 
 
 # Room groups could be things like 'Upstairs', or to be used for templates
@@ -102,7 +96,7 @@ class RoomGroup(object):
         self.room_ids.append(room_id)
 
 
-class Device:
+class Device(object):
     def __init__(self, house_id, room_id, name, device_type, power_state):
         self.house_id = house_id
         self.room_id = room_id
