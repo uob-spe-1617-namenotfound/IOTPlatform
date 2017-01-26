@@ -40,8 +40,9 @@ class RoomRepository(Repository):
 
     def add_room(self, room):
         new_room = room.get_room_attributes()
+        house_id = new_room['house_id']
         name = new_room['name']
-        result = self.collection.insert_one({'name': name})
+        result = self.collection.insert_one({'house_id': house_id, 'name': name})
         room_id = result.inserted_id
         room.set_room_id(room_id)
 
@@ -104,11 +105,14 @@ class DeviceRepository(Repository):
 
     def add_device(self, device):
         new_device = device.get_device_attributes()
+        house_id = new_device['house_id']
+        room_id = new_device['room_id']
         name = new_device['name']
         device_type = new_device['device_type']
         power_state = new_device['power_state']
-        device_id = self.collection.insert_one({'name': name, 'device_type': device_type,
-                                        'power_state': power_state})
+        device_id = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
+                                                'name': name, 'device_type': device_type,
+                                                'power_state': power_state})
         device.set_device_id(device_id)
 
     #def add_new_device(self, device_type, house_id, name, access_data):
@@ -135,7 +139,6 @@ class DeviceRepository(Repository):
 
     def get_devices_for_room(self, room_id):
         return self.collection.find({'room_id': room_id})
-
 
     def set_target_temperature(self, device_id, temp):
         device = self.collection.find_one_or_404({'_id': device_id})

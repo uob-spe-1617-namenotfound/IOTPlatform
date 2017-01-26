@@ -104,8 +104,8 @@ class RoomGroup(object):
 
 class Device:
     def __init__(self, house_id, room_id, name, device_type, power_state):
-        self.house_id = None
-        self.room_id = None
+        self.house_id = house_id
+        self.room_id = room_id
         self.device_id = None
         self.name = name
         self.device_type = device_type
