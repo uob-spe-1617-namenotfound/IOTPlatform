@@ -26,8 +26,8 @@ def init_hardcoded_data():
     api.room_repository.add_room(room2)
     room3 = model.Room("Living Room", house1.get_house_id())
     api.room_repository.add_room(room3)
-    # device1 = model.Device("house_id_1", "'room_id_1", "device_id_1", "Thermostat", 1)
-    # device_repository.add_device(device1)
+    device1 = model.Device(house1.get_house_id(), room1.get_room_id(), "My Thermostat", "Thermostat", 1)
+    api.device_repository.add_device(device1)
     devicegroup = model.DeviceGroup("Group 1")
     api.devicegroup_repository.add_device_group(devicegroup)
 

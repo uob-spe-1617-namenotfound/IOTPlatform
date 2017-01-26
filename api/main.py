@@ -36,8 +36,7 @@ api.trigger_repository = repositories.TriggerRepository(db.triggers)
 
 @api.route('/user/default_user')
 def get_first_user_id():
-    # TODO: don't access the collection field
-    users = api.user_repository.collection.find({})
+    users = api.user_repository.get_all_users()
     first_user = users[0]
     user_id = first_user['_id']
     return jsonify({"user_id": user_id})
@@ -186,6 +185,7 @@ from admin import *
 def main():
     api.run(debug=True, host=api.config['HOSTNAME'], port=int(api.config['PORT']))
 
+import admin
 
 if __name__ == "__main__":
     main()
