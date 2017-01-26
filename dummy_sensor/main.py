@@ -18,13 +18,23 @@ def read_thermostat(device_id=None):
     target = 24
     if device_id in targets:
         target = targets[device_id]
+    timestamp = datetime.now()
     return jsonify({
         "data": {
             "temperature": temperature,
             "target": target,
-            "timestamp": datetime.now()
+            "timestamp": timestamp,
+            "resolution": 5     #resolution is in seconds here
         },
         "error": None
+    })
+
+
+@app.route('/faulty_thermostat/read')
+def faulty_thermostat():
+    return jsonify({
+        "data": None,
+        "error": "No data available"
     })
 
 

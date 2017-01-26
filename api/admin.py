@@ -37,3 +37,4 @@ def fill_hardcoded_db():
     click.echo("Filling the database with dummy data")
     init_hardcoded_data()
     click.echo("Done.")
+
