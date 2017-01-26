@@ -42,6 +42,7 @@ class RoomRepository(Repository):
         room = self.collection.insert_one({'house_id': house_id, 'name': name})
         room_id = room.inserted_id
         self.add_room_to_house(house_id, room_id)
+        return room_id
 
     def remove_room(self, room_id):
         self.collection.delete_one({'_id': room_id})
