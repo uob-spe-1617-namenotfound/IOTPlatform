@@ -1,6 +1,6 @@
 class User(object):
-    def __init__(self, name, password_hash, email_address, is_admin):
-        self.user_id = None
+    def __init__(self, user_id, name, password_hash, email_address, is_admin):
+        self.user_id = user_id
         self.name = name
         self.password_hash = password_hash
         self.email_address = email_address
@@ -10,21 +10,15 @@ class User(object):
         return {'user_id': self.user_id, 'name': self.name, 'password_hash': self.password_hash,
                 'email_address': self.email_address, 'is_admin': self.is_admin}
 
-    def set_user_id(self, user_id):
-        self.user_id = user_id
-
-    def get_user_id(self):
-        return self.user_id
-
 
 class House(object):
-    def __init__(self, name, user_id):
+    def __init__(self, house_id, user_id, name):
+        self.house_id = house_id
         self.user_id = user_id
-        self.house_id = None
         self.name = name
 
     def get_house_attributes(self):
-        return {'user_id': self.user_id, 'house_id': self.house_id, 'name': self.name}
+        return {'house_id': self.house_id, 'user_id': self.user_id, 'name': self.name}
 
     @classmethod
     def from_dict(cls, d):
@@ -33,50 +27,26 @@ class House(object):
         h.set_house_id(str(d['_id']))
         return h
 
-    def set_house_id(self, house_id):
-        self.house_id = house_id
-
-    def set_user_id(self, user_id):
-        self.user_id = user_id
-
-    def get_user_id(self):
-        return self.user_id
-
-    def get_name(self):
-        return self.name
-
-    def get_house_id(self):
-        return self.house_id
-
 
 # House groups could be used for fleet management or for people with multiple houses
 class HouseGroup(object):
-    def __init__(self, name):
-        self.house_group_id = None
-        self.house_ids = []
+    def __init__(self, house_group_id, house_ids, name):
+        self.house_group_id = house_group_id
+        self.house_ids = house_ids
         self.name = name
 
     def get_house_group_attributes(self):
         return {'house_group_id': self.house_group_id, 'house_ids': self.house_ids, 'name': self.name}
 
-    def set_house_group_id(self, house_group_id):
-        self.house_group_id = house_group_id
-
-    def add_house_to_group(self, house_id):
-        self.house_ids.append(house_id)
-
 
 class Room(object):
-    def __init__(self, house_id, name):
-        self.room_id = None
+    def __init__(self, room_id, house_id, name):
+        self.room_id = room_id
         self.house_id = house_id
         self.name = name
 
     def get_room_attributes(self):
         return {'room_id': self.room_id, 'house_id': self.house_id, 'name': self.name}
-
-    def get_room_id(self):
-        return self.room_id
 
 
 # Room groups could be things like 'Upstairs', or to be used for templates

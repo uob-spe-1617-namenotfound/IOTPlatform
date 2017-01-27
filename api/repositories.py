@@ -11,23 +11,62 @@ class Repository(object):
         self.collection.delete_many({})
 
 
+class UserRepository(Repository):
+    def __init__(self, mongo_collection):
+        Repository.__init__(self, mongo_collection)
+
+    def add_user(self, name, password_hash, email_address, is_admin):
+        user = self.collection.insert_one({'name': name, 'password_hash': password_hash,
+                                           'email_address': email_address, 'is_admin': is_admin})
+        return user.inserted_id
+
+    def remove_user(self, user_id):
+        self.collection.delete_one({'_id': user_id})
+
+    def get_user_by_id(self, user_id):
+        user = self.collection.find_one_or_404({'_id': user_id})
+        target_user = User(user['user_id'], user['Name'],
+                           user['password_hash'], user['email_address'],
+                           user['is_admin'])
+        return target_user
+
+    def get_all_users(self):
+        return self.collection.find()
+
+
+class HouseRepository(Repository):
+    def __init__(self, mongo_collection):
+        Repository.__init__(self, mongo_collection)
+
+    def add_house(self, user_id, name):
+        house = self.collection.insert_one({'user_id': user_id, 'name': name})
+        return house.inserted_id
+
+    def remove_house(self, house_id):
+        self.collection.delete_one({'_id': house_id})
+
+    def get_house_by_id(self, house_id):
+        house = self.collection.find_one_or_404({'_id': house_id})
+        target_house = House(house['house_id'], house['user_id'], house['name'])
+        return target_house
+
+    def get_houses_for_user(self, user_id):
+        all_houses = self.collection.find({})
+        logging.debug("Found {} houses".format(all_houses.count()))
+        for h in all_houses:
+            logging.debug("house: {}".format(h))
+        return [House.from_dict(h) for h in self.collection.find({'user_id': user_id})]
+
+
 class HouseGroupRepository(Repository):
     def __init__(self, mongo_collection):
         Repository.__init__(self, mongo_collection)
 
-    def add_house_group(self, house_group):
-        new_house_group = house_group.get_house_group_attributes()
-        house_ids = new_house_group['house_ids']
-        name = new_house_group['name']
-        result = self.collection.insert_one({'house_ids': house_ids, 'name': name})
-        house_group_id = result.inserted_id
-        house_group.set_house_group_id(house_group_id)
+    def add_house_group(self, house_ids, name):
+        house_group = self.collection.insert_one({'house_ids': house_ids, 'name': name})
+        return house_group.inserted_id
 
-    def add_house_to_group(self, house_group, house):
-        target_house = house.get_house_attributes()
-        target_house_group = house_group.get_house_group_attributes()
-        house_id = target_house['house_id']
-        house_group_id = target_house_group['house_group_id']
+    def add_house_to_group(self, house_group_id, house_id):
         self.collection.update({'_id': house_group_id}, {"$push": {'house_ids': house_id}}, upsert=False)
 
     def remove_house_group(self, house_group_id):
@@ -40,9 +79,7 @@ class RoomRepository(Repository):
 
     def add_room(self, house_id, name):
         room = self.collection.insert_one({'house_id': house_id, 'name': name})
-        room_id = room.inserted_id
-        self.add_room_to_house(house_id, room_id)
-        return room_id
+        return room.inserted_id
 
     def remove_room(self, room_id):
         self.collection.delete_one({'_id': room_id})
@@ -52,9 +89,6 @@ class RoomRepository(Repository):
         target_room = room(room['house_id'], room['name'])
         target_room.room_id = room_id
         return target_room
-
-    def add_room_to_house(self, house_id, room_id):
-        self.collection.update({'_id': room_id}, {"$set": {'house_id': house_id}}, upsert=False)
 
     def get_rooms_for_house(self, house_id):
         return self.collection.find({'house_id': house_id})
@@ -159,71 +193,6 @@ class DeviceGroupRepository(Repository):
 
     def get_device_group_by_id(self, device_group_id):
         pass
-
-
-class UserRepository(Repository):
-    def __init__(self, mongo_collection):
-        Repository.__init__(self, mongo_collection)
-
-    def add_user(self, user):
-        new_user = User.get_user_attributes(user)
-        name = new_user['name']
-        password_hash = new_user['password_hash']
-        email_address = new_user['email_address']
-        is_admin = new_user['is_admin']
-        result = self.collection.insert_one({'name': name, 'password_hash': password_hash,
-                                             'email_address': email_address, 'is_admin': is_admin})
-        user_id = result.inserted_id
-        user.set_user_id(user_id)
-
-    def remove_user(self, user_id):
-        self.collection.delete_one({'_id': user_id})
-
-    def get_user_by_id(self, user_id):
-        user = self.collection.find_one_or_404({'_id': user_id})
-        target_user = User(user['Name'], user['password_hash'],
-                           user['email_address'], user['is_admin'])
-        target_user.set_user_id(user_id)
-        return target_user
-
-    def get_all_users(self):
-        return self.collection.find()
-
-
-class HouseRepository(Repository):
-    def __init__(self, mongo_collection):
-        Repository.__init__(self, mongo_collection)
-
-    def add_house(self, house):
-        result = self.collection.insert_one({'name': house.get_name(), 'user_id': house.get_user_id()})
-        house_id = result.inserted_id
-        house.set_house_id(house_id)
-
-    def remove_house(self, house_id):
-        self.collection.delete_one({'_id': house_id})
-
-    def get_house_by_id(self, house_id):
-        house = self.collection.find_one_or_404({'_id': house_id})
-        name = house['name']
-        target_house = House(name)
-        target_house.set_house_id(house_id)
-        target_house.set_user(house['user_id'])
-        return target_house
-
-    def add_house_to_user(self, user, house):
-        target_house = House.get_house_attributes(house)
-        target_user = User.get_user_attributes(user)
-        house_id = target_house['house_id']
-        user_id = target_user['user_id']
-        house.set_user(user_id)
-        self.collection.update({'_id': house_id}, {"$set": {'user_id': user_id}}, upsert=False)
-
-    def get_houses_for_user(self, user_id):
-        all_houses = self.collection.find({})
-        logging.debug("Found {} houses".format(all_houses.count()))
-        for h in all_houses:
-            logging.debug("house: {}".format(h))
-        return [House.from_dict(h) for h in self.collection.find({'user_id': user_id})]
 
 
 class TriggerRepository(Repository):
