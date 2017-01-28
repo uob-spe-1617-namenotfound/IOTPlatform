@@ -97,18 +97,11 @@ class RoomGroupRepository(Repository):
     def __init__(self, mongo_collection):
         Repository.__init__(self, mongo_collection)
 
-    def add_room_group(self, room_group):
-        new_room_group = room_group.get_room_group_attributes()
-        room_ids = new_room_group['room_ids']
-        name = new_room_group['name']
-        room_group_id = self.collection.insert({'room_ids': room_ids, 'name': name})
-        room_group.set_room_group_id(room_group_id)
+    def add_room_group(self, room_ids, name):
+        room_group = self.collection.insert_one({'room_ids': room_ids, 'name': name})
+        return room_group.inserted_id
 
-    def add_room_to_group(self, room_group, room):
-        target_room = Room.get_room_attributes(room)
-        target_room_group = room_group.get_room_group_attributes()
-        room_id = target_room['room_id']
-        room_group_id = target_room_group['room_group_id']
+    def add_room_to_group(self, room_group_id, room_id):
         self.collection.update({'_id': room_group_id}, {"$push": {'room)ids': room_id}}, upsert=False)
 
     def remove_room_group(self, room_group_id):
@@ -205,21 +198,24 @@ class DeviceGroupRepository(Repository):
     def __init__(self, mongo_collection):
         Repository.__init__(self, mongo_collection)
 
-    def add_device_group(self, device_group):
-        new_device_group = device_group.get_device_group_attributes()
-        device_ids = new_device_group['device_ids']
-        name = new_device_group['name']
-        device_group_id = self.collection.insert_one({'device_ids': device_ids, 'name': name})
-        device_group.set_device_group_id(device_group_id)
+    def add_device_group(self, device_ids, name):
+        device_group = self.collection.insert_one({'device_ids': device_ids, 'name': name})
+        return device_group.inserted_id
 
-    def add_device_to_group(self, device_id, device_group):
-        pass
+    def add_device_to_group(self, device_group_id, device_id):
+        self.collection.update({'_id': device_group_id}, {"$push": {'device ids': device_id}}, upsert=False)
 
     def remove_device_group(self, device_group_id):
-        pass
+        self.collection.delete_one({'_id': device_group_id})
 
     def get_device_group_by_id(self, device_group_id):
-        pass
+        device_group = self.collection.find_one_or_404({'_id': device_group_id})
+        target_device_group = DeviceGroup(device_group['name'])
+        target_device_group.set_device_group_id(device_group_id)
+        devices = device_group['room_ids']
+        for device_id in devices:
+            target_device_group.add_device_to_group(device_id)
+        return target_device_group
 
 
 class TriggerRepository(Repository):
