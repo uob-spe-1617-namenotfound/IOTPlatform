@@ -1,6 +1,6 @@
 import logging
 
-from model import HouseGroup, House, Room, RoomGroup, User, Device, DeviceGroup
+from model import HouseGroup, House, Room, RoomGroup, User, Device, DeviceGroup, Thermostat, MotionSensor, PlugSocket, OpenSensor
 
 
 class Repository(object):
@@ -86,8 +86,7 @@ class RoomRepository(Repository):
 
     def get_room_by_id(self, room_id):
         room = self.collection.find_one_or_404({'_id': room_id})
-        target_room = room(room['house_id'], room['name'])
-        target_room.room_id = room_id
+        target_room = room(room['room_id'], room['house_id'], room['name'])
         return target_room
 
     def get_rooms_for_house(self, house_id):
@@ -129,29 +128,37 @@ class DeviceRepository(Repository):
     def __init__(self, mongo_collection):
         Repository.__init__(self, mongo_collection)
 
-    def add_device(self, device):
-        new_device = device.get_device_attributes()
-        house_id = new_device['house_id']
-        room_id = new_device['room_id']
-        name = new_device['name']
-        device_type = new_device['device_type']
-        power_state = new_device['power_state']
-        device_id = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
+    def add_device(self, house_id, room_id, name, device_type, power_state):
+        device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
                                                 'name': name, 'device_type': device_type,
                                                 'power_state': power_state})
-        device.set_device_id(device_id)
-
-    #def add_new_device(self, device_type, house_id, name, access_data):
+        return device.inserted_id
 
     def remove_device(self, device_id):
         self.collection.delete_one({'_id': device_id})
 
     def get_device_by_id(self, device_id):
         device = self.collection.find_one_or_404({'_id': device_id})
-        target_device = Device(device['name'], device['device_type'], device['power_state'])
-        target_device.set_device_id(device_id)
-        target_device.set_house(device['house_id'])
-        target_device.set_room(device['room_id'])
+        if device['device_type'] == "Thermostat":
+            target_device = Thermostat(device['device_id'], device['house_id'], device['room_id'], device['name'],
+                                       device['power_state'], device['locked_max_temperature'],
+                                       device['locked_min_temperature'], device['temperature_scale'])
+            target_device.last_temperature = device['last_temperature']
+            target_device.last_read = device['last_read']
+        elif device['device_type'] == "Motion Sensor":
+            target_device = MotionSensor(device['device_id'], device['house_id'], device['room_id'], device['name'],
+                                       device['power_state'])
+            target_device.last_read = device['last_read']
+            target_device.sensor_data = device['sensor_data']
+        elif device['device_type'] == "Plug Socket":
+            target_device = PlugSocket(device['device_id'], device['house_id'], device['room_id'], device['name'],
+                                       device['power_state'])
+            target_device.last_read = device['last_read']
+        elif device['device_type'] == "Open Sensor":
+            target_device = OpenSensor(device['device_id'], device['house_id'], device['room_id'], device['name'],
+                                       device['power_state'])
+            target_device.last_read = device['last_read']
+            target_device.sensor_data = device['sensor_data']
         return target_device
 
     def add_device_to_house(self, house_id, device_id):
@@ -172,6 +179,26 @@ class DeviceRepository(Repository):
         assert (device['locked_min_temp'] <= temp), "Chosen temperature is too low."
         assert (device['locked_max_temp'] >= temp), "Chosen temperature is too high."
         self.collection.update({'_id': device_id}, {"$set": {'target_temperature': temp}}, upsert=False)
+
+    def change_temperature_scale(self, device_id):
+        device = self.collection.find_one_or_404({'_id': device_id})
+        assert (device['device_type'] == "Thermostat"), "Device is not a thermostat."
+        if device['temperature_scale'] == "C":
+            self.collection.update({'_id': device_id}, {"$set": {'temperature_scale': "F"}}, upsert=False)
+            new_target_temperature = device['target_temperature'] * 9/5 + 32
+            new_max_temperature = device['locked_max_temp'] * 9/5 + 32
+            new_min_temperature = device['locked_min_temp'] * 9/5 + 32
+            new_last_temperature = device['last_temperature'] * 9/5 + 32
+        else:
+            self.collection.update({'_id': device_id}, {"$set": {'temperature_scale': "C"}}, upsert=False)
+            new_target_temperature = (device['target_temperature'] - 32) * 5/9
+            new_max_temperature = (device['locked_max_temp'] - 32) * 5/9
+            new_min_temperature = (device['locked_min_temp'] - 32) * 5/9
+            new_last_temperature = (device['last_temperature'] - 32) * 5/9
+        self.collection.update({'_id': device_id}, {"$set": {'target_temperature': new_target_temperature}}, upsert=False)
+        self.collection.update({'_id': device_id}, {"$set": {'locked_max_temp': new_max_temperature}}, upsert=False)
+        self.collection.update({'_id': device_id}, {"$set": {'locked_min_temp': new_min_temperature}}, upsert=False)
+        self.collection.update({'_id': device_id}, {"$set": {'last_temperature': new_last_temperature}}, upsert=False)
 
 
 class DeviceGroupRepository(Repository):
