@@ -10,6 +10,9 @@ class User(object):
         return {'user_id': self.user_id, 'name': self.name, 'password_hash': self.password_hash,
                 'email_address': self.email_address, 'is_admin': self.is_admin}
 
+    def get_user_id(self):
+        return self.user_id
+
 
 class House(object):
     def __init__(self, house_id, user_id, name):
@@ -23,8 +26,8 @@ class House(object):
     @classmethod
     def from_dict(cls, d):
         h = House(user_id=d['user_id'] if 'user_id' in d else None,
+                  house_id=d['_id'] if '_id' in d else None,
                   name=d['name'] if 'name' in d else "")
-        h.set_house_id(str(d['_id']))
         return h
 
 
@@ -51,30 +54,24 @@ class Room(object):
 
 # Room groups could be things like 'Upstairs', or to be used for templates
 class RoomGroup(object):
-    def __init__(self, name):
-        self.room_group_id = None
-        self.room_ids = []
+    def __init__(self, room_group_id, room_ids, name):
+        self.room_group_id = room_group_id
+        self.room_ids = room_ids
         self.name = name
 
     def get_room_group_attributes(self):
         return {'room_group_id': self.room_group_id, 'room_ids': self.room_ids, 'name': self.name}
 
-    def set_room_group_id(self, room_group_id):
-        self.room_group_id = room_group_id
-
-    def add_room_to_group(self, room_id):
-        self.room_ids.append(room_id)
-
 
 class Device(object):
-    def __init__(self, device_id, house_id, room_id, name, device_type, power_state):
+    def __init__(self, device_id, house_id, room_id, name, device_type, power_state, last_read):
         self.device_id = device_id
         self.house_id = house_id
         self.room_id = room_id
         self.name = name
         self.device_type = device_type
         self.power_state = power_state
-        self.last_read = None
+        self.last_read = last_read
 
     def get_device_attributes(self):
         return {'house_id': self.house_id, 'room_id': self.room_id,
@@ -82,12 +79,19 @@ class Device(object):
                 'device_type': self.device_type, 'power_state': self.power_state,
                 'last_read': self.last_read}
 
+    def get_device_id(self):
+        return self.device_id
+
+    def get_device_type(self):
+        return self.device_type
+
 
 class Thermostat(Device):
-    def __init__(self, device_id, house_id, room_id, name, power_state, locked_max_temperature, locked_min_temperature, temperature_scale):
-        Device.__init__(self, device_id, house_id, room_id, name, "Thermostat", power_state)
-        self.last_temperature = None
-        self.target_temperature = None
+    def __init__(self, device_id, house_id, room_id, name, power_state, last_read, last_temperature, target_temperature,
+                 locked_max_temperature, locked_min_temperature, temperature_scale):
+        Device.__init__(self, device_id, house_id, room_id, name, "thermostat", power_state)
+        self.last_temperature = last_temperature
+        self.target_temperature = target_temperature
         self.locked_max_temp = locked_max_temperature
         self.locked_min_temp = locked_min_temperature
         self.temperature_scale = temperature_scale
@@ -102,9 +106,9 @@ class Thermostat(Device):
 
 
 class MotionSensor(Device):
-    def __init__(self, device_id, house_id, room_id, name, power_state):
-        Device.__init__(self, device_id, house_id, room_id, name, "Motion Sensor", power_state)
-        self.sensor_data = None
+    def __init__(self, device_id, house_id, room_id, name, power_state, last_read, sensor_data):
+        Device.__init__(self, device_id, house_id, room_id, name, "motion_sensor", power_state, last_read)
+        self.sensor_data = sensor_data
 
     def get_device_attributes(self):
         return {'house_id': self.house_id, 'room_id': self.room_id,
@@ -114,8 +118,8 @@ class MotionSensor(Device):
 
 
 class PlugSocket(Device):
-    def __init__(self, device_id, house_id, room_id, name, power_state):
-        Device.__init__(self, device_id, house_id, room_id, name, "Plug Socket", power_state)
+    def __init__(self, device_id, house_id, room_id, name, power_state, last_read):
+        Device.__init__(self, device_id, house_id, room_id, name, "plug_socket", power_state, last_read)
 
     def get_device_attributes(self):
         return {'house_id': self.house_id, 'room_id': self.room_id,
@@ -125,9 +129,9 @@ class PlugSocket(Device):
 
 
 class OpenSensor(Device):
-    def __init__(self, device_id, house_id, room_id, name, power_state):
-        Device.__init__(self, device_id, house_id, room_id, name, "Open Sensor", power_state)
-        self.sensor_data = None
+    def __init__(self, device_id, house_id, room_id, name, power_state, last_read, sensor_data):
+        Device.__init__(self, device_id, house_id, room_id, name, "open_sensor", power_state, last_read)
+        self.sensor_data = sensor_data
 
     def get_device_attributes(self):
         return {'house_id': self.house_id, 'room_id': self.room_id,
@@ -137,22 +141,15 @@ class OpenSensor(Device):
 
 
 class DeviceGroup(object):
-    def __init__(self, name):
-        self.device_group_id = None
-        self.device_ids = []
+    def __init__(self, device_group_id, device_ids, name):
+        self.device_group_id = device_group_id
+        self.device_ids = device_ids
         self.name = name
 
     def get_device_group_attributes(self):
         return {'device_group_id': self.device_group_id, 'device_ids': self.device_ids, 'name': self.name}
 
-    def set_device_group_id(self, device_group_id):
-        self.device_group_id = device_group_id
 
-    def add_device_to_group(self, device_id):
-        self.device_ids.append(device_id)
-
-
-"""
 class Trigger:
     def __init__(self, trigger, action):
         self.trigger_id = None
@@ -164,4 +161,3 @@ class Trigger:
     def get_trigger_attributes(self):
         return {'trigger_id': self.trigger_id, 'trigger_sensor_id': self.trigger_sensor_id,
                 'trigger': self.trigger, 'actor_id': self.actor_id, 'action': self.action}
-"""

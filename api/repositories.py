@@ -24,14 +24,19 @@ class UserRepository(Repository):
         self.collection.delete_one({'_id': user_id})
 
     def get_user_by_id(self, user_id):
-        user = self.collection.find_one_or_404({'_id': user_id})
-        target_user = User(user['user_id'], user['Name'],
+        user = self.collection.find_one({'_id': user_id})
+        target_user = User(user['_id'], user['name'],
                            user['password_hash'], user['email_address'],
                            user['is_admin'])
         return target_user
 
     def get_all_users(self):
-        return self.collection.find()
+        users = self.collection.find()
+        target_users = []
+        for user in users:
+            target_users.append(User(user['_id'], user['name'], user['password_hash'], user['email_address'],
+                                     user['is_admin']))
+        return target_users
 
 
 class HouseRepository(Repository):
@@ -46,8 +51,8 @@ class HouseRepository(Repository):
         self.collection.delete_one({'_id': house_id})
 
     def get_house_by_id(self, house_id):
-        house = self.collection.find_one_or_404({'_id': house_id})
-        target_house = House(house['house_id'], house['user_id'], house['name'])
+        house = self.collection.find_one({'_id': house_id})
+        target_house = House(house['_id'], house['user_id'], house['name'])
         return target_house
 
     def get_houses_for_user(self, user_id):
@@ -72,6 +77,14 @@ class HouseGroupRepository(Repository):
     def remove_house_group(self, house_group_id):
         self.collection.delete_one({'_id': house_group_id})
 
+    def remove_house_from_group(self, house_group_id, house_id):
+        self.collection.update({'_id': house_group_id}, {"$pull": {'device_ids': house_id}}, upsert=False)
+
+    def get_house_group_by_id(self, house_group_id):
+        house_group = self.collection.find_one({'_id': house_group_id})
+        target_house_group = HouseGroup(house_group['house_group_id'], house_group['house_ids'], house_group['name'])
+        return target_house_group
+
 
 class RoomRepository(Repository):
     def __init__(self, mongo_collection):
@@ -85,12 +98,16 @@ class RoomRepository(Repository):
         self.collection.delete_one({'_id': room_id})
 
     def get_room_by_id(self, room_id):
-        room = self.collection.find_one_or_404({'_id': room_id})
-        target_room = room(room['room_id'], room['house_id'], room['name'])
+        room = self.collection.find_one({'_id': room_id})
+        target_room = Room(room['_id'], room['house_id'], room['name'])
         return target_room
 
     def get_rooms_for_house(self, house_id):
-        return self.collection.find({'house_id': house_id})
+        rooms = self.collection.find({'house_id': house_id})
+        target_rooms = []
+        for room in rooms:
+            target_rooms.append(Room(room['_id'], house_id, room['name']))
+        return target_rooms
 
 
 class RoomGroupRepository(Repository):
@@ -102,18 +119,17 @@ class RoomGroupRepository(Repository):
         return room_group.inserted_id
 
     def add_room_to_group(self, room_group_id, room_id):
-        self.collection.update({'_id': room_group_id}, {"$push": {'room)ids': room_id}}, upsert=False)
+        self.collection.update({'_id': room_group_id}, {"$push": {'room_ids': room_id}}, upsert=False)
 
     def remove_room_group(self, room_group_id):
         self.collection.delete_one({'_id': room_group_id})
 
+    def remove_room_from_group(self, room_group_id, room_id):
+        self.collection.update({'_id': room_group_id}, {"$pull": {'device_ids': room_id}}, upsert=False)
+
     def get_room_group_by_id(self, room_group_id):
-        room_group = self.collection.find_one_or_404({'_id': room_group_id})
-        target_room_group = RoomGroup(room_group['name'])
-        target_room_group.set_room_group_id(room_group_id)
-        rooms = room_group['room_ids']
-        for room_id in rooms:
-            target_room_group.add_room_to_group(room_id)
+        room_group = self.collection.find_one({'_id': room_group_id})
+        target_room_group = RoomGroup(room_group['room_group_id'], room_group['room_ids'], room_group['name'])
         return target_room_group
 
 
@@ -125,57 +141,83 @@ class DeviceRepository(Repository):
         device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
                                                 'name': name, 'device_type': device_type,
                                                 'power_state': power_state})
-        return device.inserted_id
+        device_id = device.inserted_id
+        self.collection.update({'_id': device_id}, {"$set": {'last_read': 0}})
+        self.set_device_type(device_id)
+        return device_id
+
+    def set_device_type(self, device_id):
+        device = self.collection.find_one({'_id': device_id})
+        if device['device_type'] == "thermostat":
+            self.collection.update({'_id': device_id}, {"$set": {'locked_max_temperature': 22}})
+            self.collection.update({'_id': device_id}, {"$set": {'locked_min_temperature': 15}})
+            self.collection.update({'_id': device_id}, {"$set": {'temperature_scale': "C"}})
+            self.collection.update({'_id': device_id}, {"$set": {'target_temperature': 0}})
+            self.collection.update({'_id': device_id}, {"$set": {'last_temperature': 0}})
+        elif device['device_type'] == "motion_sensor":
+            self.collection.update({'_id': device_id}, {"$set": {'sensor_data': 0}})
+        #elif device['device_type'] == "Plug Socket":
+        elif device['device_type'] == "open_sensor":
+            self.collection.update({'_id': device_id}, {"$set": {'sensor_data': 0}})
 
     def remove_device(self, device_id):
         self.collection.delete_one({'_id': device_id})
 
     def get_device_by_id(self, device_id):
-        device = self.collection.find_one_or_404({'_id': device_id})
+        device = self.collection.find_one({'_id': device_id})
+        target_device = Device(device['_id'], device['house_id'], device['room_id'], device['name'],
+                               device["device_type"], device['power_state'], device['last_read'])
+        """
         if device['device_type'] == "Thermostat":
-            target_device = Thermostat(device['device_id'], device['house_id'], device['room_id'], device['name'],
-                                       device['power_state'], device['locked_max_temperature'],
-                                       device['locked_min_temperature'], device['temperature_scale'])
-            target_device.last_temperature = device['last_temperature']
-            target_device.last_read = device['last_read']
+            target_device = Thermostat(device['_id'], device['house_id'], device['room_id'], device['name'],
+                                       device['power_state'], device['last_read'], device['last_temperature'],
+                                       device['target_temperature'], device['locked_max_temperature'],
+                                       device['locked_min_temperature'], device['temperature_scale'],
+                                       device['last_read'])
         elif device['device_type'] == "Motion Sensor":
-            target_device = MotionSensor(device['device_id'], device['house_id'], device['room_id'], device['name'],
-                                       device['power_state'])
-            target_device.last_read = device['last_read']
-            target_device.sensor_data = device['sensor_data']
+            target_device = MotionSensor(device['_id'], device['house_id'], device['room_id'], device['name'],
+                                         device['power_state'], device['last_read'], device['sensor_data'])
         elif device['device_type'] == "Plug Socket":
-            target_device = PlugSocket(device['device_id'], device['house_id'], device['room_id'], device['name'],
-                                       device['power_state'])
-            target_device.last_read = device['last_read']
+            target_device = PlugSocket(device['_id'], device['house_id'], device['room_id'], device['name'],
+                                       device['power_state'], device['last_read'])
         elif device['device_type'] == "Open Sensor":
-            target_device = OpenSensor(device['device_id'], device['house_id'], device['room_id'], device['name'],
-                                       device['power_state'])
-            target_device.last_read = device['last_read']
-            target_device.sensor_data = device['sensor_data']
+            target_device = OpenSensor(device['_id'], device['house_id'], device['room_id'], device['name'],
+                                       device['power_state'], device['last_read'], device['sensor_data'])
+        """
         return target_device
 
     def add_device_to_house(self, house_id, device_id):
         self.collection.update({'_id': device_id}, {"$set": {'house_id': house_id}}, upsert = False)
 
     def get_devices_for_house(self, house_id):
-        return self.collection.find({'house_id': house_id})
+        devices = self.collection.find({'house_id': house_id})
+        target_devices = []
+        for device in devices:
+            target_devices.append(Device(device['_id'], house_id, device['room_id'], device['name'],
+                                         device['device_type'], device['power_state'], device['last_read']))
+        return target_devices
 
     def link_device_to_room(self, room_id, device_id):
         self.collection.update({'_id': device_id}, {"$set": {'room_id': room_id}}, upsert = False)
 
     def get_devices_for_room(self, room_id):
-        return self.collection.find({'room_id': room_id})
+        devices = self.collection.find({'room_id': room_id})
+        target_devices = []
+        for device in devices:
+            target_devices.append(Device(device['_id'], house_id, device['room_id'], device['name'],
+                                         device['device_type'], device['power_state']))
+        return target_devices
 
     def set_target_temperature(self, device_id, temp):
-        device = self.collection.find_one_or_404({'_id': device_id})
-        assert (device['device_type'] == "Thermostat"), "Device is not a thermostat."
+        device = self.collection.find_one({'_id': device_id})
+        assert (device['device_type'] == "thermostat"), "Device is not a thermostat."
         assert (device['locked_min_temp'] <= temp), "Chosen temperature is too low."
         assert (device['locked_max_temp'] >= temp), "Chosen temperature is too high."
         self.collection.update({'_id': device_id}, {"$set": {'target_temperature': temp}}, upsert=False)
 
     def change_temperature_scale(self, device_id):
-        device = self.collection.find_one_or_404({'_id': device_id})
-        assert (device['device_type'] == "Thermostat"), "Device is not a thermostat."
+        device = self.collection.find_one({'_id': device_id})
+        assert (device['device_type'] == "thermostat"), "Device is not a thermostat."
         if device['temperature_scale'] == "C":
             self.collection.update({'_id': device_id}, {"$set": {'temperature_scale': "F"}}, upsert=False)
             new_target_temperature = device['target_temperature'] * 9/5 + 32
@@ -203,18 +245,17 @@ class DeviceGroupRepository(Repository):
         return device_group.inserted_id
 
     def add_device_to_group(self, device_group_id, device_id):
-        self.collection.update({'_id': device_group_id}, {"$push": {'device ids': device_id}}, upsert=False)
+        self.collection.update({'_id': device_group_id}, {"$push": {'device_ids': device_id}}, upsert=False)
 
     def remove_device_group(self, device_group_id):
         self.collection.delete_one({'_id': device_group_id})
 
+    def remove_device_from_group(self, device_group_id, device_id):
+        self.collection.update({'_id': device_group_id}, {"$pull": {'device_ids': device_id}}, upsert=False)
+
     def get_device_group_by_id(self, device_group_id):
-        device_group = self.collection.find_one_or_404({'_id': device_group_id})
-        target_device_group = DeviceGroup(device_group['name'])
-        target_device_group.set_device_group_id(device_group_id)
-        devices = device_group['room_ids']
-        for device_id in devices:
-            target_device_group.add_device_to_group(device_id)
+        device_group = self.collection.find_one({'_id': device_group_id})
+        target_device_group = DeviceGroup(device_group['device_group_id'], device_group['device_ids'], device_group['name'])
         return target_device_group
 
 

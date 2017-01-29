@@ -38,13 +38,13 @@ api.trigger_repository = repositories.TriggerRepository(db.triggers)
 def get_first_user_id():
     users = api.user_repository.get_all_users()
     first_user = users[0]
-    user_id = first_user['_id']
+    user_id = first_user.get_user_id()
     return jsonify({"user_id": user_id})
 
 
 @api.route('/user/<string:user_id>')
 def get_user_info(user_id):
-    user = api.user_repository.get_user_by_id(user_id)
+    user = api.user_repository.get_user_by_id(ObjectId(user_id))
     if user is None:
         return jsonify({"user": None, "error": {"code": 404, "message": "No such user found"}})
     return jsonify({"user": user.get_user_attributes(), "error": None})
@@ -52,7 +52,7 @@ def get_user_info(user_id):
 
 @api.route('/users')
 def get_all_users():
-    users = user_repository.get_all_users()
+    users = api.user_repository.get_all_users()
     return jsonify({"users": [user.get_user_attributes() for user in users], "error": None})
 
 
@@ -67,7 +67,7 @@ def get_houses_for_user(user_id):
 
 @api.route('/house/<string:house_id>')
 def get_house_info(house_id):
-    house = api.house_repository.get_house_by_id(house_id)
+    house = api.house_repository.get_house_by_id(ObjectId(house_id))
     if house is None:
         return jsonify({"house": None, "error": {"code": 404, "message": "No such house found"}})
     return jsonify({"house": house.get_house_attributes(), "error": None})
@@ -75,7 +75,7 @@ def get_house_info(house_id):
 
 @api.route('/room/<string:room_id>')
 def get_room_info(room_id):
-    room = api.room_repository.get_room_by_id(room_id)
+    room = api.room_repository.get_room_by_id(ObjectId(room_id))
     if room is None:
         return jsonify({"room": None, "error": {"code": 404, "message": "No such room found"}})
     return jsonify({"room": room.get_room_attributes(), "error": None})
@@ -83,7 +83,7 @@ def get_room_info(room_id):
 
 @api.route('/house/<string:house_id>/rooms')
 def get_rooms_for_house(house_id):
-    rooms = api.room_repository.get_rooms_for_house(house_id)
+    rooms = api.room_repository.get_rooms_for_house(ObjectId(house_id))
     if rooms is None:
         return jsonify({"rooms": None, "error": {"code": 404, "message": "No such house found"}})
     return jsonify({"rooms": [room.get_room_attributes() for room in rooms], "error": None})
@@ -91,7 +91,7 @@ def get_rooms_for_house(house_id):
 
 @api.route('/room/<string:room_id>/devices')
 def get_devices_for_room(room_id):
-    devices = api.device_repository.get_devices_for_room(room_id)
+    devices = api.device_repository.get_devices_for_room(ObjectId(room_id))
     if devices is None:
         return jsonify({"devices": None, "error": {"code": 404, "message": "No such room found"}})
     return jsonify({"devices": [device.get_device_attributes() for device in devices], "error": None})
@@ -99,7 +99,7 @@ def get_devices_for_room(room_id):
 
 @api.route('/house/<string:house_id>/devices')
 def get_devices_for_house(house_id):
-    devices = device_repository.get_devices_for_house(house_id)
+    devices = api.device_repository.get_devices_for_house(ObjectId(house_id))
     if devices is None:
         return jsonify({"devices": None, "error": {"code": 404, "message": "No such house found"}})
     return jsonify({"devices": [device.get_device_attributes() for device in devices], "error": None})
@@ -107,7 +107,7 @@ def get_devices_for_house(house_id):
 
 @api.route('/device/<string:device_id>')
 def get_device_info(device_id):
-    device = api.device_repository.get_device_by_id(device_id)
+    device = api.device_repository.get_device_by_id(ObjectId(device_id))
     if device is None:
         return jsonify({"user": None, "error": {"code": 404, "message": "No such device found"}})
     return jsonify({"device": device.get_device_attributes(), "error": None})
@@ -115,7 +115,7 @@ def get_device_info(device_id):
 
 @api.route('/devicegroup/<string:device_group_id>')
 def get_devicegroup_info(device_group_id):
-    device_group = api.devicegroup_repository.get_device_group_by_id(device_group_id)
+    device_group = api.devicegroup_repository.get_device_group_by_id(ObjectId(device_group_id))
     if device_group is None:
         return jsonify({"device_group": None, "error": {"code": 404, "message": "No such device group found"}})
     return jsonify({"device_group": device_group.get_devicegroup_attributes(), "errors": None})
@@ -125,7 +125,7 @@ def get_devicegroup_info(device_group_id):
 def add_device(house_id):
     print(request.get_json())
     data = request.get_json()
-    device = api.device_repository.add_new_device(data['device_type'], house_id, data['name'], data['access_data'])
+    device = api.device_repository.add_new_device(data['device_type'], ObjectId(house_id), data['name'], data['access_data'])
     if device is None:
         return jsonify({"device": None, "error": {"code": 400, "message": "Device could not be added"}})
     return jsonify({"device": device.get_device_attributes(), "error": None})
@@ -133,7 +133,7 @@ def add_device(house_id):
 
 @api.route('/device/<string:device_id>/remove', methods=['POST'])
 def remove_device(device_id):
-    result = api.device_repository.remove_device(device_id)
+    result = api.device_repository.remove_device(ObjectId(device_id))
     if result is None:
         return jsonify({"device_id": None, "error": {"code": 404, "message": "No such device found"}})
     return jsonify({"device_id": result.device_id, "error": None})
@@ -142,16 +142,14 @@ def remove_device(device_id):
 @api.route('/house/<string:house_id>/rooms/add', methods=['POST'])
 def add_room(house_id):
     data = request.get_json()
-    room_id = api.room_repository.generate_new_room_id()
-    room = model.Room(room_id, house_id, data['name'])
-    api.room_repository.add_room(room)
+    room_id = api.room_repository.add_room(house_id, data['name'])
     room = api.room_repository.get_room_by_id(room_id)
     return jsonify({"room": room.get_room_attributes(), "error": None})
 
 
 @api.route('/room/<string:room_id>/device/<string:device_id>/link')
 def link_device_to_room(room_id, device_id):
-    result = api.device_repository.link_device_to_room(room_id, device_id)
+    result = api.device_repository.link_device_to_room(ObjectId(room_id), ObjectId(device_id))
     if result is None:
         return jsonify({"device": None, "error": {"code": 404, "message": "No such device found."}})
     return jsonify({"device": result.get_device_attributes(), "error": None})
@@ -173,8 +171,8 @@ def add_trigger(device_id):
 def configure_thermostat(device_id):
     data = request.get_json()
     target_temperature = data['target_temperature']
-    device = device_repository.get_device_by_id(device_id)
-    device.set_target_temp(target_temperature)
+    device = api.device_repository.get_device_by_id(ObjectId(device_id))
+    api.device_repository.set_target_temperature(ObjectId(device_id), target_temperature)
     return jsonify({
         "device": device.get_device_attributes(),
         "error": None
