@@ -170,7 +170,7 @@ class DeviceRepository(Repository):
         if device['device_type'] == "thermostat":
             target_device = self.get_thermostat(device_id)
         elif device['device_type'] == "motion_sensor":
-            target_device = self.get_motion_Sensor(device_id)
+            target_device = self.get_motion_sensor(device_id)
         elif device['device_type'] == "plug_socket":
             target_device = self.get_plug_socket(device_id)
         elif device['device_type'] == "open_sensor":
