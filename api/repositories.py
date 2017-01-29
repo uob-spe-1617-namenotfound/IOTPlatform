@@ -167,7 +167,6 @@ class DeviceRepository(Repository):
         device = self.collection.find_one({'_id': device_id})
         target_device = Device(device['_id'], device['house_id'], device['room_id'], device['name'],
                                device["device_type"], device['power_state'], device['last_read'])
-        """
         if device['device_type'] == "thermostat":
             target_device = self.get_thermostat(device_id)
         elif device['device_type'] == "motion_sensor":
@@ -176,7 +175,6 @@ class DeviceRepository(Repository):
             target_device = self.get_plug_socket(device_id)
         elif device['device_type'] == "open_sensor":
             target_device = self.get_open_sensor(device_id)
-        """
         return target_device
 
     def get_thermostat(self, device_id):
@@ -184,8 +182,7 @@ class DeviceRepository(Repository):
         target_device = Thermostat(device['_id'], device['house_id'], device['room_id'], device['name'],
                                    device['power_state'], device['last_read'], device['last_temperature'],
                                    device['target_temperature'], device['locked_max_temperature'],
-                                   device['locked_min_temperature'], device['temperature_scale'],
-                                   device['last_read'])
+                                   device['locked_min_temperature'], device['temperature_scale'])
         return target_device
 
     def get_motion_sensor(self, device_id):
@@ -225,15 +222,15 @@ class DeviceRepository(Repository):
         devices = self.collection.find({'room_id': room_id})
         target_devices = []
         for device in devices:
-            target_devices.append(Device(device['_id'], house_id, device['room_id'], device['name'],
+            target_devices.append(Device(device['_id'], device['house_id'], device['room_id'], device['name'],
                                          device['device_type'], device['power_state']))
         return target_devices
 
     def set_target_temperature(self, device_id, temp):
         device = self.collection.find_one({'_id': device_id})
         assert (device['device_type'] == "thermostat"), "Device is not a thermostat."
-        assert (device['locked_min_temp'] <= temp), "Chosen temperature is too low."
-        assert (device['locked_max_temp'] >= temp), "Chosen temperature is too high."
+        assert (device['locked_min_temperature'] <= temp), "Chosen temperature is too low."
+        assert (device['locked_max_temperature'] >= temp), "Chosen temperature is too high."
         self.collection.update({'_id': device_id}, {"$set": {'target_temperature': temp}}, upsert=False)
         return Thermostat(device_id, device['house_id'], device['room_id'], device['name'], device['power_state'],
                           device['last_read'], device['last_temperature'], temp,

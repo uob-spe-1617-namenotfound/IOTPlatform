@@ -89,7 +89,7 @@ class Device(object):
 class Thermostat(Device):
     def __init__(self, device_id, house_id, room_id, name, power_state, last_read, last_temperature, target_temperature,
                  locked_max_temperature, locked_min_temperature, temperature_scale):
-        Device.__init__(self, device_id, house_id, room_id, name, "thermostat", power_state)
+        Device.__init__(self, device_id, house_id, room_id, name, "thermostat", power_state, last_read)
         self.last_temperature = last_temperature
         self.target_temperature = target_temperature
         self.locked_max_temp = locked_max_temperature

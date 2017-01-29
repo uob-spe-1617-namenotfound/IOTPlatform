@@ -161,7 +161,7 @@ def add_trigger(device_id):
     trigger = data['trigger']
     actor_id = data['actor_id']
     action = data['action']
-    result = api.trigger_repository.add_trigger(device_id, trigger, actor_id, action)
+    result = api.trigger_repository.add_trigger(ObjectId(device_id), trigger, ObjectId(actor_id), action)
     if result is None:
         return jsonify({"trigger": None, "error": {"code": 404, "message": "Trigger couldn't be created."}})
     return jsonify({"trigger": result.get_trigger_attributes(), "error": None})
