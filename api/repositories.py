@@ -235,6 +235,10 @@ class DeviceRepository(Repository):
         assert (device['locked_min_temp'] <= temp), "Chosen temperature is too low."
         assert (device['locked_max_temp'] >= temp), "Chosen temperature is too high."
         self.collection.update({'_id': device_id}, {"$set": {'target_temperature': temp}}, upsert=False)
+        return Thermostat(device_id, device['house_id'], device['room_id'], device['name'], device['power_state'],
+                          device['last_read'], device['last_temperature'], temp,
+                          device['locked_max_temperature'], device['locked_min_temperature'],
+                          device['temperature_scale'])
 
     def change_temperature_scale(self, device_id):
         device = self.collection.find_one({'_id': device_id})

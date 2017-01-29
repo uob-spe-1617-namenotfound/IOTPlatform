@@ -142,7 +142,7 @@ def remove_device(device_id):
 @api.route('/house/<string:house_id>/rooms/add', methods=['POST'])
 def add_room(house_id):
     data = request.get_json()
-    room_id = api.room_repository.add_room(house_id, data['name'])
+    room_id = api.room_repository.add_room(ObjectId(house_id), data['name'])
     room = api.room_repository.get_room_by_id(room_id)
     return jsonify({"room": room.get_room_attributes(), "error": None})
 
@@ -171,8 +171,8 @@ def add_trigger(device_id):
 def configure_thermostat(device_id):
     data = request.get_json()
     target_temperature = data['target_temperature']
-    device = api.device_repository.get_device_by_id(ObjectId(device_id))
     api.device_repository.set_target_temperature(ObjectId(device_id), target_temperature)
+    device = api.device_repository.get_device_by_id(ObjectId(device_id))
     return jsonify({
         "device": device.get_device_attributes(),
         "error": None
