@@ -1,6 +1,6 @@
 import logging
 
-from model import HouseGroup, House, Room, RoomGroup, User, Device, DeviceGroup, Thermostat, MotionSensor, PlugSocket, OpenSensor
+from model import HouseGroup, House, Room, RoomGroup, User, Device, DeviceGroup, Thermostat, MotionSensor, LightSwitch, OpenSensor
 
 
 class Repository(object):
@@ -156,7 +156,7 @@ class DeviceRepository(Repository):
             self.collection.update({'_id': device_id}, {"$set": {'last_temperature': 0}})
         elif device['device_type'] == "motion_sensor":
             self.collection.update({'_id': device_id}, {"$set": {'sensor_data': 0}})
-        #elif device['device_type'] == "Plug Socket":
+        #elif device['device_type'] == "light_switch":
         elif device['device_type'] == "open_sensor":
             self.collection.update({'_id': device_id}, {"$set": {'sensor_data': 0}})
 
@@ -171,8 +171,8 @@ class DeviceRepository(Repository):
             target_device = self.get_thermostat(device_id)
         elif device['device_type'] == "motion_sensor":
             target_device = self.get_motion_sensor(device_id)
-        elif device['device_type'] == "plug_socket":
-            target_device = self.get_plug_socket(device_id)
+        elif device['device_type'] == "light_switch":
+            target_device = self.get_light_switch(device_id)
         elif device['device_type'] == "open_sensor":
             target_device = self.get_open_sensor(device_id)
         return target_device
@@ -191,10 +191,10 @@ class DeviceRepository(Repository):
                                      device['power_state'], device['last_read'], device['sensor_data'])
         return target_device
 
-    def get_plug_socket(self, device_id):
+    def get_light_switch(self, device_id):
         device = self.collection.find_one({'_id': device_id})
-        target_device = PlugSocket(device['_id'], device['house_id'], device['room_id'], device['name'],
-                                   device['power_state'], device['last_read'], device['sensor_data'])
+        target_device = LightSwitch(device['_id'], device['house_id'], device['room_id'], device['name'],
+                                    device['power_state'], device['last_read'])
         return target_device
 
     def get_open_sensor(self, device_id):
@@ -215,7 +215,7 @@ class DeviceRepository(Repository):
         return target_devices
 
     def link_device_to_room(self, room_id, device_id):
-        device = self.collection.update({'_id': device_id}, {"$set": {'room_id': room_id}}, upsert=False)
+        self.collection.update({'_id': device_id}, {"$set": {'room_id': room_id}}, upsert=False)
         return self.get_device_by_id(device_id)
 
     def get_devices_for_room(self, room_id):

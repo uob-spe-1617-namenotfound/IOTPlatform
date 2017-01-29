@@ -117,9 +117,9 @@ class MotionSensor(Device):
                 'last_read': self.last_read, 'sensor_data': self.sensor_data}
 
 
-class PlugSocket(Device):
+class LightSwitch(Device):
     def __init__(self, device_id, house_id, room_id, name, power_state, last_read):
-        Device.__init__(self, device_id, house_id, room_id, name, "plug_socket", power_state, last_read)
+        Device.__init__(self, device_id, house_id, room_id, name, "light_switch", power_state, last_read)
 
     def get_device_attributes(self):
         return {'house_id': self.house_id, 'room_id': self.room_id,

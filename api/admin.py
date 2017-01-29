@@ -23,7 +23,7 @@ def init_hardcoded_data():
     room3 = api.room_repository.add_room(house1, "Living Room")
     device1 = api.device_repository.add_device(house1, None, "Kitchen Thermostat", "thermostat", 1)
     device2 = api.device_repository.add_device(house1, None, "Living Room Motion Sensor", "motion_sensor", 1)
-    device3 = api.device_repository.add_device(house1, None, "Kitchen Motion Sensor", "motion_sensor", 1)
+    device3 = api.device_repository.add_device(house1, None, "Kitchen Light Switch", "light_switch", 1)
     device_ids1 = [device1, device2, device3]
     devicegroup1 = api.devicegroup_repository.add_device_group(device_ids1, "Group 1")
 
