@@ -1,6 +1,16 @@
-from crontab import CronTab
+from data_model.last_temp import get_last_temp
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 
-cron = CronTab()
+scheduler = BackgroundScheduler(daemon=False)
+scheduler.start()
 
-job = cron.new(command='last_temp.py')
-job.minutes.every(1)
+
+def schedule_cron_job():
+    scheduler.add_job(
+        func=get_last_temp,
+        trigger=IntervalTrigger(seconds=2),
+        id='get_last_temp',
+        name='Get last temperature for dummy thermostat',
+        replace_existing=True)
+

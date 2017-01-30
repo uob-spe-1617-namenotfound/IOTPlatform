@@ -28,6 +28,14 @@ def read_thermostat(device_id=None):
     })
 
 
+@app.route('/faulty_thermostat/read')
+def faulty_thermostat():
+    return jsonify({
+        "data": None,
+        "error": "No data available"
+    })
+
+
 @app.route('/thermostat/<int:device_id>/write', methods=['POST'])
 def write_thermostat_target(device_id):
     data = request.get_json()
