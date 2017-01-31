@@ -2,6 +2,7 @@ from flask import render_template, flash, redirect, url_for
 from flask_wtf import FlaskForm
 from wtforms import SelectField, StringField, SubmitField, DecimalField
 from wtforms.validators import URL
+
 import data_interface
 from main import app
 
@@ -102,3 +103,11 @@ def set_device_settings(device_id):
         flash('Target temperature successfully set!', 'success')
         return redirect(url_for('.show_device', device_id=device_id))
     return show_device(device_id, form)
+
+
+@app.route('/device/<string:device_id>/switch/configure/<int:state>')
+def set_switch_settings(device_id, state):
+    error = data_interface.set_switch_state(device_id, state)
+    if error is not None:
+        flash("State successfully set", "success")
+    return redirect(url_for('.show_device', device_id=device_id))
