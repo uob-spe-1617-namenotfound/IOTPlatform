@@ -186,6 +186,19 @@ def configure_thermostat(device_id):
         "error": None
     })
 
+
+@api.route('/device/<string:device_id>/switch/configure', methods=['POST'])
+def configure_switch(device_id):
+    data = request.get_json()
+    power_state = data['power_state']
+    api.device_repository.set_power_state(ObjectId(device_id), power_state)
+    device = api.device_repository.get_device_by_id(ObjectId(device_id))
+    return jsonify({
+        "device": device.get_device_attributes(),
+        "error": None
+    })
+
+
 @api.route('/devices/faulty')
 def faulty_devices():
     faulty_devices = api.device_repository.get_faulty_devices()
@@ -193,6 +206,8 @@ def faulty_devices():
         "devices": [x.get_device_attributes() for x in faulty_devices],
         "error": None
     })
+
+
 from admin import *
 
 

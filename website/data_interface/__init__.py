@@ -132,6 +132,16 @@ def set_thermostat_target(device_id, target_temperature):
     return data['device']
 
 
+def set_switch_state(device_id, state):
+    r = requests.post(get_api_url('/device/{}/switch/configure'.format(device_id)),
+                      json={"power_state": state})
+    print(r.content)
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['device']
+
+
 def get_faulty_devices():
     r = requests.get(get_api_url('/devices/faulty'))
     data = r.json()

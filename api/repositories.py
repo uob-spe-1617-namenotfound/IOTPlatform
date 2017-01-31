@@ -225,6 +225,13 @@ class DeviceRepository(Repository):
         for device in devices:
             target_devices.append(Device(device))
         return target_devices
+    def set_power_state(self, device_id, power_state):
+        device = self.get_device_by_id(device_id)
+        assert(device.device_type == "light_switch"), "Device is not a switch."
+        device.configure_power_state(power_state)
+        self.update_device_reading(device)
+        return device
+
 
     def set_target_temperature(self, device_id, temp):
         device = self.collection.find_one({'_id': device_id})

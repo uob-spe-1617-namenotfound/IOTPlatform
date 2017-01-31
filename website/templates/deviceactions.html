@@ -13,13 +13,19 @@
     {% elif device.device_type == 'light_switch' %}
         <h1> Light Switch Action Settings </h1>
         <hr>
-        <h5> Lights (ON/OFF) : </h5>
-        <form action="">
-            <li><input type="radio" name="motionsensor" value="ON" checked/> Light switch is ON</li>
-            <br>
-            <li><input type="radio" name="motionsensor" value="OFF"> Light switch is OFF</li>
-            <br>
-        </form>
+        {% if device.last_read %}
+            {% if device.last_read.data.power_state == 1 %}
+                Switch is on.<a class="btn btn-default btn-primary"
+                                href="{{ url_for('.set_switch_settings', device_id=device.device_id, state=0) }}">Turn
+                it off</a>
+            {% else %}
+                Switch is off.<a class="btn btn-default btn-primary"
+                                 href="{{ url_for('.set_switch_settings', device_id=device.device_id, state=1) }}">Turn
+                it on</a>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-danger">No data available</div>
+        {% endif %}
     {% elif device.device_type == "thermostat" %}
         <h1> Thermostat Action Settings </h1>
         <hr>
