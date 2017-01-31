@@ -30,6 +30,9 @@ def init_hardcoded_data():
                                                 {"username": 'bc15050@mybristol.ac.uk',
                                                  "password": 'test1234',
                                                  "device_id": '46865'}, 'energenie')
+    motion_sensor = api.device_repository.add_device(house1, room3, "Motion Sensor", "motion_sensor", 1,
+                                                     {"url": "http://dummy-sensor:5000/motion_sensor"},
+                                                     vendor="OWN")
     good_thermostat = api.device_repository.add_device(house1, None, "Working thermostat", "thermostat", 1, {
         "url": "http://dummy-sensor:5000/thermostat/3"
     }, vendor="OWN")
