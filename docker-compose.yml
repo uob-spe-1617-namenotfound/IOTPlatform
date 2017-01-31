@@ -20,11 +20,11 @@ services:
       - ./api:/code
     links:
       - db
-      - dummy_sensor
+      - dummy-sensor
   db:
     image: mongo:3.4
     command: --smallfiles --rest
-  dummy_sensor:
+  dummy-sensor:
     build: ./dummy_sensor
     command: python -u main.py
     expose:

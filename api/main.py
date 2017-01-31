@@ -5,6 +5,8 @@ from bson.objectid import ObjectId
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
 
+from cron import setup_cron
+
 # TODO: better error handling
 api = Flask("SPE-IoT-API")
 api.config.from_pyfile('config.cfg')
@@ -23,7 +25,6 @@ class JSONEncoder(json.JSONEncoder):
 
 api.json_encoder = JSONEncoder
 
-import model
 import repositories
 
 api.user_repository = repositories.UserRepository(db.users)
@@ -123,9 +124,16 @@ def get_devicegroup_info(device_group_id):
 
 @api.route('/house/<string:house_id>/devices/add', methods=['POST'])
 def add_device(house_id):
-    print(request.get_json())
     data = request.get_json()
-    device = api.device_repository.add_new_device(data['device_type'], ObjectId(house_id), data['name'], data['access_data'])
+    logging.debug("Adding device: {}".format(data))
+    device = api.device_repository.add_device(device_type=data['device_type'],
+                                              house_id=ObjectId(house_id),
+                                              room_id=None,
+                                              name=data['name'],
+                                              power_state=None,
+                                              configuration=data['configuration'],
+                                              vendor=data['vendor'])
+    logging.debug("Device added: {}".format(device))
     if device is None:
         return jsonify({"device": None, "error": {"code": 400, "message": "Device could not be added"}})
     return jsonify({"device": device.get_device_attributes(), "error": None})
@@ -178,12 +186,20 @@ def configure_thermostat(device_id):
         "error": None
     })
 
+@api.route('/devices/faulty')
+def faulty_devices():
+    faulty_devices = api.device_repository.get_faulty_devices()
+    return jsonify({
+        "devices": [x.get_device_attributes() for x in faulty_devices],
+        "error": None
+    })
 from admin import *
 
+
 def main():
+    setup_cron()
     api.run(debug=True, host=api.config['HOSTNAME'], port=int(api.config['PORT']))
 
-import admin
 
 if __name__ == "__main__":
     main()
