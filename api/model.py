@@ -1,5 +1,5 @@
 import time
-
+import logging
 import requests
 
 
@@ -127,6 +127,23 @@ class Device(object):
                     error = "Cannot read data from configuration URL: {}".format(ex)
             else:
                 error = "Can't read current state as no url is set in configuration"
+        elif self.vendor == "energenie":
+            if "username" in self.configuration and "password" in self.configuration and "device_id" in self.configuration:
+                username = self.configuration['username']
+                password = self.configuration['password']
+                dev_id = self.configuration['device_id']
+                try:
+                    r = requests.get("https://mihome4u.co.uk/api/v1/subdevices/show", auth=(username, password), json={"id":dev_id})
+                    r_data = r.json()
+                    if r_data["status"] != "success":
+                        error = r_data['status']
+                    else:
+                        data = {'power_state': r_data['power_state'], 'voltage': r_data['voltage']}
+                except Exception as ex:
+                    error = "Cannot read device data from URL: {}".format(ex)
+            else:
+                error = "Not all required information is set in the configuration"
+            logging.debug("Read current data for the device: {}".format(data))
         else:
             error = "read_current_state not implemented for vendor {}".format(self.vendor)
         if error is not None:

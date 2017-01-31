@@ -28,7 +28,10 @@ def init_hardcoded_data():
     #device3 = api.device_repository.add_device(house1, None, "Kitchen Light Switch", "light_switch", 1)
     #device_ids1 = [device1, device2, device3]
     #devicegroup1 = api.devicegroup_repository.add_device_group(device_ids1, "Group 1")
-
+    adapter1 = api.device_repository.add_device(house1, None, "Test Adapter", "adapter", 1,
+                                                {"username": 'bc15050@mybristol.ac.uk',
+                                                 "password": 'test1234',
+                                                 "device_id": '46865'}, 'energenie')
 
 @api.cli.command()
 def fill_hardcoded_db():
