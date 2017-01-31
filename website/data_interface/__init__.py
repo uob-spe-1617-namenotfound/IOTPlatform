@@ -1,8 +1,7 @@
-import logging
-
 import requests
 
 from main import app
+import logging
 
 
 def get_api_url(endpoint):
@@ -54,11 +53,15 @@ def get_default_rooms_for_user(user_id):
 
 def add_new_device(name, device_type, vendor, configuration):
     r = requests.post(get_api_url('/house/{}/devices/add'.format(get_default_house_id())),
-                      json={"name": name, "configuration": configuration, "device_type": device_type, "vendor": vendor})
+                      json={"name": name,
+                            "configuration": configuration,
+                            "device_type": device_type,
+                            "vendor": vendor})
+    logging.debug("Received from add new device: {}".format(r.content))
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
-    return data['device']['device_id']
+    return data['device']['_id']
 
 
 def add_new_room(name):

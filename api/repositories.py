@@ -1,6 +1,7 @@
 import logging
 
-from model import HouseGroup, House, Room, RoomGroup, User, Device, DeviceGroup, Thermostat, MotionSensor, LightSwitch, OpenSensor
+from model import HouseGroup, House, Room, RoomGroup, User, Device, DeviceGroup, Thermostat, MotionSensor, LightSwitch, \
+    OpenSensor
 
 
 class Repository(object):
@@ -137,14 +138,30 @@ class DeviceRepository(Repository):
     def __init__(self, mongo_collection):
         Repository.__init__(self, mongo_collection)
 
-    def add_device(self, house_id, room_id, name, device_type, power_state):
+    def update_device_reading(self, device):
+        reading = device.read_current_state()
+        logging.debug("Read current state of device {}: {}".format(device.get_device_id(), reading))
+        self.collection.update({'_id': device.get_device_id()},
+                               {"$set": {"last_read": reading}})
+
+    def update_all_device_readings(self):
+        all_device_ids = [x['_id'] for x in self.collection.find({}, {})]
+        for device_id in all_device_ids:
+            device = self.get_device_by_id(device_id)
+            self.update_device_reading(device)
+
+    def add_device(self, house_id, room_id, name, device_type, power_state, configuration, vendor):
         device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
-                                                'name': name, 'device_type': device_type,
-                                                'power_state': power_state})
+                                             'name': name, 'device_type': device_type,
+                                             'power_state': power_state,
+                                             'configuration': configuration,
+                                             'vendor': vendor})
         device_id = device.inserted_id
         self.collection.update({'_id': device_id}, {"$set": {'last_read': 0}})
-        self.set_device_type(device_id)
-        return device_id
+        # self.set_device_type(device_id)
+        device = self.get_device_by_id(device_id=device_id)
+        self.update_device_reading(device)
+        return device
 
     def set_device_type(self, device_id):
         device = self.collection.find_one({'_id': device_id})
@@ -156,7 +173,7 @@ class DeviceRepository(Repository):
             self.collection.update({'_id': device_id}, {"$set": {'last_temperature': 0}})
         elif device['device_type'] == "motion_sensor":
             self.collection.update({'_id': device_id}, {"$set": {'sensor_data': 0}})
-        #elif device['device_type'] == "light_switch":
+        # elif device['device_type'] == "light_switch":
         elif device['device_type'] == "open_sensor":
             self.collection.update({'_id': device_id}, {"$set": {'sensor_data': 0}})
 
@@ -165,43 +182,18 @@ class DeviceRepository(Repository):
 
     def get_device_by_id(self, device_id):
         device = self.collection.find_one({'_id': device_id})
-        target_device = Device(device['_id'], device['house_id'], device['room_id'], device['name'],
-                               device["device_type"], device['power_state'], device['last_read'])
-        if device['device_type'] == "thermostat":
-            target_device = self.get_thermostat(device_id)
-        elif device['device_type'] == "motion_sensor":
-            target_device = self.get_motion_sensor(device_id)
-        elif device['device_type'] == "light_switch":
-            target_device = self.get_light_switch(device_id)
-        elif device['device_type'] == "open_sensor":
-            target_device = self.get_open_sensor(device_id)
-        return target_device
-
-    def get_thermostat(self, device_id):
-        device = self.collection.find_one({'_id': device_id})
-        target_device = Thermostat(device['_id'], device['house_id'], device['room_id'], device['name'],
-                                   device['power_state'], device['last_read'], device['last_temperature'],
-                                   device['target_temperature'], device['locked_max_temperature'],
-                                   device['locked_min_temperature'], device['temperature_scale'])
-        return target_device
-
-    def get_motion_sensor(self, device_id):
-        device = self.collection.find_one({'_id': device_id})
-        target_device = MotionSensor(device['_id'], device['house_id'], device['room_id'], device['name'],
-                                     device['power_state'], device['last_read'], device['sensor_data'])
-        return target_device
-
-    def get_light_switch(self, device_id):
-        device = self.collection.find_one({'_id': device_id})
-        target_device = LightSwitch(device['_id'], device['house_id'], device['room_id'], device['name'],
-                                    device['power_state'], device['last_read'])
-        return target_device
-
-    def get_open_sensor(self, device_id):
-        device = self.collection.find_one({'_id': device_id})
-        target_device = OpenSensor(device['_id'], device['house_id'], device['room_id'], device['name'],
-                                   device['power_state'], device['last_read'], device['sensor_data'])
-        return target_device
+        if device is None:
+            return None
+        device_type = device['device_type'] if 'device_type' in device else None
+        if device_type == "thermostat":
+            return Thermostat(device)
+        elif device_type == "motion_sensor":
+            return MotionSensor(device)
+        elif device_type == "light_switch":
+            return LightSwitch(device)
+        elif device_type == "open_sensor":
+            return OpenSensor(device)
+        return Device(device)
 
     def add_device_to_house(self, house_id, device_id):
         self.collection.update({'_id': device_id}, {"$set": {'house_id': house_id}}, upsert=False)
@@ -210,8 +202,7 @@ class DeviceRepository(Repository):
         devices = self.collection.find({'house_id': house_id})
         target_devices = []
         for device in devices:
-            target_devices.append(Device(device['_id'], house_id, device['room_id'], device['name'],
-                                         device['device_type'], device['power_state'], device['last_read']))
+            target_devices.append(Device(device))
         return target_devices
 
     def link_device_to_room(self, room_id, device_id):
@@ -222,37 +213,39 @@ class DeviceRepository(Repository):
         devices = self.collection.find({'room_id': room_id})
         target_devices = []
         for device in devices:
-            target_devices.append(Device(device['_id'], device['house_id'], device['room_id'], device['name'],
-                                         device['device_type'], device['power_state']))
+            target_devices.append(Device(device))
         return target_devices
 
     def set_target_temperature(self, device_id, temp):
         device = self.collection.find_one({'_id': device_id})
         assert (device['device_type'] == "thermostat"), "Device is not a thermostat."
-        assert (device['locked_min_temperature'] <= temp), "Chosen temperature is too low."
-        assert (device['locked_max_temperature'] >= temp), "Chosen temperature is too high."
+        assert ('locked_min_temperature' not in device or device[
+            'locked_min_temperature'] <= temp), "Chosen temperature is too low."
+        assert ('locked_max_temperature' not in device or device[
+            'locked_max_temperature'] >= temp), "Chosen temperature is too high."
         self.collection.update({'_id': device_id}, {"$set": {'target_temperature': temp}}, upsert=False)
-        return Thermostat(device_id, device['house_id'], device['room_id'], device['name'], device['power_state'],
-                          device['last_read'], device['last_temperature'], temp,
-                          device['locked_max_temperature'], device['locked_min_temperature'],
-                          device['temperature_scale'])
+        device = self.get_device_by_id(device_id)
+        device.configure_target_temperature(temp)
+        self.update_device_reading(device)
+        return device
 
     def change_temperature_scale(self, device_id):
         device = self.collection.find_one({'_id': device_id})
         assert (device['device_type'] == "thermostat"), "Device is not a thermostat."
         if device['temperature_scale'] == "C":
             self.collection.update({'_id': device_id}, {"$set": {'temperature_scale': "F"}}, upsert=False)
-            new_target_temperature = device['target_temperature'] * 9/5 + 32
-            new_max_temperature = device['locked_max_temp'] * 9/5 + 32
-            new_min_temperature = device['locked_min_temp'] * 9/5 + 32
-            new_last_temperature = device['last_temperature'] * 9/5 + 32
+            new_target_temperature = device['target_temperature'] * 9 / 5 + 32
+            new_max_temperature = device['locked_max_temp'] * 9 / 5 + 32
+            new_min_temperature = device['locked_min_temp'] * 9 / 5 + 32
+            new_last_temperature = device['last_temperature'] * 9 / 5 + 32
         else:
             self.collection.update({'_id': device_id}, {"$set": {'temperature_scale': "C"}}, upsert=False)
-            new_target_temperature = (device['target_temperature'] - 32) * 5/9
-            new_max_temperature = (device['locked_max_temp'] - 32) * 5/9
-            new_min_temperature = (device['locked_min_temp'] - 32) * 5/9
-            new_last_temperature = (device['last_temperature'] - 32) * 5/9
-        self.collection.update({'_id': device_id}, {"$set": {'target_temperature': new_target_temperature}}, upsert=False)
+            new_target_temperature = (device['target_temperature'] - 32) * 5 / 9
+            new_max_temperature = (device['locked_max_temp'] - 32) * 5 / 9
+            new_min_temperature = (device['locked_min_temp'] - 32) * 5 / 9
+            new_last_temperature = (device['last_temperature'] - 32) * 5 / 9
+        self.collection.update({'_id': device_id}, {"$set": {'target_temperature': new_target_temperature}},
+                               upsert=False)
         self.collection.update({'_id': device_id}, {"$set": {'locked_max_temp': new_max_temperature}}, upsert=False)
         self.collection.update({'_id': device_id}, {"$set": {'locked_min_temp': new_min_temperature}}, upsert=False)
         self.collection.update({'_id': device_id}, {"$set": {'last_temperature': new_last_temperature}}, upsert=False)
@@ -277,7 +270,8 @@ class DeviceGroupRepository(Repository):
 
     def get_device_group_by_id(self, device_group_id):
         device_group = self.collection.find_one({'_id': device_group_id})
-        target_device_group = DeviceGroup(device_group['device_group_id'], device_group['device_ids'], device_group['name'])
+        target_device_group = DeviceGroup(device_group['device_group_id'], device_group['device_ids'],
+                                          device_group['name'])
         return target_device_group
 
 
