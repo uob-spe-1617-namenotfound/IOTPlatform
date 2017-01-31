@@ -17,17 +17,17 @@ def clear_db():
 
 def init_hardcoded_data():
     user1 = api.user_repository.add_user("Jack Xia", "xxxxxxxx", "nobody@gmail.com", False)
-    user2 = api.user_repository.add_user("Ben Fossett", "xxxxxxxx", "nobody@gmail.com", False)
+    #user2 = api.user_repository.add_user("Ben Fossett", "xxxxxxxx", "nobody@gmail.com", False)
     house1 = api.house_repository.add_house(user1, "Jack's House")
-    house2 = api.house_repository.add_house(user2, "Ben's House")
-    room1 = api.room_repository.add_room(house1, "Kitchen")
-    room2 = api.room_repository.add_room(house1, "Bathroom")
-    room3 = api.room_repository.add_room(house1, "Living Room")
-    device1 = api.device_repository.add_device(house1, None, "Kitchen Thermostat", "thermostat", 1)
-    device2 = api.device_repository.add_device(house1, None, "Living Room Motion Sensor", "motion_sensor", 1)
-    device3 = api.device_repository.add_device(house1, None, "Kitchen Light Switch", "light_switch", 1)
-    device_ids1 = [device1, device2, device3]
-    devicegroup1 = api.devicegroup_repository.add_device_group(device_ids1, "Group 1")
+    #house2 = api.house_repository.add_house(user2, "Ben's House")
+    #room1 = api.room_repository.add_room(house1, "Kitchen")
+    #room2 = api.room_repository.add_room(house1, "Bathroom")
+    #room3 = api.room_repository.add_room(house1, "Living Room")
+    #device1 = api.device_repository.add_device(house1, None, "Kitchen Thermostat", "thermostat", 1)
+    #device2 = api.device_repository.add_device(house1, None, "Living Room Motion Sensor", "motion_sensor", 1)
+    #device3 = api.device_repository.add_device(house1, None, "Kitchen Light Switch", "light_switch", 1)
+    #device_ids1 = [device1, device2, device3]
+    #devicegroup1 = api.devicegroup_repository.add_device_group(device_ids1, "Group 1")
 
 
 @api.cli.command()
