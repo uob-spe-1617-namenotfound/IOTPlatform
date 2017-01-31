@@ -9,7 +9,7 @@
     </ul>
 
 
-   {% if devices %}
+    {% if devices %}
         <h3>Faulty devices</h3>
         <table class="table table-striped">
             <tr>
@@ -30,11 +30,12 @@
                         {{ device.user["email_address"] }}
                     </td>
                     <td>
-                       {{ device.device.last_read.error }}
+                        {{ device.device.last_read.error }}
                     </td>
                 </tr>
             {% endfor %}
         </table>
     {% else %}
+        <p>All devices are functioning perfectly!</p>
     {% endif %}
 {% endblock %}
