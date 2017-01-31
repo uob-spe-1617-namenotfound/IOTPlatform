@@ -1,6 +1,15 @@
+import time
+
+import requests
+
+
+def get_optional_attribute(attributes, key):
+    return attributes[key] if key in attributes else None
+
+
 class User(object):
-    def __init__(self, name, password_hash, email_address, is_admin):
-        self.user_id = None
+    def __init__(self, user_id, name, password_hash, email_address, is_admin):
+        self.user_id = user_id
         self.name = name
         self.password_hash = password_hash
         self.email_address = email_address
@@ -10,212 +19,220 @@ class User(object):
         return {'user_id': self.user_id, 'name': self.name, 'password_hash': self.password_hash,
                 'email_address': self.email_address, 'is_admin': self.is_admin}
 
-    def set_user_id(self, user_id):
-        self.user_id = user_id
-
     def get_user_id(self):
         return self.user_id
 
 
 class House(object):
-    def __init__(self, name, user_id):
+    def __init__(self, house_id, user_id, name):
+        self.house_id = house_id
         self.user_id = user_id
-        self.house_id = None
         self.name = name
 
     def get_house_attributes(self):
-        return {'user_id': self.user_id, 'house_id': self.house_id, 'name': self.name}
+        return {'house_id': self.house_id, 'user_id': self.user_id, 'name': self.name}
 
     @classmethod
     def from_dict(cls, d):
         h = House(user_id=d['user_id'] if 'user_id' in d else None,
+                  house_id=d['_id'] if '_id' in d else None,
                   name=d['name'] if 'name' in d else "")
-        h.set_house_id(str(d['_id']))
         return h
-
-    def set_house_id(self, house_id):
-        self.house_id = house_id
-
-    def set_user_id(self, user_id):
-        self.user_id = user_id
-
-    def get_user_id(self):
-        return self.user_id
-
-    def get_name(self):
-        return self.name
-
-    def get_house_id(self):
-        return self.house_id
 
 
 # House groups could be used for fleet management or for people with multiple houses
 class HouseGroup(object):
-    def __init__(self, name):
-        self.house_group_id = None
-        self.house_ids = []
+    def __init__(self, house_group_id, house_ids, name):
+        self.house_group_id = house_group_id
+        self.house_ids = house_ids
         self.name = name
 
     def get_house_group_attributes(self):
         return {'house_group_id': self.house_group_id, 'house_ids': self.house_ids, 'name': self.name}
 
-    def set_house_group_id(self, house_group_id):
-        self.house_group_id = house_group_id
-
-    def add_house_to_group(self, house_id):
-        self.house_ids.append(house_id)
-
 
 class Room(object):
-    def __init__(self, name, house_id):
-        self.room_id = None
+    def __init__(self, room_id, house_id, name):
+        self.room_id = room_id
         self.house_id = house_id
         self.name = name
 
     def get_room_attributes(self):
         return {'room_id': self.room_id, 'house_id': self.house_id, 'name': self.name}
 
-    def get_room_id(self):
-        return self.room_id
-
-    def set_room_id(self, room_id):
-        self.room_id = room_id
-
-    def set_house(self, house_id):
-        self.house_id = house_id
-
 
 # Room groups could be things like 'Upstairs', or to be used for templates
 class RoomGroup(object):
-    def __init__(self, name):
-        self.room_group_id = None
-        self.room_ids = []
+    def __init__(self, room_group_id, room_ids, name):
+        self.room_group_id = room_group_id
+        self.room_ids = room_ids
         self.name = name
 
     def get_room_group_attributes(self):
         return {'room_group_id': self.room_group_id, 'room_ids': self.room_ids, 'name': self.name}
 
-    def set_room_group_id(self, room_group_id):
-        self.room_group_id = room_group_id
 
-    def add_room_to_group(self, room_id):
-        self.room_ids.append(room_id)
-
-
-class Device:
-    def __init__(self, house_id, room_id, name, device_type, power_state):
-        self.house_id = house_id
-        self.room_id = room_id
+class Device(object):
+    def __init__(self, attributes):
         self.device_id = None
-        self.name = name
-        self.device_type = device_type
-        self.power_state = power_state
+        self.house_id = None
+        self.room_id = None
+        self.name = None
+        self.device_type = None
+        self.power_state = None
         self.last_read = None
+        self.vendor = None
+        self.configuration = None
+        self.set_attributes(attributes)
+
+    def set_attributes(self, attributes):
+        self.device_id = attributes['_id']
+        self.house_id = attributes['house_id']
+        self.room_id = attributes['room_id']
+        self.name = attributes['name']
+        self.device_type = attributes['device_type']
+        self.power_state = attributes['power_state']
+        self.last_read = attributes['last_read']
+        self.vendor = attributes['vendor'] if "vendor" in attributes else None
+        self.configuration = attributes['configuration'] if "configuration" in attributes else None
 
     def get_device_attributes(self):
-        return {'house_id': self.house_id, 'room_id': self.room_id,
-                'device_id': self.device_id, 'name': self.name,
+        return {'_id': str(self.device_id), 'device_id': str(self.device_id), 'house_id': self.house_id,
+                'room_id': self.room_id, 'name': self.name,
                 'device_type': self.device_type, 'power_state': self.power_state,
-                'last_read': self.last_read}
+                'last_read': self.last_read, 'vendor': self.vendor, 'configuration': self.configuration}
 
-    def set_device_id(self, device_id):
-        self.device_id = device_id
+    def get_device_id(self):
+        return self.device_id
 
-    def change_power_state(self):
-        if self.power_state == 0:
-            setattr(self, 'power_state', 1)
+    def get_device_type(self):
+        return self.device_type
+
+    def read_current_state(self):
+
+        error = None
+        data = None
+        timestamp = str(time.time())
+        if self.vendor == "OWN":
+            if "url" in self.configuration:
+                url = self.configuration['url']
+                try:
+                    r = requests.get(url)
+                    r_data = r.json()
+                    if "error" in r_data and r_data["error"] is not None:
+                        error = r_data["error"]
+                    else:
+                        data = r_data['data']
+                except Exception as ex:
+                    error = "Cannot read data from configuration URL: {}".format(ex)
+            else:
+                error = "Can't read current state as no url is set in configuration"
         else:
-            setattr(self, 'power_state', 0)
+            error = "read_current_state not implemented for vendor {}".format(self.vendor)
+        if error is not None:
+            return {"error": error, "timestamp": timestamp}
+        return {"data": data, "timestamp": timestamp}
 
-    def set_last_read(self, time):
-        self.last_read = time
+    def is_faulty(self):
+        if "error" in self.last_read and self.last_read['error'] is not None:
+            return True
+        return False
 
 
 class Thermostat(Device):
-    def __init__(self, house_id, room_id, name, power_state, locked_max_temperature, locked_min_temperature):
-        Device.__init__(self, house_id, room_id, name, "Thermostat", power_state)
+    def __init__(self, attributes):
         self.last_temperature = None
         self.target_temperature = None
-        self.locked_max_temp = locked_max_temperature
-        self.locked_min_temp = locked_min_temperature
-        self.temperature_scale = "C"
+        self.locked_max_temp = None
+        self.locked_min_temp = None
+        self.temperature_scale = None
+        Device.__init__(self, attributes)
+
+    def set_attributes(self, attributes):
+        attributes['device_type'] = "thermostat"
+        Device.set_attributes(self, attributes=attributes)
+        self.last_temperature = get_optional_attribute(attributes, 'last_temperature')
+        self.target_temperature = get_optional_attribute(attributes, 'target_temperature')
+        self.locked_max_temp = get_optional_attribute(attributes, 'locked_max_temperature')
+        self.locked_min_temp = get_optional_attribute(attributes, 'locked_min_temperature')
+        self.temperature_scale = get_optional_attribute(attributes, 'temperature_scale')
 
     def get_device_attributes(self):
-        return {'house_id': self.house_id, 'room_id': self.room_id,
-                'device_id': self.device_id, 'name': self.name,
-                'device_type': self.device_type, 'power_state': self.power_state, 'last_read': self.last_read,
-                'last_temperature': self.last_temperature, 'target_temperature': self.target_temperature,
-                'locked_max_temp': self.locked_max_temp, 'locked_min_temp': self.locked_min_temp,
-                'temperature_scale': self.temperature_scale}
+        attributes = Device.get_device_attributes(self)
+        attributes.update({
+            'last_temperature': self.last_temperature, 'target_temperature': self.target_temperature,
+            'locked_max_temp': self.locked_max_temp, 'locked_min_temp': self.locked_min_temp,
+            'temperature_scale': self.temperature_scale
+        })
+        return attributes
 
-    def get_reading(self):
-        return {'last_temperature': self.last_temperature}
-
-    def change_temperature_scale(self):
-        if self.temperature_scale == "C":
-            self.temperature_scale = "F"
+    def configure_target_temperature(self, temperature):
+        error = None
+        if self.vendor == "OWN":
+            if "url" in self.configuration:
+                url = self.configuration['url'] + "/write"
+                try:
+                    r = requests.post(url, json={"target_temperature": temperature})
+                    r_data = r.json()
+                    if "error" in r_data and r_data["error"] is not None:
+                        error = r_data["error"]
+                except Exception as ex:
+                    error = "Cannot read data from configuration URL: {}".format(ex)
+            else:
+                error = "Can't read current state as no url is set in configuration"
         else:
-            self.temperature_scale = "C"
+            error = "read_current_state not implemented for vendor {}".format(self.vendor)
+        return error
 
 
 class MotionSensor(Device):
-    def __init__(self, house_id, room_id, name, power_state):
-        Device.__init__(self, house_id, room_id, name, "Motion Sensor", power_state)
+    def __init__(self, attributes):
         self.sensor_data = None
+        Device.__init__(self, attributes)
+
+    def set_attributes(self, attributes):
+        Device.set_attributes(self, attributes=attributes)
+        self.sensor_data = get_optional_attribute(attributes, 'sensor_data')
 
     def get_device_attributes(self):
-        return {'house_id': self.house_id, 'room_id': self.room_id,
-                'device_id': self.device_id, 'name': self.name,
-                'device_type': self.device_type, 'power_state': self.power_state,
-                'last_read': self.last_read, 'sensor_data': self.sensor_data}
-
-    def get_reading(self):
-        return {'sensor_data': self.sensor_data}
+        attributes = Device.get_device_attributes(self)
+        attributes.update({'sensor_data': self.sensor_data})
+        return attributes
 
 
-class PlugSocket(Device):
-    def __init__(self, house_id, room_id, name, power_state):
-        Device.__init__(self, house_id, room_id, name, "Plug Socket", power_state)
+class LightSwitch(Device):
+    def __init__(self, attributes):
+        Device.__init__(self, attributes)
 
     def get_device_attributes(self):
-        return {'house_id': self.house_id, 'room_id': self.room_id,
-                'device_id': self.device_id, 'name': self.name,
-                'device_type': self.device_type, 'power_state': self.power_state,
-                'last_read': self.last_read,}
+        return Device.get_device_attributes(self)
 
 
 class OpenSensor(Device):
-    def __init__(self, house_id, room_id, name, power_state):
-        Device.__init__(self, house_id, room_id, name, "Door/Window Sensor", power_state)
+    def __init__(self, attributes):
         self.sensor_data = None
+        Device.__init__(self, attributes)
+
+    def set_attributes(self, attributes):
+        Device.set_attributes(self, attributes=attributes)
+        self.sensor_data = attributes["sensor_data"]
 
     def get_device_attributes(self):
-        return {'house_id': self.house_id, 'room_id': self.room_id,
-                'device_id': self.device_id, 'name': self.name,
-                'device_type': self.device_type, 'power_state': self.power_state,
-                'last_read': self.last_read, 'sensor_data': self.sensor_data}
-
-    def get_reading(self):
-        return {'sensor_data': self.sensor_data}
+        attributes = Device.get_device_attributes(self)
+        attributes.update({'sensor_data': self.sensor_data})
+        return attributes
 
 
 class DeviceGroup(object):
-    def __init__(self, name):
-        self.device_group_id = None
-        self.device_ids = []
+    def __init__(self, device_group_id, device_ids, name):
+        self.device_group_id = device_group_id
+        self.device_ids = device_ids
         self.name = name
 
     def get_device_group_attributes(self):
         return {'device_group_id': self.device_group_id, 'device_ids': self.device_ids, 'name': self.name}
 
-    def set_device_group_id(self, device_group_id):
-        self.device_group_id = device_group_id
 
-    def add_device_to_group(self, device_id):
-        self.device_ids.append(device_id)
-
-
-"""
 class Trigger:
     def __init__(self, trigger, action):
         self.trigger_id = None
@@ -227,4 +244,3 @@ class Trigger:
     def get_trigger_attributes(self):
         return {'trigger_id': self.trigger_id, 'trigger_sensor_id': self.trigger_sensor_id,
                 'trigger': self.trigger, 'actor_id': self.actor_id, 'action': self.action}
-"""

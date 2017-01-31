@@ -5,6 +5,7 @@ import data_interface
 
 import views.devices
 import views.rooms
+import views.admin
 
 
 @app.route('/triggers')
@@ -33,22 +34,6 @@ def logout():
 @app.route('/account/settings')
 def account_settings():
     return "To be implemented"
-
-
-@app.route('/admin')
-def admin():
-    users = data_interface.get_all_users()
-    print(users)
-    return render_template("admin.html", users=users)
-
-
-@app.route('/admin_map')
-def admin_map():
-    house1 = {'lat': -20.000, 'lng': -179.000}
-    house2 = {'lat': -50.000, 'lng': 45.000}
-    house3 = {'lat': 10.000, 'lng': 120.000}
-    house_location = [house1, house2, house3]
-    return render_template("admin_maps.html", house_location=house_location)
 
 
 @app.route('/help')

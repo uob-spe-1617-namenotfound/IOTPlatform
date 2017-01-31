@@ -12,7 +12,9 @@
             {% if unlinked_devices %}
                 <ul class="dropdown-menu" role="menu">
                     {% for dev in unlinked_devices %}
-                        <li><a href="{{ url_for('.link_device_to_room', room_id=room.room_id, device_id=dev.device_id) }}" data-toggle="modal">{{ dev['name'] }} </a></li>
+                        <li>
+                            <a href="{{ url_for('.link_device_to_room', room_id=room.room_id, device_id=dev.device_id) }}"
+                               data-toggle="modal">{{ dev['name'] }} </a></li>
                     {% endfor %}
                 </ul>
             {% else %}
@@ -60,7 +62,13 @@
                                 <td>
                                     <a href="{{ url_for('.show_device', device_id=dev.device_id) }}">{{ dev["name"] }}</a>
                                 </td>
-                                <td>{{ dev["Property"] }}</td>
+                                <td>
+                                    {% if dev.last_read and dev.last_read.data %}
+                                        {{ dev.last_read.data.temperature }}℃
+                                    {% else %}
+                                        <i>no data</i>
+                                    {% endif %}
+                                </td>
                             </tr>
                         {% endfor %}
                     </table>

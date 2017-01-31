@@ -30,9 +30,24 @@
             <li><input type="radio" name="motionsensor" value="OFF">Thermostat is OFF</li>
             <br>
         </form>
-
-        <h4>Current temperature: {{ device.last_temp }}℃</h4>
-        <h4>Target temperature: {{ device.target_temp }}℃</h4>
+        {% if device.last_read %}
+            {% if device.last_read.error %}
+                <div class="alert alert-danger">
+                    Error: {{ device.last_read.error }}
+                </div>
+            {% else %}
+                <h4>Current temperature:
+                    {{ device.last_read.data.temperature }}℃
+                </h4>
+                <h4>Target temperature:
+                    {{ device.last_read.data.target }}℃
+                </h4>
+            {% endif %}
+        {% else %}
+            <p>
+                <i>No actual data available yet.</i>
+            </p>
+        {% endif %}
         {{ wtf.quick_form(change_settings_form, action=url_for('.set_device_settings', device_id=device.device_id)) }}
         <hr>
     {% elif device.device_type == "door_sensor" %}
