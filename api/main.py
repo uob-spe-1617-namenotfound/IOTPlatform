@@ -186,7 +186,13 @@ def configure_thermostat(device_id):
         "error": None
     })
 
-
+@api.route('/devices/faulty')
+def faulty_devices():
+    faulty_devices = api.device_repository.get_faulty_devices()
+    return jsonify({
+        "devices": [x.get_device_attributes() for x in faulty_devices],
+        "error": None
+    })
 from admin import *
 
 

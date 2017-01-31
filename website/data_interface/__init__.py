@@ -1,7 +1,8 @@
+import logging
+
 import requests
 
 from main import app
-import logging
 
 
 def get_api_url(endpoint):
@@ -97,6 +98,14 @@ def link_device_to_room(room_id, device_id):
     return data['device']['device_id']
 
 
+def get_house_info(house_id):
+    r = requests.get(get_api_url('/house/{}'.format(house_id)))
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['house']
+
+
 def get_room_info(room_id):
     r = requests.get(get_api_url('/room/{}'.format(room_id)))
     data = r.json()
@@ -121,6 +130,14 @@ def set_thermostat_target(device_id, target_temperature):
     if data['error'] is not None:
         raise Exception('Error!')
     return data['device']
+
+
+def get_faulty_devices():
+    r = requests.get(get_api_url('/devices/faulty'))
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception('Error!')
+    return data['devices']
 
 
 def get_user_info(user_id):

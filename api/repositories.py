@@ -138,6 +138,16 @@ class DeviceRepository(Repository):
     def __init__(self, mongo_collection):
         Repository.__init__(self, mongo_collection)
 
+    def get_faulty_devices(self):
+        all_device_ids = [x['_id'] for x in self.collection.find({}, {})]
+        devices = []
+        for device_id in all_device_ids:
+            device = self.get_device_by_id(device_id)
+            if device.is_faulty():
+                devices.append(device)
+        return devices
+
+
     def update_device_reading(self, device):
         reading = device.read_current_state()
         logging.debug("Read current state of device {}: {}".format(device.get_device_id(), reading))

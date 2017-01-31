@@ -133,6 +133,11 @@ class Device(object):
             return {"error": error, "timestamp": timestamp}
         return {"data": data, "timestamp": timestamp}
 
+    def is_faulty(self):
+        if "error" in self.last_read and self.last_read['error'] is not None:
+            return True
+        return False
+
 
 class Thermostat(Device):
     def __init__(self, attributes):
