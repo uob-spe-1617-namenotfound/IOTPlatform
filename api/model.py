@@ -192,7 +192,7 @@ class MotionSensor(Device):
 
     def set_attributes(self, attributes):
         Device.set_attributes(self, attributes=attributes)
-        self.sensor_data = attributes['sensor_data']
+        self.sensor_data = get_optional_attribute(attributes, 'sensor_data')
 
     def get_device_attributes(self):
         attributes = Device.get_device_attributes(self)
