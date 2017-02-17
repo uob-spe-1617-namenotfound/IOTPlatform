@@ -23,6 +23,18 @@ class User(object):
     def get_user_id(self):
         return self.user_id
 
+    def get_user_name(self):
+        return self.name
+
+    def get_user_password(self):
+        return self.password_hash
+
+    def get_user_email(self):
+        return self.email_address
+
+    def is_user_admin(self):
+        return self.is_admin
+
 
 class House(object):
     def __init__(self, house_id, user_id, name):
