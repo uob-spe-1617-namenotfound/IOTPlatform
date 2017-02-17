@@ -63,6 +63,13 @@ class HouseRepository(Repository):
             logging.debug("house: {}".format(h))
         return [House.from_dict(h) for h in self.collection.find({'user_id': user_id})]
 
+    def get_all_houses(self):
+        houses = self.collection.find()
+        target_houses = []
+        for house in houses:
+            target_houses.append(House(house['_id'], house['user_id'], house['name']))
+        return target_houses
+
 
 class HouseGroupRepository(Repository):
     def __init__(self, mongo_collection):

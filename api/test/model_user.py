@@ -1,6 +1,4 @@
 from api import repositories, model
-from model import User
-
 import unittest
 
 

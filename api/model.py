@@ -45,6 +45,15 @@ class House(object):
     def get_house_attributes(self):
         return {'house_id': self.house_id, 'user_id': self.user_id, 'name': self.name}
 
+    def get_house_id(self):
+        return self.house_id
+
+    def get_house_user(self):
+        return self.user_id
+
+    def get_house_name(self):
+        return self.name
+
     @classmethod
     def from_dict(cls, d):
         h = House(user_id=d['user_id'] if 'user_id' in d else None,
