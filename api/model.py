@@ -23,18 +23,6 @@ class User(object):
     def get_user_id(self):
         return self.user_id
 
-    def get_user_name(self):
-        return self.name
-
-    def get_user_password(self):
-        return self.password_hash
-
-    def get_user_email(self):
-        return self.email_address
-
-    def is_user_admin(self):
-        return self.is_admin
-
 
 class House(object):
     def __init__(self, house_id, user_id, name):
@@ -47,12 +35,6 @@ class House(object):
 
     def get_house_id(self):
         return self.house_id
-
-    def get_house_user(self):
-        return self.user_id
-
-    def get_house_name(self):
-        return self.name
 
     @classmethod
     def from_dict(cls, d):
@@ -82,11 +64,8 @@ class Room(object):
     def get_room_attributes(self):
         return {'room_id': self.room_id, 'house_id': self.house_id, 'name': self.name}
 
-    def get_room_house(self):
-        return self.house_id
-
-    def get_room_name(self):
-        return self.name
+    def get_room_id(self):
+        return self.room_id
 
 
 # Room groups could be things like 'Upstairs', or to be used for templates
@@ -132,27 +111,6 @@ class Device(object):
 
     def get_device_id(self):
         return self.device_id
-
-    def get_device_house(self):
-        return self.house_id
-
-    def get_device_room(self):
-        return self.room_id
-
-    def get_device_name(self):
-        return self.name
-
-    def get_device_type(self):
-        return self.device_type
-
-    def get_device_power_state(self):
-        return self.power_state
-
-    def get_device_configuration(self):
-        return self.configuration
-
-    def get_device_vendor(self):
-        return self.vendor
 
     def read_current_state(self):
         error = None

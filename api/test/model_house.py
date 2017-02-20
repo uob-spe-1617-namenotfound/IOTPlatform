@@ -15,18 +15,17 @@ class HouseTests(unittest.TestCase):
 
     def test_HouseAddedCorrectly(self):
         house3 = self.houses.get_house_by_id(self.house3id)
-        user_id = house3.get_house_user()
-        self.assertEqual(user_id, self.user2id, "House user not added correctly.")
-        name = house3.get_house_name()
-        self.assertEqual(name, "Floris' Other House", "House name not added correctly.")
+        attributes = house3.get_house_attributes()
+        self.assertEqual(attributes['user_id'], self.user2id, "House user not added correctly.")
+        self.assertEqual(attributes['name'], "Floris' Other House", "House name not added correctly.")
 
     def test_GetHousesForUser(self):
         houses = self.houses.get_houses_for_user(self.user2id)
         self.assertEqual(len(houses), 2, "Incorrect amount of houses.")
-        name1 = houses[0].get_house_name()
-        name2 = houses[1].get_house_name()
-        self.assertEqual(name1, "Floris' House", "First house has incorrect name.")
-        self.assertEqual(name2, "Floris' Other House", "Second house has incorrect name.")
+        house1attr = houses[0].get_house_attributes()
+        house2attr = houses[1].get_house_attributes()
+        self.assertEqual(house1attr['name'], "Floris' House", "First house has incorrect name.")
+        self.assertEqual(house2attr['name'], "Floris' Other House", "Second house has incorrect name.")
 
     def test_HouseRemovedCorrectly(self):
         all_houses = self.houses.get_all_houses()
