@@ -43,3 +43,38 @@ class DeviceTests(unittest.TestCase):
         device3 = self.devices.get_device_by_id(self.device3id)
         room_id = device3.get_device_room()
         self.assertEqual(room_id, self.room1id, "Device 3 not added to room correctly.")
+
+    def test_GetDevicesForHouse(self):
+        devices = self.devices.get_devices_for_house(self.house1id)
+        self.assertEqual(len(devices), 3, "Incorrect amount of devices.")
+        name1 = devices[0].get_device_name()
+        name2 = devices[1].get_device_name()
+        name3 = devices[2].get_device_name()
+        self.assertEqual(name1, "Kitchen Thermostat", "First device has incorrect name.")
+        self.assertEqual(name2, "Kitchen Motion Sensor", "First device has incorrect name.")
+        self.assertEqual(name3, "Kitchen Light Switch", "First device has incorrect name.")
+
+    def test_GetDevicesForRoom(self):
+        self.devices.link_device_to_room(self.room1id, self.device1id)
+        self.devices.link_device_to_room(self.room1id, self.device2id)
+        self.devices.link_device_to_room(self.room1id, self.device3id)
+        devices = self.devices.get_devices_for_room(self.room1id)
+        self.assertEqual(len(devices), 3, "Incorrect amount of devices.")
+        name1 = devices[0].get_device_name()
+        name2 = devices[1].get_device_name()
+        name3 = devices[2].get_device_name()
+        self.assertEqual(name1, "Kitchen Thermostat", "First device has incorrect name.")
+        self.assertEqual(name2, "Kitchen Motion Sensor", "First device has incorrect name.")
+        self.assertEqual(name3, "Kitchen Light Switch", "First device has incorrect name.")
+
+    def test_SetPowerState(self):
+        self.devices.set_power_state(self.device3id, 0)
+        device3 = self.devices.get_device_by_id(self.device3id)
+        power_state = device3.get_device_power_state()
+        self.assertEqual(power_state, 0, "Device power state not configured correctly.")
+
+    def test_DeviceRemovedCorrectly(self):
+        all_devices = self.devices.get_all_devices()
+        self.devices.remove_device(self.device3id)
+        all_remaining_devices = self.devices.get_all_devices()
+        self.assertEqual(len(all_remaining_devices), len(all_devices) - 1, "Incorrect number of remaining devices.")
