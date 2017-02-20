@@ -9,7 +9,7 @@ machine:
 
   test:
     override:
-      - python ./api/test/__init__.py
+      - python ./api/tests.py
 
 
 

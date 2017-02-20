@@ -147,6 +147,13 @@ class RoomGroupRepository(Repository):
         target_room_group = RoomGroup(room_group['room_group_id'], room_group['room_ids'], room_group['name'])
         return target_room_group
 
+    def get_all_room_groups(self):
+        room_groups = self.collection.find()
+        target_room_groups = []
+        for room_group in room_groups:
+            target_room_groups.append(Room(room_group['_id'], room_group['house_id'], room_group['name']))
+        return target_room_groups
+
 
 class DeviceRepository(Repository):
     def __init__(self, mongo_collection):
