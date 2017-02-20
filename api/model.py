@@ -82,6 +82,12 @@ class Room(object):
     def get_room_attributes(self):
         return {'room_id': self.room_id, 'house_id': self.house_id, 'name': self.name}
 
+    def get_room_house(self):
+        return self.house_id
+
+    def get_room_name(self):
+        return self.name
+
 
 # Room groups could be things like 'Upstairs', or to be used for templates
 class RoomGroup(object):
@@ -127,11 +133,28 @@ class Device(object):
     def get_device_id(self):
         return self.device_id
 
+    def get_device_house(self):
+        return self.house_id
+
+    def get_device_room(self):
+        return self.room_id
+
+    def get_device_name(self):
+        return self.name
+
     def get_device_type(self):
         return self.device_type
 
-    def read_current_state(self):
+    def get_device_power_state(self):
+        return self.power_state
 
+    def get_device_configuration(self):
+        return self.configuration
+
+    def get_device_vendor(self):
+        return self.vendor
+
+    def read_current_state(self):
         error = None
         data = None
         timestamp = str(time.time())

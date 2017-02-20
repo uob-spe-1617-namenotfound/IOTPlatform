@@ -117,6 +117,13 @@ class RoomRepository(Repository):
             target_rooms.append(Room(room['_id'], house_id, room['name']))
         return target_rooms
 
+    def get_all_rooms(self):
+        rooms = self.collection.find()
+        target_rooms = []
+        for room in rooms:
+            target_rooms.append(Room(room['_id'], room['house_id'], room['name']))
+        return target_rooms
+
 
 class RoomGroupRepository(Repository):
     def __init__(self, mongo_collection):
@@ -154,7 +161,6 @@ class DeviceRepository(Repository):
                 devices.append(device)
         return devices
 
-
     def update_device_reading(self, device):
         reading = device.read_current_state()
         logging.debug("Read current state of device {}: {}".format(device.get_device_id(), reading))
@@ -178,7 +184,7 @@ class DeviceRepository(Repository):
         # self.set_device_type(device_id)
         device = self.get_device_by_id(device_id=device_id)
         self.update_device_reading(device)
-        return device
+        return device_id
 
     def set_device_type(self, device_id):
         device = self.collection.find_one({'_id': device_id})
@@ -223,7 +229,7 @@ class DeviceRepository(Repository):
         return target_devices
 
     def link_device_to_room(self, room_id, device_id):
-        self.collection.update({'_id': device_id}, {"$set": {'room_id': room_id}}, upsert=False)
+        self.collection.update_one({'_id': device_id}, {"$set": {'room_id': room_id}}, upsert=False)
         return self.get_device_by_id(device_id)
 
     def get_devices_for_room(self, room_id):
@@ -232,13 +238,13 @@ class DeviceRepository(Repository):
         for device in devices:
             target_devices.append(Device(device))
         return target_devices
+
     def set_power_state(self, device_id, power_state):
         device = self.get_device_by_id(device_id)
         assert(device.device_type == "light_switch"), "Device is not a switch."
         device.configure_power_state(power_state)
         self.update_device_reading(device)
         return device
-
 
     def set_target_temperature(self, device_id, temp):
         device = self.collection.find_one({'_id': device_id})

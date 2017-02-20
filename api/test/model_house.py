@@ -32,4 +32,4 @@ class HouseTests(unittest.TestCase):
         all_houses = self.houses.get_all_houses()
         self.houses.remove_house(self.house3id)
         all_remaining_houses = self.houses.get_all_houses()
-        self.assertEqual(len(all_remaining_houses), len(all_houses) - 1, "A house was not removed.")
+        self.assertEqual(len(all_remaining_houses), len(all_houses) - 1, "Incorrect number of remaining houses.")
