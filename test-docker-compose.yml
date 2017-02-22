@@ -1,0 +1,19 @@
+version: '2'
+services:
+  test:
+    build: ./api
+    environment:
+        - MONGO_HOST=db
+        - MONGO_PORT=27017
+    command: python -u tests.py
+    expose:
+      - "5000"
+    ports:
+      - "12100:5000"
+    volumes:
+      - ./api:/code
+    links:
+      - db
+  db:
+    image: mongo:3.4
+    command: --smallfiles --rest
