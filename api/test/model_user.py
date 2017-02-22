@@ -1,4 +1,5 @@
-from api import repositories, model
+import repositories
+import model
 import unittest
 
 
