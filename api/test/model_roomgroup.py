@@ -29,12 +29,12 @@ class RoomGroupTests(unittest.TestCase):
         self.assertEqual(name2, "Kitchen", "Second room has incorrect name.")
         self.assertEqual(name3, "Bathroom", "Third room has incorrect name.")
 
-    def test_GetRoomsAddedCorrectly(self):
+    def test_RoomsAddedCorrectly(self):
         self.room_groups.add_room_to_group(self.room1id, self.roomgroup_id)
         room_group = self.room_groups.get_room_group_by_id(self.roomgroup_id)
         self.assertEqual(self.room1id, room_group['room_ids'])
 
-    def test_RoomRemovedCorrectly(self):
+    def test_RoomGroupRemovedCorrectly(self):
         all_room_groups = self.room_groups.get_all_room_groups()
         self.room_groups.remove_room_group(self.roomgroup_id)
         all_remaining_room_groups = self.room_groups.get_all_room_groups()
