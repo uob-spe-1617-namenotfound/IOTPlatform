@@ -74,8 +74,16 @@ class DeviceTests(unittest.TestCase):
         target_temperature = device1.get_device_attributes()['target_temperature']
         self.assertEqual(target_temperature, 30, "Incorrect target temperature.")
 
+    def test_GetAllDevices(self):
+        all_devices = self.devices.get_all_devices()
+        self.assertEqual(len(all_devices), 3, "Incorrect number of devices.")
+
     def test_DeviceRemovedCorrectly(self):
         all_devices = self.devices.get_all_devices()
         self.devices.remove_device(self.device3id)
         all_remaining_devices = self.devices.get_all_devices()
         self.assertEqual(len(all_remaining_devices), len(all_devices) - 1, "Incorrect number of remaining devices.")
+
+    def test_DevicesCannotHaveSameName(self):
+        with self.assertRaisesRegex(AssertionError, "There is already a device with this name."):
+            self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat", 1, None, "example")

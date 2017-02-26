@@ -29,8 +29,16 @@ class RoomTests(unittest.TestCase):
         self.assertEqual(room2attr['name'], "Kitchen", "Second room has incorrect name.")
         self.assertEqual(room3attr['name'], "Bathroom", "Third room has incorrect name.")
 
+    def test_GetAllRooms(self):
+        all_rooms = self.rooms.get_all_rooms()
+        self.assertEqual(len(all_rooms), 3, "Incorrect number of rooms.")
+
     def test_RoomRemovedCorrectly(self):
         all_rooms = self.rooms.get_all_rooms()
         self.rooms.remove_room(self.room3id)
         all_remaining_rooms = self.rooms.get_all_rooms()
         self.assertEqual(len(all_remaining_rooms), len(all_rooms) - 1, "Incorrect number of remaining rooms.")
+
+    def test_RoomsCannotHaveSameName(self):
+        with self.assertRaisesRegex(AssertionError, "There is already a room with this name."):
+            self.rooms.add_room(self.house1id, "Living Room")
