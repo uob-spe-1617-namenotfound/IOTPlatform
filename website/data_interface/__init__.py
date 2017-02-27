@@ -54,11 +54,15 @@ def get_default_rooms_for_user(user_id):
 
 def add_new_device(name, device_type, vendor, configuration):
     r = requests.post(get_api_url('/house/{}/devices/add'.format(get_default_house_id())),
-                      json={"name": name, "configuration": configuration, "device_type": device_type, "vendor": vendor})
+                      json={"name": name,
+                            "configuration": configuration,
+                            "device_type": device_type,
+                            "vendor": vendor})
+    logging.debug("Received from add new device: {}".format(r.content))
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
-    return data['device']['device_id']
+    return data['device']['_id']
 
 
 def add_new_room(name):
@@ -94,6 +98,14 @@ def link_device_to_room(room_id, device_id):
     return data['device']['device_id']
 
 
+def get_house_info(house_id):
+    r = requests.get(get_api_url('/house/{}'.format(house_id)))
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['house']
+
+
 def get_room_info(room_id):
     r = requests.get(get_api_url('/room/{}'.format(room_id)))
     data = r.json()
@@ -118,6 +130,24 @@ def set_thermostat_target(device_id, target_temperature):
     if data['error'] is not None:
         raise Exception('Error!')
     return data['device']
+
+
+def set_switch_state(device_id, state):
+    r = requests.post(get_api_url('/device/{}/switch/configure'.format(device_id)),
+                      json={"power_state": state})
+    print(r.content)
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['device']
+
+
+def get_faulty_devices():
+    r = requests.get(get_api_url('/devices/faulty'))
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception('Error!')
+    return data['devices']
 
 
 def get_user_info(user_id):
