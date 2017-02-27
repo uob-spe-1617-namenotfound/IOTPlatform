@@ -268,7 +268,8 @@ class DeviceRepository(Repository):
 
     def set_power_state(self, device_id, power_state):
         device = self.get_device_by_id(device_id)
-        assert(device.device_type == "light_switch"), "Device is not a switch."
+        if device.device_type != "light_switch":
+            raise Exception("Device is not a switch.")
         device.configure_power_state(power_state)
         self.update_device_reading(device)
         self.collection.update_one({'_id': device_id}, {"$set": {'power_state': power_state}}, upsert=False)
