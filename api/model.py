@@ -33,6 +33,9 @@ class House(object):
     def get_house_attributes(self):
         return {'house_id': self.house_id, 'user_id': self.user_id, 'name': self.name}
 
+    def get_house_id(self):
+        return self.house_id
+
     @classmethod
     def from_dict(cls, d):
         h = House(user_id=d['user_id'] if 'user_id' in d else None,
@@ -60,6 +63,9 @@ class Room(object):
 
     def get_room_attributes(self):
         return {'room_id': self.room_id, 'house_id': self.house_id, 'name': self.name}
+
+    def get_room_id(self):
+        return self.room_id
 
 
 # Room groups could be things like 'Upstairs', or to be used for templates
@@ -106,11 +112,7 @@ class Device(object):
     def get_device_id(self):
         return self.device_id
 
-    def get_device_type(self):
-        return self.device_type
-
     def read_current_state(self):
-
         error = None
         data = None
         timestamp = str(time.time())
