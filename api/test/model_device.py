@@ -5,14 +5,16 @@ from bson import ObjectId
 
 
 class DeviceTests(unittest.TestCase):
-    def __init__(self, testName):
-        unittest.TestCase.__init__(self, testName)
+    def setUp(self):
         self.devices = repositories.DeviceRepository(DeviceTests.collection)
         self.house1id = ObjectId()
         self.room1id = ObjectId()
         self.device1id = self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat", 1, None, "example")
         self.device2id = self.devices.add_device(self.house1id, None, "Kitchen Motion Sensor", "motion_sensor", 1, None, "example")
         self.device3id = self.devices.add_device(self.house1id, None, "Kitchen Light Switch", "light_switch", 1, None, "example")
+
+    def tearDown(self):
+        self.devices.clear_db()
 
     def test_DeviceAddedCorrectly(self):
         device3 = self.devices.get_device_by_id(self.device3id)
@@ -82,7 +84,7 @@ class DeviceTests(unittest.TestCase):
         all_devices = self.devices.get_all_devices()
         self.devices.remove_device(self.device3id)
         all_remaining_devices = self.devices.get_all_devices()
-        self.assertEqual(len(all_remaining_devices), len(all_devices) - 1, "Incorrect number of remaining devices.")
+        self.assertEqual(len(all_remaining_devices), 2, "Incorrect number of remaining devices.")
 
     def test_DevicesCannotHaveSameName(self):
         with self.assertRaisesRegex(AssertionError, "There is already a device with this name."):

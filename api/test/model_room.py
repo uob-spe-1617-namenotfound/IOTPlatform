@@ -5,13 +5,15 @@ from bson import ObjectId
 
 
 class RoomTests(unittest.TestCase):
-    def __init__(self, testName):
-        unittest.TestCase.__init__(self, testName)
+    def setUp(self):
         self.rooms = repositories.RoomRepository(RoomTests.collection)
         self.house1id = ObjectId()
         self.room1id = self.rooms.add_room(self.house1id, "Living Room")
         self.room2id = self.rooms.add_room(self.house1id, "Kitchen")
         self.room3id = self.rooms.add_room(self.house1id, "Bathroom")
+
+    def tearDown(self):
+        self.rooms.clear_db()
 
     def test_RoomAddedCorrectly(self):
         room3 = self.rooms.get_room_by_id(self.room3id)
@@ -37,7 +39,7 @@ class RoomTests(unittest.TestCase):
         all_rooms = self.rooms.get_all_rooms()
         self.rooms.remove_room(self.room3id)
         all_remaining_rooms = self.rooms.get_all_rooms()
-        self.assertEqual(len(all_remaining_rooms), len(all_rooms) - 1, "Incorrect number of remaining rooms.")
+        self.assertEqual(len(all_remaining_rooms), 2, "Incorrect number of remaining rooms.")
 
     def test_RoomsCannotHaveSameName(self):
         with self.assertRaisesRegex(AssertionError, "There is already a room with this name."):

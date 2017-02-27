@@ -17,6 +17,10 @@ class UserRepository(Repository):
         Repository.__init__(self, mongo_collection)
 
     def add_user(self, name, password_hash, email_address, is_admin):
+        all_users = self.get_all_users()
+        for user in all_users:
+            other_email = user.get_user_attributes()['email_address']
+            assert(email_address != other_email), "There is already an account with this email."
         user = self.collection.insert_one({'name': name, 'password_hash': password_hash,
                                            'email_address': email_address, 'is_admin': is_admin})
         return user.inserted_id
@@ -45,6 +49,10 @@ class HouseRepository(Repository):
         Repository.__init__(self, mongo_collection)
 
     def add_house(self, user_id, name):
+        user_houses = self.get_houses_for_user(user_id)
+        for house in user_houses:
+            other_name = house.get_house_attributes()['name']
+            assert(name != other_name), "There is already a house with this name."
         house = self.collection.insert_one({'user_id': user_id, 'name': name})
         return house.inserted_id
 
@@ -99,6 +107,10 @@ class RoomRepository(Repository):
         Repository.__init__(self, mongo_collection)
 
     def add_room(self, house_id, name):
+        house_rooms = self.get_rooms_for_house(house_id)
+        for room in house_rooms:
+            other_name = room.get_room_attributes()['name']
+            assert(name != other_name), "There is already a room with this name."
         room = self.collection.insert_one({'house_id': house_id, 'name': name})
         return room.inserted_id
 
@@ -174,6 +186,10 @@ class DeviceRepository(Repository):
             self.update_device_reading(device)
 
     def add_device(self, house_id, room_id, name, device_type, power_state, configuration, vendor):
+        house_devices = self.get_devices_for_house(house_id)
+        for device in house_devices:
+            other_name = device.get_device_attributes()['name']
+            assert(name != other_name), "There is already a device with this name."
         device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
                                              'name': name, 'device_type': device_type,
                                              'power_state': power_state,
