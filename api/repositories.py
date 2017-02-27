@@ -20,7 +20,8 @@ class UserRepository(Repository):
         all_users = self.get_all_users()
         for user in all_users:
             other_email = user.get_user_attributes()['email_address']
-            assert(email_address != other_email), "There is already an account with this email."
+            if email_address == other_email:
+                raise Exception("There is already an account with this email.")
         user = self.collection.insert_one({'name': name, 'password_hash': password_hash,
                                            'email_address': email_address, 'is_admin': is_admin})
         return user.inserted_id
@@ -52,7 +53,8 @@ class HouseRepository(Repository):
         user_houses = self.get_houses_for_user(user_id)
         for house in user_houses:
             other_name = house.get_house_attributes()['name']
-            assert(name != other_name), "There is already a house with this name."
+            if name == other_name:
+                raise Exception("There is already a house with this name.")
         house = self.collection.insert_one({'user_id': user_id, 'name': name})
         return house.inserted_id
 
@@ -110,7 +112,8 @@ class RoomRepository(Repository):
         house_rooms = self.get_rooms_for_house(house_id)
         for room in house_rooms:
             other_name = room.get_room_attributes()['name']
-            assert(name != other_name), "There is already a room with this name."
+            if name == other_name:
+                raise Exception("There is already a room with this name.")
         room = self.collection.insert_one({'house_id': house_id, 'name': name})
         return room.inserted_id
 
@@ -189,7 +192,8 @@ class DeviceRepository(Repository):
         house_devices = self.get_devices_for_house(house_id)
         for device in house_devices:
             other_name = device.get_device_attributes()['name']
-            assert(name != other_name), "There is already a device with this name."
+            if name == other_name:
+                raise Exception("There is already a device with this name.")
         device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
                                              'name': name, 'device_type': device_type,
                                              'power_state': power_state,
@@ -197,7 +201,7 @@ class DeviceRepository(Repository):
                                              'vendor': vendor})
         device_id = device.inserted_id
         self.collection.update_one({'_id': device_id}, {"$set": {'last_read': 0}})
-        # self.set_device_type(device_id)
+        self.set_device_type(device_id)
         device = self.get_device_by_id(device_id=device_id)
         self.update_device_reading(device)
         return device_id
@@ -272,10 +276,10 @@ class DeviceRepository(Repository):
     def set_target_temperature(self, device_id, temp):
         device = self.collection.find_one({'_id': device_id})
         assert (device['device_type'] == "thermostat"), "Device is not a thermostat."
-        assert ('locked_min_temperature' not in device or device[
-            'locked_min_temperature'] <= temp), "Chosen temperature is too low."
-        assert ('locked_max_temperature' not in device or device[
-            'locked_max_temperature'] >= temp), "Chosen temperature is too high."
+        if device['locked_min_temperature'] > temp:
+            raise Exception("Chosen temperature is too low.")
+        if device['locked_max_temperature'] < temp:
+            raise Exception("Chosen temperature is too high.")
         self.collection.update_one({'_id': device_id}, {"$set": {'target_temperature': temp}}, upsert=False)
         device = self.get_device_by_id(device_id)
         device.configure_target_temperature(temp)
@@ -297,8 +301,7 @@ class DeviceRepository(Repository):
             new_max_temperature = (device['locked_max_temp'] - 32) * 5 / 9
             new_min_temperature = (device['locked_min_temp'] - 32) * 5 / 9
             new_last_temperature = (device['last_temperature'] - 32) * 5 / 9
-        self.collection.update_one({'_id': device_id}, {"$set": {'target_temperature': new_target_temperature}},
-                               upsert=False)
+        self.collection.update_one({'_id': device_id}, {"$set": {'target_temperature': new_target_temperature}}, upsert=False)
         self.collection.update_one({'_id': device_id}, {"$set": {'locked_max_temp': new_max_temperature}}, upsert=False)
         self.collection.update_one({'_id': device_id}, {"$set": {'locked_min_temp': new_min_temperature}}, upsert=False)
         self.collection.update_one({'_id': device_id}, {"$set": {'last_temperature': new_last_temperature}}, upsert=False)

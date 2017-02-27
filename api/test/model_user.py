@@ -6,7 +6,6 @@ import unittest
 class UserTests(unittest.TestCase):
     def setUp(self):
         self.users = repositories.UserRepository(UserTests.collection)
-        self.users.clear_db()
         self.user1id = self.users.add_user("Benny Clark", "xxxxxxxx", "benny@example.com", False)
         self.user2id = self.users.add_user("Floris Kint", "xxxxxxxx", "floris@example.com", True)
         self.user3id = self.users.add_user("Ben Fossett", "xxxxxxxx", "ben@example.com", True)
@@ -33,5 +32,5 @@ class UserTests(unittest.TestCase):
         self.assertEqual(len(all_remaining_users), 2, "A user has not been removed.")
 
     def test_UsersCannotHaveSameEmail(self):
-        with self.assertRaisesRegex(AssertionError, "There is already an account with this email."):
+        with self.assertRaisesRegex(Exception, "There is already an account with this email."):
             self.users.add_user("Benny Smith", "xxxxxxxx", "benny@example.com", False)

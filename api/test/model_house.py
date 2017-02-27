@@ -41,5 +41,5 @@ class HouseTests(unittest.TestCase):
         self.assertEqual(len(all_remaining_houses), 2, "Incorrect number of remaining houses.")
 
     def test_HousesCannotHaveSameName(self):
-        with self.assertRaisesRegex(AssertionError, "There is already a house with this name."):
+        with self.assertRaisesRegex(Exception, "There is already a house with this name."):
             self.houses.add_house(self.user1id, "Benny's House")

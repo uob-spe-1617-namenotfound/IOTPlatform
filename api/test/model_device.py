@@ -87,5 +87,5 @@ class DeviceTests(unittest.TestCase):
         self.assertEqual(len(all_remaining_devices), 2, "Incorrect number of remaining devices.")
 
     def test_DevicesCannotHaveSameName(self):
-        with self.assertRaisesRegex(AssertionError, "There is already a device with this name."):
+        with self.assertRaisesRegex(Exception, "There is already a device with this name."):
             self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat", 1, None, "example")
