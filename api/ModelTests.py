@@ -1,4 +1,4 @@
-from data_model import model
+from api import model
 import unittest
 
 

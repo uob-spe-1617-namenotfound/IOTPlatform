@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block page_content %}
+    <h1>Welcome!</h1>
+
+    <ul class="nav nav-pills">
+        <li role="presentation"><a href="{{ url_for('.admin') }}">List of Users</a></li>
+        <li role="presentation"><a href="{{ url_for('.admin_map') }}">Map</a></li>
+        <li role="presentation" class="active"><a href="{{ url_for('.admin_faulty_devices') }}">Faulty devices</a></li>
+    </ul>
+
+
+    {% if devices %}
+        <h3>Faulty devices</h3>
+        <table class="table table-striped">
+            <tr>
+                <th>Device ID</th>
+                <th>Device Name</th>
+                <th>User Contact details</th>
+                <th>Device Error</th>
+            </tr>
+            {% for device in devices %}
+                <tr>
+                    <td>
+                        {{ device.device.device_id }}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('.admin_index', user_id=device.user["user_id"]) }}">{{ device.device.name }}</a>
+                    </td>
+                    <td>
+                        {{ device.user["email_address"] }}
+                    </td>
+                    <td>
+                        {{ device.device.last_read.error }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>All devices are functioning perfectly!</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block page_content %}
+    <h1> Home Themes </h1>
+    <br>
+    <ul class="nav nav-pills">
+        <li role="presentation" class="dropdown active">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="True"
+               aria-expanded="False">
+                <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add New Theme
+            </a>
+            <ul class="dropdown-menu">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Theme Name" aria-describedby="basic-addon2">
+                    <span class="input-group-addon" id="basic-addon2"> <span
+                            class="glyphicon glyphicon-plus"></span></span>
+                </div>
+            </ul>
+        </li>
+
+        <li role="presentation" class="dropdown active">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="True"
+               aria-expanded="False">
+                <span class="glyphicon glyphicon-minus" aria-hidden="true"></span> Remove Existing Theme
+            </a>
+            <ul class="dropdown-menu">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Theme Name" aria-describedby="basic-addon2">
+                    <span class="input-group-addon" id="basic-addon2"> <span
+                            class="glyphicon glyphicon-minus"></span></span>
+                </div>
+            </ul>
+        </li>
+    </ul>
+    <br>
+    {% if themeinfo %}
+        <b><p> Below is a list of all of your set themes. </p></b>
+
+        <table class="table table-striped">
+            <tr>
+                <th> Theme Name</th>
+                <th> Theme Status</th>
+                <th></th>
+            </tr>
+            {% for theme in themeinfo %}
+                <tr>
+                    <td><a href="#" class="btn btn-primary" role="button" data-toggle="modal"
+                           data-target="#myModal">{{ theme.name }}</a></td>
+                    <td> {{ theme.theme_status }} </td>
+                    <td><a href="#" class="btn btn-xs btn-default"
+                           data-target="status">
+                        Enable
+                    </a> <a href="#" class="btn btn-xs btn-default"
+                            data-target="status">
+                        Disable
+                    </a></td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h3 class="modal-title" id="myModalLabel"> Devices in theme</h3>
+                </div>
+                <div class="modal-body">
+                    <label class="control-label"> Theme settings: </label>
+                    <ul>
+                        <form>
+
+                            <h4> Motion Sensors in Theme: </h4>
+                            <form action="">
+                                <input type="radio" name="motionsensor" value="ON" checked/> Motion Sensor is ON
+                                <input type="radio" name="motionsensor" value="OFF"> Motion Sensor is OFF <br>
+                            </form>
+                            <hr>
+                            <h4> Thermostats in Theme: </h4>
+                            <form action="">
+                                <input type="radio" name="motionsensor" value="ON" checked/> Turn On Thermostats
+                                <input type="radio" name="motionsensor" value="OFF"> Turn off Thermostats <br>
+                            </form>
+                            <h5> Set Targer Temperature for all Thermostats: </h5>
+
+                            <div class="center">
+                                <p>
+                                </p>
+                                <div class="input-group">
+          <span class="input-group-btn">
+              <button type="button" class="btn btn-default btn-number" data-type="minus" data-field="quant[1]">
+                  <span class="glyphicon glyphicon-minus"></span>
+              </button>
+          </span>
+                                    <input type="text" name="quant[1]" class="form-control input-number" value="21"
+                                           min="14" max="28">
+                                    <span class="input-group-btn">
+              <button type="button" class="btn btn-default btn-number" data-type="plus" data-field="quant[1]">
+                  <span class="glyphicon glyphicon-plus"></span>
+              </button>
+          </span> </input>
+                                </div>
+                                <hr>
+                                <h4> Light Switches in Theme: </h4>
+                                <form action="">
+                                    <input type="radio" name="motionsensor" value="ON" checked/> Turn ON Light Switch
+                                    <input type="radio" name="motionsensor" value="OFF"> Turn Off Light Switch <br>
+                                    <hr>
+                                </form>
+
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
