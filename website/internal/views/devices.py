@@ -4,7 +4,7 @@ from wtforms import SelectField, StringField, SubmitField, DecimalField
 from wtforms.validators import URL
 
 import data_interface
-from main import app
+from internal import internal_site
 
 
 class PairNewDeviceForm(FlaskForm):
@@ -45,13 +45,13 @@ actions = {"door_sensor": ['Turn on', 'Turn Off', 'No Action'],
            "motion_sensor": ['Turn on', 'Turn Off', 'No Action']}
 
 
-@app.route('/devices')
+@internal_site.route('/devices')
 def show_devices():
     devices = data_interface.get_user_default_devices()
-    return render_template("devices.html", paireddevices=devices, groups=groups, groupactions=groupactions)
+    return render_template("internal/devices.html", paireddevices=devices, groups=groups, groupactions=groupactions)
 
 
-@app.route('/devices/new', methods=['POST', 'GET'])
+@internal_site.route('/devices/new', methods=['POST', 'GET'])
 def add_new_device():
     form = PairNewDeviceForm()
     if form.validate_on_submit():
@@ -60,7 +60,7 @@ def add_new_device():
                                       name=form.name.data)
         flash("New device successfully added!", 'success')
         return redirect(url_for('.show_devices'))
-    return render_template("new_device.html", new_device_form=form)
+    return render_template("internal/new_device.html", new_device_form=form)
 
 
 class SetThermostatTargetForm(FlaskForm):
@@ -68,7 +68,7 @@ class SetThermostatTargetForm(FlaskForm):
     submit = SubmitField()
 
 
-@app.route('/device/<string:device_id>')
+@internal_site.route('/device/<string:device_id>')
 def show_device(device_id, form=None):
     triggers = None
     device = data_interface.get_device_info(device_id)
@@ -90,12 +90,12 @@ def show_device(device_id, form=None):
     door_sensors = filter(lambda x: x['device_id'] == "door_sensor", all_user_devices)
     motion_sensors = filter(lambda x: x['device_id'] == "motion_sensor", all_user_devices)
     light_switches = filter(lambda x: x['device_id'] == "light_switch", all_user_devices)
-    return render_template("deviceactions.html", device=device, triggers=triggers, actors=actors,
+    return render_template("internal/deviceactions.html", device=device, triggers=triggers, actors=actors,
                            thermostats=thermostats, light_switches=light_switches, door_sensors=door_sensors,
                            motion_sensors=motion_sensors, change_settings_form=form)
 
 
-@app.route('/device/<string:device_id>/configure', methods=['POST'])
+@internal_site.route('/device/<string:device_id>/configure', methods=['POST'])
 def set_device_settings(device_id):
     form = SetThermostatTargetForm()
     if form.validate_on_submit():
@@ -105,7 +105,7 @@ def set_device_settings(device_id):
     return show_device(device_id, form)
 
 
-@app.route('/device/<string:device_id>/switch/configure/<int:state>')
+@internal_site.route('/device/<string:device_id>/switch/configure/<int:state>')
 def set_switch_settings(device_id, state):
     error = data_interface.set_switch_state(device_id, state)
     if error is not None:
