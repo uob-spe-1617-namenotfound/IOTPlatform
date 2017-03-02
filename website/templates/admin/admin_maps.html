@@ -5,6 +5,7 @@
 <ul class="nav nav-pills">
         <li role="presentation"><a href="{{ url_for('.admin') }}">List of Users</a></li>
         <li role="presentation" class="active"><a href="#">Map</a></li>
+        <li role="presentation"><a href="{{ url_for('.admin_faulty_devices') }}">Faulty devices</a></li>
     </ul>
 
 <br>
@@ -21,7 +22,7 @@
         <script>
 
                 function initMap() {
-                    var uluru = {lat: -25.363, lng: 131.044};
+                    var uluru = {lat: 54.503595, lng: -4.229679};
                     var map = new google.maps.Map(document.getElementById('map'), {
                         zoom: 4,
                         center: uluru

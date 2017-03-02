@@ -1,102 +1,124 @@
 {% extends "base.html" %}
 {% block page_content %}
-    <h1> Motion Sensor Action Settings </h1>
-    <hr>
-    <h5> Motion Sensor (ON/OFF) : </h5>
-    <form action="">
-        <input type="radio" name="motionsensor" value="ON" checked/> Motion Sensor is ON<br>
-        <input type="radio" name="motionsensor" value="OFF"> Motion Sensor is OFF<br>
-    </form>
-    <hr>
-    <br>
-    <h3> Kitchen Motion Triggers: </h3>
-    <hr>
-    <div class="dropdown">
-        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> When No Motion is Detected
-            <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" role="menu">
-            <li><a href="#lightswitch" data-toggle="modal"> Light Switch </a></li>
-            <li><a href="#"> Thermostat </a></li>
-            <li class="divider"></li>
-            <li><a href="#"> Send E-mail </a></li>
-        </ul>
-    </div>
-    <div class="modal fade" id="lightswitch" data-target="#lightswitch">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header orange">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                            aria-hidden="true">&times;</span>
-                    </button>
-                    <h4 class="modal-title"><strong></strong> Light Switch</h4>
-                    <ul>
-                        <li>
-                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                                value="ON"
-                                                                checked> Turn on </label>
-                        </li>
-                        <li>
-                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                                value="OFF">
-                                Turn off </label>
-                        </li>
-                        <li><label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                                value="OFF">
-                            No Action </label>
-                        </li>
-                    </ul>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary"> Done</button>
+    {% if device.device_type == 'motion_sensor' %}
+        <h1> Motion Sensor Action Settings </h1>
+        <hr>
+        <h5> Motion Sensor (ON/OFF) : </h5>
+        <form action="">
+            <li><input type="radio" name="motionsensor" value="ON" checked/> Motion Sensor is ON</li>
+            <br>
+            <li><input type="radio" name="motionsensor" value="OFF"> Motion Sensor is OFF</li>
+            <br>
+        </form>
+    {% elif device.device_type == 'light_switch' %}
+        <h1> Light Switch Action Settings </h1>
+        <hr>
+        {% if device.last_read %}
+            {% if device.last_read.data.power_state == 1 %}
+                Switch is on.<a class="btn btn-default btn-primary"
+                                href="{{ url_for('.set_switch_settings', device_id=device.device_id, state=0) }}">Turn
+                it off</a>
+            {% else %}
+                Switch is off.<a class="btn btn-default btn-primary"
+                                 href="{{ url_for('.set_switch_settings', device_id=device.device_id, state=1) }}">Turn
+                it on</a>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-danger">No data available</div>
+        {% endif %}
+    {% elif device.device_type == "thermostat" %}
+        <h1> Thermostat Action Settings </h1>
+        <hr>
+        <h5> Thermostat (ON/OFF) : </h5>
+        <form action="">
+            <li><input type="radio" name="motionsensor" value="ON" checked/>Thermostat is ON</li>
+            <br>
+            <li><input type="radio" name="motionsensor" value="OFF">Thermostat is OFF</li>
+            <br>
+        </form>
+        {% if device.last_read %}
+            {% if device.last_read.error %}
+                <div class="alert alert-danger">
+                    Error: {{ device.last_read.error }}
+                </div>
+            {% else %}
+                <h4>Current temperature:
+                    {{ device.last_read.data.temperature }}℃
+                </h4>
+                <h4>Target temperature:
+                    {{ device.last_read.data.target }}℃
+                </h4>
+            {% endif %}
+        {% else %}
+            <p>
+                <i>No actual data available yet.</i>
+            </p>
+        {% endif %}
+        {{ wtf.quick_form(change_settings_form, action=url_for('.set_device_settings', device_id=device.device_id)) }}
+        <hr>
+    {% elif device.device_type == "door_sensor" %}
+        <h1> Light Switch Action Settings </h1>
+        <hr>
+        <h5> Lights (ON/OFF) : </h5>
+        <form action="">
+            <li><input type="radio" name="motionsensor" value="ON" checked/> Light switch is ON</li>
+            <br>
+            <li><input type="radio" name="motionsensor" value="OFF"> Light switch is OFF</li>
+            <br>
+        </form>
+    {% else %}
+        <div class="alert alert-danger">Unknown device type!</div>
+    {% endif %}
+    <h4>Triggers</h4>
+    {% for trigger in triggers %}
+        <div class="dropdown">
+            <button type="button" class="btn btn-primary dropdown-toggle"
+                    data-toggle="dropdown"> {{ trigger.name }}
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                {% for actor in actors %}
+                    <li><a href="" data-toggle="modal"
+                           data-target="#modal_actor_{{ actor.id }}"> {{ actor.name }} </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <br>
+    {% endfor %}
+    {% for actor in actors %}
+        <div class="modal fade" id="modal_actor_{{ actor.id }}">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header orange">
+                        <button type="button" class="close" data-dismiss="modal"
+                                aria-label="Close"><span
+                                aria-hidden="true">&times;</span>
+                        </button>
+                        <h4 class="modal-title"><strong>{{ actor.name }}</strong></h4>
+                        <div class="modal-body">
+                            <form>
+                                <ul>
+                                    {% for action in actor.action %}
+                                        <li>
+                                            <label class="radio-inline"> <input type="radio"
+                                                                                name="{{ actor.id }}_actions"
+                                                                                value="{{ action }}"
+                                            > {{ action }}
+                                            </label>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close
+                            </button>
+                            <button type="button" class="btn btn-primary"> Done</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <br>
-    <br>
-    <div class="dropdown">
-        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> When Motion is Detected
-            <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" role="menu">
-            <li><a href="#lightswitch" data-toggle="modal"> Light Switch </a></li>
-            <li><a href="#"> Thermostat </a></li>
-            <li class="divider"></li>
-            <li><a href="#"> Send E-mail </a></li>
-        </ul>
-    </div>
-    <div class="modal fade" id="lightswitch" data-target="#lightswitch">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header orange">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                            aria-hidden="true">&times;</span>
-                    </button>
-                    <h4 class="modal-title"><strong></strong> Light Switch</h4>
-                    <ul>
-                        <li>
-                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                                value="ON"> Turn on </label>
-                        </li>
-                        <li>
-                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                                value="OFF">
-                                Turn off </label>
-                        </li>
-                        <li><label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                                value="OFF">
-                            No Action </label>
-                        </li>
-
-                    </ul>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary"> Done</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    {% endfor %}
 {% endblock %}

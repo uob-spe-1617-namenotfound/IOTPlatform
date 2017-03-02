@@ -1,121 +1,110 @@
 {% extends "base.html" %}
 {% block page_content %}
-    <!-- Modal -->
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                            aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="myModalLabel">Pair New Device</h4>
-                </div>
-                <div class="modal-body">
-                    <label class="control-label"> Devices to pair: </label>
-                    <ul>
-                        <li>
-                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                                value="ON"
-                                                                checked> Motion Sensor </label>
-                        </li>
-                        <li>
-                            <label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                                value="OFF">
-                                Thermostat </label>
-                        </li>
-                        <li><label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                                value="OFF">
-                            Switch </label>
-                        </li>
-                        <li><label class="radio-inline"> <input type="radio" name="MotionSensor" id="MotionSensor"
-                                                                value="OFF">
-                            Door/Window Sensor </label>
-                        </li>
-                    </ul>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Pair New Device</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <h2>Devices</h2>
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+    <a type="button" class="btn btn-primary" href="{{ url_for('.add_new_device') }}">
         Pair New Device
-    </button>
-    <p>
-        Below is a list of all your current devices.
-    </p>
-    <ol>
-        <li>Kitchen Thermostat
-            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
-                <span class="glyphicon glyphicon-remove"></span>
-                Delete
-            </a>
-            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
-                <span class="glyphicon glyphicon-plus"></span>
-                Add to group
-            </a>
-        </li>
-        <li>Living Room Sensor
-            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
-                <span class="glyphicon glyphicon-remove"></span>
-                Delete
-            </a>
-            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
-                <span class="glyphicon glyphicon-plus"></span>
-                Add to group
-            </a>
-        </li>
-        <li>Bathroom Door/Window Sensor
-            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
-                <span class="glyphicon glyphicon-remove"></span>
-                Delete
-            </a>
-            <a href="{{ url_for('.devices') }}" class="btn btn-xs btn-default">
-                <span class="glyphicon glyphicon-plus"></span>
-                Add to group
-            </a>
-        </li>
-    </ol>
+    </a>
+    {% if paireddevices %}
+        <p>
+            Below is a list of all your current devices.
+        </p>
+        <ol>
+            {% for device in paireddevices %}
+                <li>
+                    <a href="{{ url_for('.show_device', device_id=device._id) }}">{{ device.name }}</a>
+                    <a href="#" class="btn btn-xs btn-default" data-toggle="modal" data-target="#delete">
+                        <span class="glyphicon glyphicon-remove"></span>
+                        Delete
+                    </a>
+                    <!-- Modal -->
+                    <div class="modal fade" id="delete" role="dialog">
+                        <div class="modal-dialog modal-sm">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h4 class="modal-title">Delete existing device:</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Are you sure you want to delete this device? </p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Yes
+                                    </button>
+                                    <button type="button" class="btn btn-primary">Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#" class="btn btn-xs btn-default" data-toggle="modal"
+                       data-target="#addtogroup">
+                        <span class="glyphicon glyphicon-plus"></span>
+                        Add to group
+                    </a>
+                    <!-- Modal -->
+                    <div id="addtogroup" class="modal fade" role="dialog">
+                        <div class="modal-dialog">
+                            <!-- Modal content-->
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h4 class="modal-title"> Add device to group</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <p> Select from the following groups: </p>
+                                    <form>
+                                        {% for group in groups %}
+                                            <input type="radio" name='addtogroup'
+                                                   value="group"><strong> {{ group.name }}</strong></input> <br>
+                                        {% endfor %}
+                                    </form>
+                                    <br>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary">Save changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ol>
+    {% else %}
+        <h1>No data to show!</h1>
+    {% endif %}
+
     <h2>Device Groups </h2>
-
+    <div class="alert alert-warning"><strong>Warning!</strong> This section only contains hardcoded data.</div>
     <a href="#" class="btn btn-primary"> Create New Device Group</a>
-
+    <br>
     <table class="table table-condensed table-striped">
         <tr>
             <th>Device Group Name</th>
             <th>Devices</th>
             <th>Actions</th>
         </tr>
-        <tr>
-            <td>Ground Floor Thermostats</td>
-            <td>
-                <ul>
-                    <li>Kitchen Thermostat</li>
-                    <li>Dining Room Thermostat</li>
-                    <li>Bathroom Thermostat</li>
-                </ul>
-            </td>
-            <td>
-                <button class="btn btn-default btn-xs"> Set Temperature</button>
-                <button class="btn btn-default btn-xs"> Turn On</button>
-                <button class="btn btn-default btn-xs"> Turn Off</button>
-            </td>
-        </tr>
-        <tr>
-            <td>Bedrooms Motion Sensors</td>
-            <td>
-                <ul>
-                    <li>David's Room Motion Sensor</li>
-                    <li>Ann's Room Motion Sensor</li>
-                </ul>
-            </td>
-            <td>
-                <button class="btn btn-default btn-xs"> Turn On</button>
-                <button class="btn btn-default btn-xs"> Turn Off</button>
-            </td>
-        </tr>
+        {% if groups %}
+            {% for group in groups %}
+                <tr>
+                <td>
+                    {{ group.name }}
+                </td>
+                <td>
+                    <ul>
+                        {% for device in group.device_ids %}
+                            <li>
+                                {{ device.text }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                <td>
+                    {% for group in group.group_actions %}
+                        <button class="btn btn-default btn-xs"> {{ group }}</button>
+                    {% endfor %}
+                </td>
+            {% endfor %}
+        {% endif %}
     </table>
 {% endblock %}
