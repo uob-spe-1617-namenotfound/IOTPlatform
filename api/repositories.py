@@ -81,29 +81,6 @@ class HouseRepository(Repository):
         return target_houses
 
 
-class HouseGroupRepository(Repository):
-    def __init__(self, mongo_collection):
-        Repository.__init__(self, mongo_collection)
-
-    def add_house_group(self, house_ids, name):
-        house_group = self.collection.insert_one({'house_ids': house_ids, 'name': name})
-        return house_group.inserted_id
-
-    def add_house_to_group(self, house_group_id, house_id):
-        self.collection.update_one({'_id': house_group_id}, {"$push": {'house_ids': house_id}}, upsert=False)
-
-    def remove_house_group(self, house_group_id):
-        self.collection.delete_one({'_id': house_group_id})
-
-    def remove_house_from_group(self, house_group_id, house_id):
-        self.collection.update_one({'_id': house_group_id}, {"$pull": {'device_ids': house_id}}, upsert=False)
-
-    def get_house_group_by_id(self, house_group_id):
-        house_group = self.collection.find_one({'_id': house_group_id})
-        target_house_group = HouseGroup(house_group['house_group_id'], house_group['house_ids'], house_group['name'])
-        return target_house_group
-
-
 class RoomRepository(Repository):
     def __init__(self, mongo_collection):
         Repository.__init__(self, mongo_collection)
@@ -138,29 +115,6 @@ class RoomRepository(Repository):
         for room in rooms:
             target_rooms.append(Room(room['_id'], room['house_id'], room['name']))
         return target_rooms
-
-
-class RoomGroupRepository(Repository):
-    def __init__(self, mongo_collection):
-        Repository.__init__(self, mongo_collection)
-
-    def add_room_group(self, room_ids, name):
-        room_group = self.collection.insert_one({'room_ids': room_ids, 'name': name})
-        return room_group.inserted_id
-
-    def add_room_to_group(self, room_group_id, room_id):
-        self.collection.update_one({'_id': room_group_id}, {"$push": {'room_ids': room_id}}, upsert=False)
-
-    def remove_room_group(self, room_group_id):
-        self.collection.delete_one({'_id': room_group_id})
-
-    def remove_room_from_group(self, room_group_id, room_id):
-        self.collection.update_one({'_id': room_group_id}, {"$pull": {'device_ids': room_id}}, upsert=False)
-
-    def get_room_group_by_id(self, room_group_id):
-        room_group = self.collection.find_one({'_id': room_group_id})
-        target_room_group = RoomGroup(room_group['room_group_id'], room_group['room_ids'], room_group['name'])
-        return target_room_group
 
 
 class DeviceRepository(Repository):
@@ -340,7 +294,4 @@ class TriggerRepository(Repository):
         pass
 
     def get_trigger_by_id(self, trigger_id):
-        pass
-
-    def generate_new_trigger_id(self):
         pass
