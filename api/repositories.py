@@ -1,7 +1,6 @@
 import logging
 
-from model import HouseGroup, House, Room, RoomGroup, User, Device, DeviceGroup, Thermostat, MotionSensor, LightSwitch, \
-    OpenSensor
+from model import House, Room, User, Device, DeviceGroup, Thermostat, MotionSensor, LightSwitch, OpenSensor
 
 
 class Repository(object):
