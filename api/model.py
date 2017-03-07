@@ -36,24 +36,6 @@ class House(object):
     def get_house_id(self):
         return self.house_id
 
-    @classmethod
-    def from_dict(cls, d):
-        h = House(user_id=d['user_id'] if 'user_id' in d else None,
-                  house_id=d['_id'] if '_id' in d else None,
-                  name=d['name'] if 'name' in d else "")
-        return h
-
-
-# House groups could be used for fleet management or for people with multiple houses
-class HouseGroup(object):
-    def __init__(self, house_group_id, house_ids, name):
-        self.house_group_id = house_group_id
-        self.house_ids = house_ids
-        self.name = name
-
-    def get_house_group_attributes(self):
-        return {'house_group_id': self.house_group_id, 'house_ids': self.house_ids, 'name': self.name}
-
 
 class Room(object):
     def __init__(self, room_id, house_id, name):
@@ -66,17 +48,6 @@ class Room(object):
 
     def get_room_id(self):
         return self.room_id
-
-
-# Room groups could be things like 'Upstairs', or to be used for templates
-class RoomGroup(object):
-    def __init__(self, room_group_id, room_ids, name):
-        self.room_group_id = room_group_id
-        self.room_ids = room_ids
-        self.name = name
-
-    def get_room_group_attributes(self):
-        return {'room_group_id': self.room_group_id, 'room_ids': self.room_ids, 'name': self.name}
 
 
 class Device(object):
