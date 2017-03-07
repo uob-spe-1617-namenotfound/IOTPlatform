@@ -66,11 +66,12 @@ class HouseRepository(Repository):
         return target_house
 
     def get_houses_for_user(self, user_id):
-        all_houses = self.collection.find({})
-        logging.debug("Found {} houses".format(all_houses.count()))
-        for h in all_houses:
-            logging.debug("house: {}".format(h))
-        return [House.from_dict(h) for h in self.collection.find({'user_id': user_id})]
+        houses = self.collection.find({'user_id': user_id})
+        target_houses = []
+        logging.debug("Found {} houses".format(houses.count()))
+        for house in houses:
+            target_houses.append(House(house['_id'], house['user_id'], house['name']))
+        return target_houses
 
     def get_all_houses(self):
         houses = self.collection.find()

@@ -36,13 +36,6 @@ class House(object):
     def get_house_id(self):
         return self.house_id
 
-    @classmethod
-    def from_dict(cls, d):
-        h = House(user_id=d['user_id'] if 'user_id' in d else None,
-                  house_id=d['_id'] if '_id' in d else None,
-                  name=d['name'] if 'name' in d else "")
-        return h
-
 
 class Room(object):
     def __init__(self, room_id, house_id, name):
