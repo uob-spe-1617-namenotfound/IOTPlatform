@@ -1,6 +1,7 @@
-from flask import render_template
+from flask import flash, redirect, url_for, render_template
 
 import data_interface
+import utilities.session
 from admin import admin_site
 
 
@@ -40,4 +41,6 @@ def map():
 
 @admin_site.route('/logout')
 def logout():
-    return "To be implemented"
+    utilities.session.logout()
+    flash('Successfully logged out', 'success')
+    return redirect(url_for('public.index'))

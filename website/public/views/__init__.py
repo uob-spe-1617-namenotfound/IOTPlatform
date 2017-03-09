@@ -1,6 +1,9 @@
-from flask import render_template
+from flask import render_template, redirect, url_for, flash
 
+import data_interface.users
+import utilities.session
 from public import public_site
+from public.views.forms import RegisterForm, LoginForm
 
 
 @public_site.route('/')
@@ -15,11 +18,34 @@ def help():
     return render_template('public/help.html')
 
 
-@public_site.route('/register')
+@public_site.route('/register', methods=['GET', 'POST'])
 def register():
-    return "Not implemented yet"
+    form = RegisterForm()
+    if form.validate_on_submit():
+        result, error = data_interface.users.register_user(
+            email_address=form.email_address.data,
+            password=form.password.data,
+            name=form.name.data
+        )
+        if error is None:
+            flash('Successfully registered', 'success')
+            return redirect(url_for('.login'))
+        flash(str(error), 'danger')
+    return render_template('public/register.html', register_form=form)
 
 
-@public_site.route('/login')
+@public_site.route('/login', methods=['GET', 'POST'])
 def login():
-    return "Not implemented yet"
+    form = LoginForm()
+    if form.validate_on_submit():
+        result, error = data_interface.users.login(
+            email_address=form.email_address.data,
+            password=form.password.data
+        )
+        if error is None:
+            error = utilities.session.login(result['user_id'], result['admin'])
+        if error is None:
+            flash('Successfully logged in', 'success')
+            return redirect(url_for('internal.index'))
+        flash(str(error), 'danger')
+    return render_template('public/login.html', login_form=form)
