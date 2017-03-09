@@ -29,7 +29,6 @@ import json
 
 id = {'id': 46865}
 dev = requests.get('https://mihome4u.co.uk/api/v1/subdevices/list', auth=('bc15050@mybristol.ac.uk', 'test1234'))
-power_on = requests.get('https://mihome4u.co.uk/api/v1/subdevices/show', auth=('bc15050@mybristol.ac.uk', 'test1234'), json=id)
+power_on = requests.get('https://mihome4u.co.uk/api/v1/subdevices/power_on', auth=('bc15050@mybristol.ac.uk', 'test1234'), json=id)
 print(dev.content)
 print(power_on.content)
-

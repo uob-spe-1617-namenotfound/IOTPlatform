@@ -1,7 +1,6 @@
 import logging
 
-from model import HouseGroup, House, Room, RoomGroup, User, Device, DeviceGroup, Thermostat, MotionSensor, LightSwitch, \
-    OpenSensor
+from model import House, Room, User, Device, DeviceGroup, Thermostat, MotionSensor, LightSwitch, OpenSensor
 
 
 class Repository(object):
@@ -17,6 +16,11 @@ class UserRepository(Repository):
         Repository.__init__(self, mongo_collection)
 
     def add_user(self, name, password_hash, email_address, is_admin):
+        all_users = self.get_all_users()
+        for user in all_users:
+            other_email = user.get_user_attributes()['email_address']
+            if email_address == other_email:
+                raise Exception("There is already an account with this email.")
         user = self.collection.insert_one({'name': name, 'password_hash': password_hash,
                                            'email_address': email_address, 'is_admin': is_admin})
         return user.inserted_id
@@ -45,6 +49,11 @@ class HouseRepository(Repository):
         Repository.__init__(self, mongo_collection)
 
     def add_house(self, user_id, name):
+        user_houses = self.get_houses_for_user(user_id)
+        for house in user_houses:
+            other_name = house.get_house_attributes()['name']
+            if name == other_name:
+                raise Exception("There is already a house with this name.")
         house = self.collection.insert_one({'user_id': user_id, 'name': name})
         return house.inserted_id
 
@@ -57,11 +66,12 @@ class HouseRepository(Repository):
         return target_house
 
     def get_houses_for_user(self, user_id):
-        all_houses = self.collection.find({})
-        logging.debug("Found {} houses".format(all_houses.count()))
-        for h in all_houses:
-            logging.debug("house: {}".format(h))
-        return [House.from_dict(h) for h in self.collection.find({'user_id': user_id})]
+        houses = self.collection.find({'user_id': user_id})
+        target_houses = []
+        logging.debug("Found {} houses".format(houses.count()))
+        for house in houses:
+            target_houses.append(House(house['_id'], house['user_id'], house['name']))
+        return target_houses
 
     def get_all_houses(self):
         houses = self.collection.find()
@@ -71,34 +81,16 @@ class HouseRepository(Repository):
         return target_houses
 
 
-class HouseGroupRepository(Repository):
-    def __init__(self, mongo_collection):
-        Repository.__init__(self, mongo_collection)
-
-    def add_house_group(self, house_ids, name):
-        house_group = self.collection.insert_one({'house_ids': house_ids, 'name': name})
-        return house_group.inserted_id
-
-    def add_house_to_group(self, house_group_id, house_id):
-        self.collection.update_one({'_id': house_group_id}, {"$push": {'house_ids': house_id}}, upsert=False)
-
-    def remove_house_group(self, house_group_id):
-        self.collection.delete_one({'_id': house_group_id})
-
-    def remove_house_from_group(self, house_group_id, house_id):
-        self.collection.update_one({'_id': house_group_id}, {"$pull": {'device_ids': house_id}}, upsert=False)
-
-    def get_house_group_by_id(self, house_group_id):
-        house_group = self.collection.find_one({'_id': house_group_id})
-        target_house_group = HouseGroup(house_group['house_group_id'], house_group['house_ids'], house_group['name'])
-        return target_house_group
-
-
 class RoomRepository(Repository):
     def __init__(self, mongo_collection):
         Repository.__init__(self, mongo_collection)
 
     def add_room(self, house_id, name):
+        house_rooms = self.get_rooms_for_house(house_id)
+        for room in house_rooms:
+            other_name = room.get_room_attributes()['name']
+            if name == other_name:
+                raise Exception("There is already a room with this name.")
         room = self.collection.insert_one({'house_id': house_id, 'name': name})
         return room.inserted_id
 
@@ -123,36 +115,6 @@ class RoomRepository(Repository):
         for room in rooms:
             target_rooms.append(Room(room['_id'], room['house_id'], room['name']))
         return target_rooms
-
-
-class RoomGroupRepository(Repository):
-    def __init__(self, mongo_collection):
-        Repository.__init__(self, mongo_collection)
-
-    def add_room_group(self, room_ids, name):
-        room_group = self.collection.insert_one({'room_ids': room_ids, 'name': name})
-        return room_group.inserted_id
-
-    def add_room_to_group(self, room_group_id, room_id):
-        self.collection.update_one({'_id': room_group_id}, {"$push": {'room_ids': room_id}}, upsert=False)
-
-    def remove_room_group(self, room_group_id):
-        self.collection.delete_one({'_id': room_group_id})
-
-    def remove_room_from_group(self, room_group_id, room_id):
-        self.collection.update_one({'_id': room_group_id}, {"$pull": {'device_ids': room_id}}, upsert=False)
-
-    def get_room_group_by_id(self, room_group_id):
-        room_group = self.collection.find_one({'_id': room_group_id})
-        target_room_group = RoomGroup(room_group['room_group_id'], room_group['room_ids'], room_group['name'])
-        return target_room_group
-
-    def get_all_room_groups(self):
-        room_groups = self.collection.find()
-        target_room_groups = []
-        for room_group in room_groups:
-            target_room_groups.append(Room(room_group['_id'], room_group['house_id'], room_group['name']))
-        return target_room_groups
 
 
 class DeviceRepository(Repository):
@@ -181,6 +143,11 @@ class DeviceRepository(Repository):
             self.update_device_reading(device)
 
     def add_device(self, house_id, room_id, name, device_type, power_state, configuration, vendor):
+        house_devices = self.get_devices_for_house(house_id)
+        for device in house_devices:
+            other_name = device.get_device_attributes()['name']
+            if name == other_name:
+                raise Exception("There is already a device with this name.")
         device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
                                              'name': name, 'device_type': device_type,
                                              'power_state': power_state,
@@ -188,7 +155,7 @@ class DeviceRepository(Repository):
                                              'vendor': vendor})
         device_id = device.inserted_id
         self.collection.update_one({'_id': device_id}, {"$set": {'last_read': 0}})
-        # self.set_device_type(device_id)
+        self.set_device_type(device_id)
         device = self.get_device_by_id(device_id=device_id)
         self.update_device_reading(device)
         return device_id
@@ -255,7 +222,8 @@ class DeviceRepository(Repository):
 
     def set_power_state(self, device_id, power_state):
         device = self.get_device_by_id(device_id)
-        assert(device.device_type == "light_switch"), "Device is not a switch."
+        if device.device_type != "light_switch":
+            raise Exception("Device is not a switch.")
         device.configure_power_state(power_state)
         self.update_device_reading(device)
         self.collection.update_one({'_id': device_id}, {"$set": {'power_state': power_state}}, upsert=False)
@@ -263,10 +231,10 @@ class DeviceRepository(Repository):
     def set_target_temperature(self, device_id, temp):
         device = self.collection.find_one({'_id': device_id})
         assert (device['device_type'] == "thermostat"), "Device is not a thermostat."
-        assert ('locked_min_temperature' not in device or device[
-            'locked_min_temperature'] <= temp), "Chosen temperature is too low."
-        assert ('locked_max_temperature' not in device or device[
-            'locked_max_temperature'] >= temp), "Chosen temperature is too high."
+        if device['locked_min_temperature'] > temp:
+            raise Exception("Chosen temperature is too low.")
+        if device['locked_max_temperature'] < temp:
+            raise Exception("Chosen temperature is too high.")
         self.collection.update_one({'_id': device_id}, {"$set": {'target_temperature': temp}}, upsert=False)
         device = self.get_device_by_id(device_id)
         device.configure_target_temperature(temp)
@@ -288,8 +256,7 @@ class DeviceRepository(Repository):
             new_max_temperature = (device['locked_max_temp'] - 32) * 5 / 9
             new_min_temperature = (device['locked_min_temp'] - 32) * 5 / 9
             new_last_temperature = (device['last_temperature'] - 32) * 5 / 9
-        self.collection.update_one({'_id': device_id}, {"$set": {'target_temperature': new_target_temperature}},
-                               upsert=False)
+        self.collection.update_one({'_id': device_id}, {"$set": {'target_temperature': new_target_temperature}}, upsert=False)
         self.collection.update_one({'_id': device_id}, {"$set": {'locked_max_temp': new_max_temperature}}, upsert=False)
         self.collection.update_one({'_id': device_id}, {"$set": {'locked_min_temp': new_min_temperature}}, upsert=False)
         self.collection.update_one({'_id': device_id}, {"$set": {'last_temperature': new_last_temperature}}, upsert=False)
@@ -327,7 +294,4 @@ class TriggerRepository(Repository):
         pass
 
     def get_trigger_by_id(self, trigger_id):
-        pass
-
-    def generate_new_trigger_id(self):
         pass
