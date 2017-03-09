@@ -39,3 +39,7 @@ themeinfo = [{'id': '1', 'name': 'Weekend Away Theme', 'theme_status': status[0]
 @internal_site.route('/themes')
 def themes():
     return render_template("internal/themes.html", themeinfo=themeinfo, status=status)
+
+@internal_site.route("/graph")
+def graph():
+    return render_template("internal/graph.html")
