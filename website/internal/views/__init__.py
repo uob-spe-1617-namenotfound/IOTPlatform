@@ -1,10 +1,10 @@
-from flask import render_template
+from flask import render_template, redirect, flash, url_for
 
 import data_interface
 from internal import internal_site
 from internal.views import rooms, devices
 
-
+import utilities.session
 @internal_site.route('/triggers')
 def triggers():
     return render_template("internal/triggers.html")
@@ -23,7 +23,9 @@ def help():
 
 @internal_site.route('/logout')
 def logout():
-    return "To be implemented"
+    utilities.session.logout()
+    flash('Successfully logged out', 'success')
+    return redirect(url_for('public.index'))
 
 
 @internal_site.route('/account/settings')
