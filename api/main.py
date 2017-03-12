@@ -207,6 +207,33 @@ def faulty_devices():
         "error": None
     })
 
+import model
+
+
+@api.route('/house/<string:house_id>')
+def location_attr(house_id):
+    attributes = model.House.get_house_attributes(house_id)
+    attributes.update({'lat': 51.529249, 'lng': -0.117973, 'description': 'University of Bristol'})
+    return attributes
+
+
+@api.route('/device/<string:device_id')
+def faulty_device_attr(device_id):
+    attributes = model.Device.get_device_attributes(device_id)
+    attributes.update({'status': 'faulty'})
+    return attributes
+
+
+@api.route('/user/<string:user_id>')
+def faulty_user_devices(user_id):
+    faulty_devs = api.device_repository.get_faulty_devices()
+    attributes = model.User.get_user_attributes()
+    fault_check = False
+    for device in faulty_devs:
+        if device.user_id == user_id:
+            fault_check = True
+    attributes.update({'faulty': fault_check})
+
 
 from admin import *
 

@@ -57,10 +57,10 @@ class Device(object):
         self.room_id = None
         self.name = None
         self.device_type = None
-        self.power_state = None
-        self.last_read = None
         self.vendor = None
         self.configuration = None
+        self.target = {}
+        self.status = {}
         self.set_attributes(attributes)
 
     def set_attributes(self, attributes):
@@ -69,16 +69,16 @@ class Device(object):
         self.room_id = attributes['room_id']
         self.name = attributes['name']
         self.device_type = attributes['device_type']
-        self.power_state = attributes['power_state']
-        self.last_read = attributes['last_read']
+        self.target = attributes['target']
+        self.status = attributes['status']
         self.vendor = attributes['vendor'] if "vendor" in attributes else None
         self.configuration = attributes['configuration'] if "configuration" in attributes else None
 
     def get_device_attributes(self):
         return {'_id': str(self.device_id), 'device_id': str(self.device_id), 'house_id': self.house_id,
                 'room_id': self.room_id, 'name': self.name,
-                'device_type': self.device_type, 'power_state': self.power_state,
-                'last_read': self.last_read, 'vendor': self.vendor, 'configuration': self.configuration}
+                'device_type': self.device_type, 'target': self.target, 'status': self.status,
+                'vendor': self.vendor, 'configuration': self.configuration}
 
     def get_device_id(self):
         return self.device_id
@@ -129,35 +129,37 @@ class Device(object):
         return {"data": data, "timestamp": timestamp}
 
     def is_faulty(self):
-        if "error" in self.last_read and self.last_read['error'] is not None:
+        if "error" in self.status['last_read'] and self.status['last_read']['error'] is not None:
             return True
         return False
 
 
 class Thermostat(Device):
     def __init__(self, attributes):
-        self.last_temperature = None
-        self.target_temperature = None
-        self.locked_max_temp = None
-        self.locked_min_temp = None
-        self.temperature_scale = None
         Device.__init__(self, attributes)
+        self.temperature_scale = None
+        self.target['target_temperature'] = None
+        self.status['last_temperature'] = None
+        self.status['power_state'] = None
+        if self.vendor == 'netatmo':
+            self.target['locked_max_temp'] = None
+            self.target['locked_min_temp'] = None
 
     def set_attributes(self, attributes):
         attributes['device_type'] = "thermostat"
         Device.set_attributes(self, attributes=attributes)
-        self.last_temperature = get_optional_attribute(attributes, 'last_temperature')
-        self.target_temperature = get_optional_attribute(attributes, 'target_temperature')
-        self.locked_max_temp = get_optional_attribute(attributes, 'locked_max_temperature')
-        self.locked_min_temp = get_optional_attribute(attributes, 'locked_min_temperature')
         self.temperature_scale = get_optional_attribute(attributes, 'temperature_scale')
+        self.target['target_temperature'] = get_optional_attribute(attributes, 'target_temperature')
+        self.status['last_temperature'] = get_optional_attribute(attributes, 'last_temperature')
+        self.status['power_state'] = get_optional_attribute(attributes, 'power_state')
+        if self.vendor == 'netatmo':
+            self.target['locked_max_temp'] = get_optional_attribute(attributes, 'locked_max_temperature')
+            self.target['locked_min_temp'] = get_optional_attribute(attributes, 'locked_min_temperature')
 
     def get_device_attributes(self):
         attributes = Device.get_device_attributes(self)
         attributes.update({
-            'last_temperature': self.last_temperature, 'target_temperature': self.target_temperature,
-            'locked_max_temp': self.locked_max_temp, 'locked_min_temp': self.locked_min_temp,
-            'temperature_scale': self.temperature_scale
+            'target': self.target, 'status': self.status, 'temperature_scale': self.temperature_scale
         })
         return attributes
 
@@ -183,11 +185,13 @@ class Thermostat(Device):
 class MotionSensor(Device):
     def __init__(self, attributes):
         self.sensor_data = None
+        self.status['power_state'] = None
         Device.__init__(self, attributes)
 
     def set_attributes(self, attributes):
         Device.set_attributes(self, attributes=attributes)
         self.sensor_data = get_optional_attribute(attributes, 'sensor_data')
+        self.status['power_state'] = get_optional_attribute(attributes, 'power_state')
 
     def get_device_attributes(self):
         attributes = Device.get_device_attributes(self)
@@ -198,6 +202,7 @@ class MotionSensor(Device):
 class LightSwitch(Device):
     def __init__(self, attributes):
         Device.__init__(self, attributes)
+        self.status['power_state'] = None
 
     def get_device_attributes(self):
         return Device.get_device_attributes(self)
