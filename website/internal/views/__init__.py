@@ -1,20 +1,13 @@
 from flask import render_template
 
-from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
 import data_interface
 from internal import internal_site
 from internal.views import rooms, devices
-
+from internal.views.forms import AddNewRoomForm
 
 @internal_site.route('/triggers')
 def triggers():
     return render_template("internal/triggers.html")
-
-
-class AddNewRoomForm(FlaskForm):
-    name = StringField("Room name")
-    submit = SubmitField()
 
 
 @internal_site.route('/')
