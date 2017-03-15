@@ -32,7 +32,8 @@
             </tr>
             </thead>
             <tbody>
-            {% for room in rooms | sort(attribute='name') %}
+            {% for room in rooms %}
+            <!-- TODO: fix sort, look at devices -->
                 <tr>
                     <td><a href="{{ url_for('.view_room', room_id=room.room_id) }}">{{ room.name }}</a></td>
                     <td><a href="#" data-toggle="modal" data-target="#myModal">x</a></td>

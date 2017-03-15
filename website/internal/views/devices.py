@@ -36,6 +36,8 @@ actions = {"door_sensor": ['Turn on', 'Turn Off', 'No Action'],
 def show_devices():
     devices = data_interface.get_user_default_devices()
     rooms = data_interface.get_user_default_rooms()
+    rooms = sorted(rooms, key=lambda k: k['name'])
+    #change from default to focal user
     #test requires here to check if devices returns devices correctly
     return render_template("internal/devices.html", devices=devices, groupactions=groupactions, rooms=rooms)
 

@@ -12,25 +12,36 @@
             <tr>
                 <th>Devices</th>
                 <th>Location</th>
-                <th></th>
+                <th>Status</th>
+                <th>Vendor</th>
             </tr>
+            {% for room in rooms %}
+                {% for device in devices %}
+                    {% if room.room_id == device['room_id'] %}
+                        <tr>
+                            <td>{{device.name}}</td>
+                            <td>{{room.name}}</td>
+                            <td>{device.faulty}}</td>
+                            <td>{{device.vendor}}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
             {% for device in devices %}
-                <tr>
-                    <td>{{device.name}}</td>
-                    <td>
-                        {% for room in rooms %}
-                            {% if room.room_id == device['room_id'] %}
-                                {{room.name}}
-                            {% endif %}
-                        {% endfor%}
-                    </td>
-                </tr>
+                {% if device['room_id'] == None %}
+                    <tr>
+                        <td>{{device.name}}</td>
+                        <td></td>
+                        <td>{device.faulty}}</td>
+                        <td>{{device.vendor}}</td>
+                    </tr>
+                {% endif %}
             {% endfor %}
         </table>
     {% else %}
     <h1>No data to show!</h1>
     {% endif %}
 
-
+<!-- TODO: add links to the table -->
 
 {% endblock %}
