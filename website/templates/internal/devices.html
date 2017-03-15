@@ -18,37 +18,52 @@
     </div>
     <br>
     <br>
+    <!-- TODO: separate ifs for linked and unlinked devices -->
     {% if devices %}
-        <table class="table table-condensed table-striped">
-            <tr>
-                <th>Devices</th>
-                <th>Location</th>
-                <th>Status</th>
-                <th>Vendor</th>
-            </tr>
-            {% for room in rooms %}
+        {% if table1 == True %}
+            <h4>Unlinked Devices</h4>
+            <table class="table table-condensed table-striped">
+                <tr>
+                    <th>Devices</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Vendor</th>
+                </tr>
                 {% for device in devices %}
-                    {% if room.room_id == device['room_id'] %}
+                    {% if device['room_id'] == None %}
                         <tr>
                             <td>{{device.name}}</td>
-                            <td>{{room.name}}</td>
+                            <td> - </td>
                             <td>{device.faulty}}</td>
                             <td>{{device.vendor}}</td>
                         </tr>
                     {% endif %}
                 {% endfor %}
-            {% endfor %}
-            {% for device in devices %}
-                {% if device['room_id'] == None %}
-                    <tr>
-                        <td>{{device.name}}</td>
-                        <td></td>
-                        <td>{device.faulty}}</td>
-                        <td>{{device.vendor}}</td>
-                    </tr>
-                {% endif %}
-            {% endfor %}
-        </table>
+            </table>
+        {% endif %}
+        {% if table2 == True %}
+            <h4>Devices Linked to Rooms</h4>
+            <table class="table table-condensed table-striped">
+                <tr>
+                    <th>Devices</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Vendor</th>
+                </tr>
+                {% for room in rooms %}
+                    {% for device in devices %}
+                        {% if room.room_id == device['room_id'] %}
+                            <tr>
+                                <td>{{device.name}}</td>
+                                <td>{{room.name}}</td>
+                                <td>{device.faulty}}</td>
+                                <td>{{device.vendor}}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </table>
+        {% endif %}
     {% else %}
     <h1>No data to show!</h1>
     {% endif %}

@@ -28,9 +28,17 @@ def show_devices():
     devices = data_interface.get_user_default_devices()
     rooms = data_interface.get_user_default_rooms()
     rooms = sorted(rooms, key=lambda k: k['name'])
+    any_linked = False
+    any_unlinked = False
+    if devices:
+        for device in devices:
+            if device['room_id'] != None:
+                any_linked = True
+            elif device['room_id'] == None:
+                any_unlinked = True
     #change from default to focal user
     #test requires here to check if devices returns devices correctly
-    return render_template("internal/devices.html", devices=devices, groupactions=groupactions, rooms=rooms, new_device_form=form)
+    return render_template("internal/devices.html", devices=devices, groupactions=groupactions, rooms=rooms, new_device_form=form, table1=any_unlinked, table2=any_linked)
 
 
 @internal_site.route('/devices/new', methods=['POST', 'GET'])
