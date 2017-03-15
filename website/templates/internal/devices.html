@@ -2,9 +2,20 @@
 {% block page_content %}
     <h2>Devices</h2>
     <br>
-    <a type="button" class="btn btn-primary" href="{{ url_for('.add_new_device') }}">
-        Add New Device
+    <a  href="#" data-toggle="modal" data-target="#myModal" class="btn btn-primary" >
+        <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add New Device
     </a>
+    <div id="myModal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-ms">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-body">
+                    <h1>Add a new device to your account!</h1>
+                    {{ wtf.quick_form(new_device_form, action=url_for('.add_new_device')) }}
+                </div>
+            </div>
+        </div>
+    </div>
     <br>
     <br>
     {% if devices %}

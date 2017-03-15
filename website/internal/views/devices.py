@@ -1,19 +1,9 @@
 from flask import render_template, flash, redirect, url_for
-from flask_wtf import FlaskForm
-from wtforms import SelectField, StringField, SubmitField, DecimalField
-from wtforms.validators import URL
 
 import data_interface
 from internal import internal_site
+from internal.views.forms import AddNewDeviceForm, SetThermostatTargetForm
 
-
-class PairNewDeviceForm(FlaskForm):
-    name = StringField("Device name")
-    device_type = SelectField("Device type", choices=[('motion_sensor', "Motion sensor"), ('thermostat', "Thermostat"),
-                                                      ('light_switch', "Light switch"),
-                                                      ('door_sensor', "Door/Window Sensor")])
-    url = StringField("API URL", validators=[URL(require_tld=False)])
-    submit = SubmitField()
 
 
 motion_triggers = [{'id': '00', 'name': 'When Motion is Detected'},
@@ -34,17 +24,18 @@ actions = {"door_sensor": ['Turn on', 'Turn Off', 'No Action'],
 
 @internal_site.route('/devices')
 def show_devices():
+    form = AddNewDeviceForm()
     devices = data_interface.get_user_default_devices()
     rooms = data_interface.get_user_default_rooms()
     rooms = sorted(rooms, key=lambda k: k['name'])
     #change from default to focal user
     #test requires here to check if devices returns devices correctly
-    return render_template("internal/devices.html", devices=devices, groupactions=groupactions, rooms=rooms)
+    return render_template("internal/devices.html", devices=devices, groupactions=groupactions, rooms=rooms, new_device_form=form)
 
 
 @internal_site.route('/devices/new', methods=['POST', 'GET'])
 def add_new_device():
-    form = PairNewDeviceForm()
+    form = AddNewDeviceForm()
     if form.validate_on_submit():
         data_interface.add_new_device(device_type=form.device_type.data, vendor="OWN",
                                       configuration={"url": form.url.data},
@@ -54,9 +45,7 @@ def add_new_device():
     return render_template("internal/new_device.html", new_device_form=form)
 
 
-class SetThermostatTargetForm(FlaskForm):
-    target_temperature = DecimalField("Target temperature ℃")
-    submit = SubmitField()
+
 
 
 @internal_site.route('/device/<string:device_id>')
