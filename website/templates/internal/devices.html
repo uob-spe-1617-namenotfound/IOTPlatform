@@ -28,19 +28,34 @@
                     <th>Location</th>
                     <th>Status</th>
                     <th>Vendor</th>
+                    <th></th>
                 </tr>
                 {% for device in devices %}
                     {% if device['room_id'] == None %}
-                        <tr>
-                            <td>{{device.name}}</td>
-                            <td> - </td>
-                            <td>{device.faulty}}</td>
-                            <td>{{device.vendor}}</td>
-                        </tr>
+                            <tr>
+                                <td>{{device.name}}</td>
+                                <td>-</td>
+                                <td>{device.faulty}}</td>
+                                <td>{{device.vendor}}</td>
+                                <td><a href="#" data-toggle="modal" data-target="#myModal2">x</a></td>
+                                <div id="myModal2" class="modal fade" role="dialog">
+                                    <div class="modal-dialog modal-sm">
+                                        <!-- Modal content-->
+                                        <div class="modal-content">
+                                            <div class="modal-body">
+                                                <p>Are you sure you want to delete this room?</p>
+                                                <button type="button" class="btn btn-default" data-dismiss="modal">Back</button>
+                                                <button type="button" class="btn btn-danger" data-dismiss="modal">Delete</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </tr>
                     {% endif %}
                 {% endfor %}
             </table>
         {% endif %}
+        <br>
         {% if table2 == True %}
             <h4>Devices Linked to Rooms</h4>
             <table class="table table-condensed table-striped">
@@ -49,6 +64,7 @@
                     <th>Location</th>
                     <th>Status</th>
                     <th>Vendor</th>
+                    <th></th>
                 </tr>
                 {% for room in rooms %}
                     {% for device in devices %}
@@ -58,6 +74,7 @@
                                 <td>{{room.name}}</td>
                                 <td>{device.faulty}}</td>
                                 <td>{{device.vendor}}</td>
+                                <td><a href="#" data-toggle="modal" data-target="#myModal2">x</a></td>
                             </tr>
                         {% endif %}
                     {% endfor %}
