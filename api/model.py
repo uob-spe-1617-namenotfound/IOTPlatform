@@ -9,39 +9,62 @@ def get_optional_attribute(attributes, key):
 
 
 class User(object):
-    def __init__(self, user_id, name, password_hash, email_address, is_admin):
-        self.user_id = user_id
-        self.name = name
-        self.password_hash = password_hash
-        self.email_address = email_address
-        self.is_admin = is_admin
+    def __init__(self, attributes):
+        self.user_id = None
+        self.name = None
+        self.password_hash = None
+        self.email_address = None
+        self.is_admin = None
+        self.faulty = None
+        self.set_attributes(attributes)
+
+    def set_attributes(self, attributes):
+        self.user_id = attributes['user_id']
+        self.name = attributes['name']
+        self.password_hash = attributes['password_hash']
+        self.is_admin = attributes['is_admin']
+        self.faulty = attributes['faulty']
 
     def get_user_attributes(self):
         return {'user_id': self.user_id, 'name': self.name, 'password_hash': self.password_hash,
-                'email_address': self.email_address, 'is_admin': self.is_admin}
+                'faulty': self.faulty, 'email_address': self.email_address, 'is_admin': self.is_admin}
 
     def get_user_id(self):
         return self.user_id
 
 
 class House(object):
-    def __init__(self, house_id, user_id, name):
-        self.house_id = house_id
-        self.user_id = user_id
-        self.name = name
+    def __init__(self, attributes):
+        self.house_id = None
+        self.user_id = None
+        self.name = None
+        self.location = None
+        self.set_attributes(attributes)
+
+    def set_attributes(self, attributes):
+        self.house_id = attributes['house_id']
+        self.user_id = attributes['user_id']
+        self.name = attributes['name']
+        self.location = attributes['location']
 
     def get_house_attributes(self):
-        return {'house_id': self.house_id, 'user_id': self.user_id, 'name': self.name}
+        return {'house_id': self.house_id, 'user_id': self.user_id, 'name': self.name, 'location': self.location}
 
     def get_house_id(self):
         return self.house_id
 
 
 class Room(object):
-    def __init__(self, room_id, house_id, name):
-        self.room_id = room_id
-        self.house_id = house_id
-        self.name = name
+    def __init__(self, attributes):
+        self.room_id = None
+        self.house_id = None
+        self.name = None
+        self.set_attributes(attributes)
+
+    def set_attributes(self, attributes):
+        self.room_id = attributes['room_id']
+        self.house_id = attributes['house_id']
+        self.name = attributes['name']
 
     def get_room_attributes(self):
         return {'room_id': self.room_id, 'house_id': self.house_id, 'name': self.name}
@@ -59,6 +82,7 @@ class Device(object):
         self.device_type = None
         self.vendor = None
         self.configuration = None
+        self.faulty = None
         self.target = {}
         self.status = {}
         self.set_attributes(attributes)
@@ -69,6 +93,7 @@ class Device(object):
         self.room_id = attributes['room_id']
         self.name = attributes['name']
         self.device_type = attributes['device_type']
+        self.faulty = attributes['faulty']
         self.target = attributes['target']
         self.status = attributes['status']
         self.vendor = attributes['vendor'] if "vendor" in attributes else None
@@ -76,8 +101,8 @@ class Device(object):
 
     def get_device_attributes(self):
         return {'_id': str(self.device_id), 'device_id': str(self.device_id), 'house_id': self.house_id,
-                'room_id': self.room_id, 'name': self.name,
-                'device_type': self.device_type, 'target': self.target, 'status': self.status,
+                'room_id': self.room_id, 'name': self.name, 'device_type': self.device_type,
+                'faulty': self.faulty, 'target': self.target, 'status': self.status,
                 'vendor': self.vendor, 'configuration': self.configuration}
 
     def get_device_id(self):
@@ -130,8 +155,8 @@ class Device(object):
 
     def is_faulty(self):
         if "error" in self.status['last_read'] and self.status['last_read']['error'] is not None:
-            return True
-        return False
+            self.faulty = True
+        return self.faulty
 
 
 class Thermostat(Device):

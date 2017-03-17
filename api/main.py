@@ -57,20 +57,12 @@ def get_all_users():
     return jsonify({"users": [user.get_user_attributes() for user in users], "error": None})
 
 
-@api.route('/user/<string:user_id>/houses')
-def get_houses_for_user(user_id):
+@api.route('/user/<string:user_id>/house')
+def get_house_for_user(user_id):
     logging.debug("Getting houses for user {}".format(user_id))
-    houses = api.house_repository.get_houses_for_user(ObjectId(user_id))
-    if houses is None:
-        return jsonify({"houses": None, "error": {"code": 404, "message": "No such user found"}})
-    return jsonify({"houses": [house.get_house_attributes() for house in houses], "error": None})
-
-
-@api.route('/house/<string:house_id>')
-def get_house_info(house_id):
-    house = api.house_repository.get_house_by_id(ObjectId(house_id))
+    house = api.house_repository.get_houses_for_user(ObjectId(user_id))
     if house is None:
-        return jsonify({"house": None, "error": {"code": 404, "message": "No such house found"}})
+        return jsonify({"house": None, "error": {"code": 404, "message": "No such House found"}})
     return jsonify({"house": house.get_house_attributes(), "error": None})
 
 
@@ -212,16 +204,17 @@ import model
 
 @api.route('/house/<string:house_id>')
 def location_attr(house_id):
-    attributes = model.House.get_house_attributes(house_id)
-    attributes.update({'lat': 51.529249, 'lng': -0.117973, 'description': 'University of Bristol'})
+    attributes = api.house_repository.get_house_attributes(house_id)
+    attributes['location'] = {'lat': 51.529249, 'lng': -0.117973, 'description': 'University of Bristol'}
     return attributes
 
+# Uncomment below method if you want the device at that endpoint to have true faulty attr
 
-@api.route('/device/<string:device_id')
-def faulty_device_attr(device_id):
-    attributes = model.Device.get_device_attributes(device_id)
-    attributes.update({'status': 'faulty'})
-    return attributes
+# @api.route('/device/<string:device_id')
+# def faulty_device_attr(device_id):
+#     attributes = model.Device.get_device_attributes(device_id)
+#     attributes.update({'faulty': True})
+#     return attributes
 
 
 @api.route('/user/<string:user_id>')
@@ -232,8 +225,45 @@ def faulty_user_devices(user_id):
     for device in faulty_devs:
         if device.user_id == user_id:
             fault_check = True
-    attributes.update({'faulty': fault_check})
+    attributes['faulty'] = fault_check
 
+from flask.ext.bcrypt import Bcrypt
+
+
+@api.route('/login', methods=['POST'])
+def login(username, password):
+    login_user = {}
+    data = {}
+    for user in api.user_repository:
+        if user['username'] == username:
+            login_user = user
+    hashed_password = bcrypt.generate_password_hash(password)
+    if login_user == username:
+        if bcrypt.check_password_hash(hashed_password, login_user.password_hash):
+            data['success'] = True
+            data['admin'] = login_user.is_admin
+            data['user_id'] = login_user.user_id
+            data['error'] = None
+        else:
+            data['success'] = False
+            data['error'] = {'code': 406, 'message': 'Password is incorrect'}
+    else:
+        data['success'] = False
+        if login_user == {}:
+            data['error'] = {'code': 404, 'message': 'Username does not exist'}
+        else:
+            data['error'] = {'code': 404, 'message': 'Incorrect Username'}
+    return data.get_json()
+
+# TODO: Add hashed password auth password etc to config
+# TODO: Finish Register, verify login is starting in the right direction
+
+
+@api.route('/register', methods=['POST'])
+def register(username, password, email_address, location, name, is_admin):
+    hashed_password = bcrypt.generate_password_hash(password)
+    new_user = api.user_repository.add_user(name, hashed_password, email_address, is_admin)
+    house_id = api.house_repository.add_house(new_user, name, location)
 
 from admin import *
 
