@@ -1,10 +1,12 @@
 from flask import render_template, redirect, flash, url_for
 
 import data_interface
+import utilities.session
 from internal import internal_site
 from internal.views import rooms, devices
+from internal.views.forms import AddNewRoomForm
 
-import utilities.session
+
 @internal_site.route('/triggers')
 def triggers():
     return render_template("internal/triggers.html")
@@ -12,8 +14,9 @@ def triggers():
 
 @internal_site.route('/')
 def index():
+    form = AddNewRoomForm()
     rooms = data_interface.get_user_default_rooms()
-    return render_template("internal/home.html", rooms=rooms)
+    return render_template("internal/home.html", rooms=rooms, new_room_form=form)
 
 
 @internal_site.route('/help')
@@ -41,3 +44,8 @@ themeinfo = [{'id': '1', 'name': 'Weekend Away Theme', 'theme_status': status[0]
 @internal_site.route('/themes')
 def themes():
     return render_template("internal/themes.html", themeinfo=themeinfo, status=status)
+
+
+@internal_site.route("/graph")
+def graph():
+    return render_template("internal/graph.html")

@@ -1,19 +1,9 @@
 from flask import render_template, flash, redirect, url_for
-from flask_wtf import FlaskForm
-from wtforms import SelectField, StringField, SubmitField, DecimalField
-from wtforms.validators import URL
 
 import data_interface
 from internal import internal_site
+from internal.views.forms import AddNewDeviceForm, SetThermostatTargetForm
 
-
-class PairNewDeviceForm(FlaskForm):
-    name = StringField("Device name")
-    device_type = SelectField("Device type", choices=[('motion_sensor', "Motion sensor"), ('thermostat', "Thermostat"),
-                                                      ('light_switch', "Light switch"),
-                                                      ('door_sensor', "Door/Window Sensor")])
-    url = StringField("API URL", validators=[URL(require_tld=False)])
-    submit = SubmitField()
 
 
 motion_triggers = [{'id': '00', 'name': 'When Motion is Detected'},
@@ -23,21 +13,8 @@ thermostat_triggers = [{'id': '000', 'name': 'When the temperature is above 22'}
 light_triggers = [{'id': '0000', 'name': 'Lights are on for 4 hours'}]
 door_triggers = [{'id': 'opens', 'name': "Opens"}, {'id': 'closes', 'name': "Closes"}]
 
-paireddevices = [
-    {'text': 'Bathroom Thermostat', 'device_id': '10', 'type': 'thermostat', 'trigger': thermostat_triggers},
-    {'text': 'Kitchen Thermostat', 'device_id': '20', 'type': 'thermostat', 'trigger': thermostat_triggers},
-    {'text': 'Dining Room Thermostat', 'device_id': '30', 'type': 'thermostat', 'trigger': thermostat_triggers},
-    {'text': 'Dining Room Motion Sensor', 'id': '40', 'type': 'motion_sensor', 'trigger': motion_triggers},
-    {'text': 'Bedroom Motion Sensor', 'id': '50', 'type': 'motion_sensor', 'trigger': motion_triggers},
-    {'text': 'Bathroom Light Switch', 'id': '60', 'type': 'light_switch', 'trigger': light_triggers}]
 
 groupactions = ['Turn On', 'Turn Off', 'Set Temperature']
-groups = [{'id': '11', 'name': 'Ground Floor Thermostats', 'device_ids': [paireddevices[1], paireddevices[2]],
-           'group_actions': [groupactions[0], groupactions[1], groupactions[2]]},
-          {'id': '21', 'name': 'Motion In Bedrooms', 'device_ids': [paireddevices[3]],
-           'group_actions': [groupactions[0], groupactions[1]]},
-          {'id': '31', 'name': 'Lighting in First Floor', 'device_ids': [paireddevices[4]],
-           'group_actions': [groupactions[0], groupactions[1]]}]
 
 actions = {"door_sensor": ['Turn on', 'Turn Off', 'No Action'],
            "light_switch": ['Turn Switch on', 'Turn Switch Off', 'No Action'],
@@ -47,13 +24,26 @@ actions = {"door_sensor": ['Turn on', 'Turn Off', 'No Action'],
 
 @internal_site.route('/devices')
 def show_devices():
+    form = AddNewDeviceForm()
     devices = data_interface.get_user_default_devices()
-    return render_template("internal/devices.html", paireddevices=devices, groups=groups, groupactions=groupactions)
+    rooms = data_interface.get_user_default_rooms()
+    rooms = sorted(rooms, key=lambda k: k['name'])
+    any_linked = False
+    any_unlinked = False
+    if devices:
+        for device in devices:
+            if device['room_id'] != None:
+                any_linked = True
+            elif device['room_id'] == None:
+                any_unlinked = True
+    #change from default to focal user
+    #test requires here to check if devices returns devices correctly
+    return render_template("internal/devices.html", devices=devices, groupactions=groupactions, rooms=rooms, new_device_form=form, table1=any_unlinked, table2=any_linked)
 
 
 @internal_site.route('/devices/new', methods=['POST', 'GET'])
 def add_new_device():
-    form = PairNewDeviceForm()
+    form = AddNewDeviceForm()
     if form.validate_on_submit():
         data_interface.add_new_device(device_type=form.device_type.data, vendor="OWN",
                                       configuration={"url": form.url.data},
@@ -63,9 +53,7 @@ def add_new_device():
     return render_template("internal/new_device.html", new_device_form=form)
 
 
-class SetThermostatTargetForm(FlaskForm):
-    target_temperature = DecimalField("Target temperature ℃")
-    submit = SubmitField()
+
 
 
 @internal_site.route('/device/<string:device_id>')
