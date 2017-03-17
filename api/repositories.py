@@ -43,6 +43,16 @@ class UserRepository(Repository):
                                      user['is_admin']))
         return target_users
 
+    def faulty_user_devices(self, user_id):
+        faulty_devs = DeviceRepository.get_faulty_devices()
+        attributes = User.get_user_attributes(user_id)
+        fault_check = False
+        for device in faulty_devs:
+            if device.user_id == user_id:
+                fault_check = True
+        attributes['faulty'] = fault_check
+        return attributes
+
 
 class HouseRepository(Repository):
     def __init__(self, mongo_collection):

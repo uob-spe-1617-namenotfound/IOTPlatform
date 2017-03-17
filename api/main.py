@@ -219,13 +219,7 @@ def location_attr(house_id):
 
 @api.route('/user/<string:user_id>')
 def faulty_user_devices(user_id):
-    faulty_devs = api.device_repository.get_faulty_devices()
-    attributes = model.User.get_user_attributes()
-    fault_check = False
-    for device in faulty_devs:
-        if device.user_id == user_id:
-            fault_check = True
-    attributes['faulty'] = fault_check
+    api.user_repository.faulty_user_devices(user_id)
 
 from flask.ext.bcrypt import Bcrypt
 
@@ -234,6 +228,7 @@ from flask.ext.bcrypt import Bcrypt
 def login(username, password):
     login_user = {}
     data = {}
+    # TODO: Change this to a Mongo username lookup
     for user in api.user_repository:
         if user['username'] == username:
             login_user = user
