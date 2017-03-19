@@ -266,3 +266,13 @@ class Trigger:
     def get_trigger_attributes(self):
         return {'trigger_id': self.trigger_id, 'trigger_sensor_id': self.trigger_sensor_id,
                 'trigger': self.trigger, 'actor_id': self.actor_id, 'action': self.action}
+
+
+class Token:
+    def __init__(self, token_id, user_id, token):
+        self.token_id = token_id
+        self.user_id = user_id
+        self.token = token
+
+    def get_token_attributes(self):
+        return {'token_id': self.token_id, 'user_id': self.user_id, 'key': self.token}

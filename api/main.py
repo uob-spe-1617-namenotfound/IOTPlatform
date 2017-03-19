@@ -27,12 +27,25 @@ api.json_encoder = JSONEncoder
 
 import repositories
 
-api.user_repository = repositories.UserRepository(db.users)
-api.house_repository = repositories.HouseRepository(db.houses)
-api.room_repository = repositories.RoomRepository(db.rooms)
-api.device_repository = repositories.DeviceRepository(db.devices)
-api.devicegroup_repository = repositories.DeviceGroupRepository(db.device_groups)
-api.trigger_repository = repositories.TriggerRepository(db.triggers)
+api.repository_collection = repositories.RepositoryCollection(db)
+
+api.user_repository = api.repository_collection.user_repository
+api.house_repository = api.repository_collection.house_repository
+api.room_repository = api.repository_collection.room_repository
+api.device_repository = api.repository_collection.device_repository
+api.devicegroup_repository = api.repository_collection.devicegroup_repository
+api.trigger_repository = api.repository_collection.trigger_repository
+api.token_repository = api.repository_collection.token_repository
+
+
+@api.route('/login')
+def login():
+    pass
+
+
+@api.route('/logout')
+def logout():
+    pass
 
 
 @api.route('/user/default_user')

@@ -4,16 +4,29 @@ from model import House, Room, User, Device, DeviceGroup, Thermostat, MotionSens
 
 
 class Repository(object):
-    def __init__(self, mongo_collection):
+    def __init__(self, mongo_collection, repository_collection):
         self.collection = mongo_collection
+        self.repositories = repository_collection
 
     def clear_db(self):
         self.collection.delete_many({})
 
 
+class RepositoryCollection(object):
+    def __init__(self, db):
+        self.db = db
+        self.user_repository = UserRepository(db.users, self)
+        self.house_repository = HouseRepository(db.houses, self)
+        self.room_repository = RoomRepository(db.rooms, self)
+        self.device_repository = DeviceRepository(db.devices, self)
+        self.devicegroup_repository = DeviceGroupRepository(db.devicegroups, self)
+        self.trigger_repository = TriggerRepository(db.triggers, self)
+        self.token_repository = TokenRepository(db.token, self)
+
+
 class UserRepository(Repository):
-    def __init__(self, mongo_collection):
-        Repository.__init__(self, mongo_collection)
+    def __init__(self, mongo_collection, repository_collection):
+        Repository.__init__(self, mongo_collection, repository_collection)
 
     def add_user(self, name, password_hash, email_address, is_admin):
         all_users = self.get_all_users()
@@ -43,10 +56,23 @@ class UserRepository(Repository):
                                      user['is_admin']))
         return target_users
 
+    def authenticate_user(self, user_id, owner_id, token):
+        if self.repositories.token_repository.check_token_validity(user_id, token) is False:
+            return False
+        else:
+            if user_id != owner_id:
+                user = self.collection.find_one({'user_id': user_id})
+                if user['is_admin'] is True:
+                    return True
+                else:
+                    return False
+            else:
+                return True
+
 
 class HouseRepository(Repository):
-    def __init__(self, mongo_collection):
-        Repository.__init__(self, mongo_collection)
+    def __init__(self, mongo_collection, repository_collection):
+        Repository.__init__(self, mongo_collection, repository_collection)
 
     def add_house(self, user_id, name):
         user_houses = self.get_houses_for_user(user_id)
@@ -80,10 +106,15 @@ class HouseRepository(Repository):
             target_houses.append(House(house['_id'], house['user_id'], house['name']))
         return target_houses
 
+    def authenticate_user_for_house(self, user_id, house_id, token):
+        self.repositories.token_repository.check_token_validity(user_id, token)
+        owner_id = self.collection.find_one({'house_id': house_id})['user_id']
+        return self.repositories.user_repository.authenticate_user(user_id, owner_id, token)
+
 
 class RoomRepository(Repository):
-    def __init__(self, mongo_collection):
-        Repository.__init__(self, mongo_collection)
+    def __init__(self, mongo_collection, repository_collection):
+        Repository.__init__(self, mongo_collection, repository_collection)
 
     def add_room(self, house_id, name):
         house_rooms = self.get_rooms_for_house(house_id)
@@ -116,10 +147,14 @@ class RoomRepository(Repository):
             target_rooms.append(Room(room['_id'], room['house_id'], room['name']))
         return target_rooms
 
+    def authenticate_user_for_room(self, user_id, room_id, token):
+        house_id = self.collection.find_one({'room_id': room_id})['house_id']
+        return self.repositories.house_repository.authenticate_user_for_house(user_id, house_id, token)
+
 
 class DeviceRepository(Repository):
-    def __init__(self, mongo_collection):
-        Repository.__init__(self, mongo_collection)
+    def __init__(self, mongo_collection, repository_collection):
+        Repository.__init__(self, mongo_collection, repository_collection)
 
     def get_faulty_devices(self):
         all_device_ids = [x['_id'] for x in self.collection.find({}, {})]
@@ -261,10 +296,14 @@ class DeviceRepository(Repository):
         self.collection.update_one({'_id': device_id}, {"$set": {'locked_min_temp': new_min_temperature}}, upsert=False)
         self.collection.update_one({'_id': device_id}, {"$set": {'last_temperature': new_last_temperature}}, upsert=False)
 
+    def authenticate_user_for_device(self, user_id, device_id, token):
+        room_id = self.collection.find_one({'device_id': device_id})['room_id']
+        return self.repositories.room_repository.authenticate_user_for_room(user_id, room_id, token)
+
 
 class DeviceGroupRepository(Repository):
-    def __init__(self, mongo_collection):
-        Repository.__init__(self, mongo_collection)
+    def __init__(self, mongo_collection, repository_collection):
+        Repository.__init__(self, mongo_collection, repository_collection)
 
     def add_device_group(self, device_ids, name):
         device_group = self.collection.insert_one({'device_ids': device_ids, 'name': name})
@@ -287,11 +326,38 @@ class DeviceGroupRepository(Repository):
 
 
 class TriggerRepository(Repository):
-    def __init__(self, mongo_collection):
-        Repository.__init__(self, mongo_collection)
+    def __init__(self, mongo_collection, repository_collection):
+        Repository.__init__(self, mongo_collection, repository_collection)
 
     def add_trigger(self, trigger_sensor_id, trigger, actor_id, action):
         pass
 
     def get_trigger_by_id(self, trigger_id):
         pass
+
+
+class TokenRepository(Repository):
+    def __init__(self, mongo_collection, repository_collection):
+        Repository.__init__(self, mongo_collection, repository_collection)
+
+    def add_token(self, user_id, token):
+        token = self.collection.insert_one({'user_id': user_id, 'token': token})
+        return token.inserted_id
+
+    def invalidate_token(self, token_id):
+        self.collection.delete_one({'_id': token_id})
+
+    def check_token_is_new(self, token):
+        result = self.collection.find({'token': token})
+        if result is not None:
+            return False
+        else:
+            return True
+
+    def check_token_validity(self, user_id, token):
+        token = self.collection.find({'token': token})
+        if token is not None:
+            if token['user_id'] == user_id:
+                return True
+        else:
+            return False
