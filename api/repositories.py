@@ -318,6 +318,11 @@ class TokenRepository(Repository):
     def __init__(self, mongo_collection, repository_collection):
         Repository.__init__(self, mongo_collection, repository_collection)
 
+    def generate_token(self, user_id):
+        token = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        self.add_token(user_id, token)
+        return token
+
     def add_token(self, user_id, token):
         token = self.collection.insert_one({'user_id': user_id, 'token': token})
         return token.inserted_id
@@ -339,3 +344,15 @@ class TokenRepository(Repository):
                 return True
         else:
             return False
+
+    def authenticate_user(self, owner_id, token):
+        valid = self.check_token_validity(token)
+        if valid:
+            token_user_id = self.collection.find_one({'token': token})['user_id']
+            user_is_admin = self.repositories.user_repository.find_one({'user_id': token_user_id})['is_admin']
+            if token_user_id == owner_id:
+                return True
+            elif user_is_admin:
+                return True
+            else:
+                return False
