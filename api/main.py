@@ -57,12 +57,20 @@ def get_all_users():
     return jsonify({"users": [user.get_user_attributes() for user in users], "error": None})
 
 
-@api.route('/user/<string:user_id>/house')
-def get_house_for_user(user_id):
+@api.route('/user/<string:user_id>/houses')
+def get_houses_for_user(user_id):
     logging.debug("Getting houses for user {}".format(user_id))
-    house = api.house_repository.get_houses_for_user(ObjectId(user_id))
+    houses = api.house_repository.get_houses_for_user(ObjectId(user_id))
+    if houses is None:
+        return jsonify({"houses": None, "error": {"code": 404, "message": "No such user found"}})
+    return jsonify({"houses": [house.get_house_attributes() for house in houses], "error": None})
+
+
+@api.route('/house/<string:house_id>')
+def get_house_info(house_id):
+    house = api.house_repository.get_house_by_id(ObjectId(house_id))
     if house is None:
-        return jsonify({"house": None, "error": {"code": 404, "message": "No such House found"}})
+        return jsonify({"house": None, "error": {"code": 404, "message": "No such house found"}})
     return jsonify({"house": house.get_house_attributes(), "error": None})
 
 
@@ -199,61 +207,6 @@ def faulty_devices():
         "error": None
     })
 
-
-@api.route('/house/<string:house_id>')
-def location_attr(house_id):
-    attributes = api.house_repository.get_house_attributes(house_id)
-    attributes['location'] = {'lat': 51.529249, 'lng': -0.117973, 'description': 'University of Bristol'}
-    return attributes
-
-
-@api.route('/user/<string:user_id>')
-def faulty_user_devices(user_id):
-    api.user_repository.faulty_user_devices(user_id)
-
-from flask.ext.bcrypt import Bcrypt
-
-bcrypt = Bcrypt(api)
-
-
-@api.route('/login', methods=['POST'])
-def login(email_address, password):
-    data = None
-    users = api.user_repository.get_all_users()
-    login_user = users.find_one({'email_address': email_address})
-
-    if login_user['email_address'] == email_address:
-        if bcrypt.check_password_hash(login_user['password_hash'], password):
-            data['success'] = True
-            data['admin'] = login_user.is_admin
-            data['user_id'] = login_user.user_id
-            data['error'] = None
-        else:
-            data['success'] = False
-            data['error'] = {'code': 406, 'message': 'Password is incorrect'}
-    else:
-        data['success'] = False
-        data['error'] = {'code': 404, 'message': 'Username not found'}
-
-    return jsonify(data)
-
-
-@api.route('/register', methods=['POST'])
-def register(password, email_address, location, name, is_admin):
-    data = None
-    users = api.user_repository.get_all_users()
-    if email_address == users.find_one({'email_address': email_address}):
-        data['success'] = False
-        data['error'] = {'code': 409, 'message': 'Email address is already registered'}
-    else:
-        if password is not None:
-            hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-            new_user = api.user_repository.add_user(name, hashed_password, email_address, is_admin)
-            house_id = api.house_repository.add_house(new_user, name, location)
-            data['success'] = True
-            data['user_id'] = new_user
-            data['house_id'] = house_id
-            data['error'] = None
 
 from admin import *
 
