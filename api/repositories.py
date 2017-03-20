@@ -1,4 +1,6 @@
 import logging
+import random
+import string
 
 from model import House, Room, User, Device, DeviceGroup, Thermostat, MotionSensor, LightSwitch, OpenSensor
 
@@ -344,8 +346,8 @@ class TokenRepository(Repository):
         return token
 
     def add_token(self, user_id, token):
-        token = self.collection.insert_one({'user_id': user_id, 'token': token})
-        return token.inserted_id
+        new_token = self.collection.insert_one({'user_id': user_id, 'token': token})
+        return new_token.inserted_id
 
     def invalidate_token(self, token_id):
         self.collection.delete_one({'_id': token_id})
@@ -357,16 +359,15 @@ class TokenRepository(Repository):
         else:
             return True
 
-    def check_token_validity(self, user_id, token):
+    def check_token_validity(self, token):
         token = self.collection.find({'token': token})
         if token is not None:
-            if token['user_id'] == user_id:
-                return True
+            return True
         else:
             return False
 
     def authenticate_user(self, owner_id, token):
-        valid = self.check_token_validity(owner_id, token)
+        valid = self.check_token_validity(token)
         if valid:
             token_user_id = self.collection.find_one({'token': token})['user_id']
             user_is_admin = self.repositories.user_repository.find_one({'user_id': token_user_id})['is_admin']
