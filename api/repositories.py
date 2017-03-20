@@ -93,6 +93,14 @@ class HouseRepository(Repository):
             target_houses.append(House(house['_id'], house['user_id'], house['name']))
         return target_houses
 
+    def validate_token(self, house_id, token):
+        house = self.get_house_by_id(house_id)
+        if house is None:
+            return False
+        else:
+            user_id = house['user_id']
+            return self.repositories.token_repository.authenticate_user(user_id, token)
+
 
 class RoomRepository(Repository):
     def __init__(self, mongo_collection, repository_collection):
@@ -128,6 +136,14 @@ class RoomRepository(Repository):
         for room in rooms:
             target_rooms.append(Room(room['_id'], room['house_id'], room['name']))
         return target_rooms
+
+    def validate_token(self, room_id, token):
+        room = self.get_room_by_id(room_id)
+        if room is None:
+            return False
+        else:
+            house_id = room['house_id']
+            return self.repositories.house_repository.validate_token(house_id, token)
 
 
 class DeviceRepository(Repository):
@@ -274,9 +290,13 @@ class DeviceRepository(Repository):
         self.collection.update_one({'_id': device_id}, {"$set": {'locked_min_temp': new_min_temperature}}, upsert=False)
         self.collection.update_one({'_id': device_id}, {"$set": {'last_temperature': new_last_temperature}}, upsert=False)
 
-    def authenticate_user_for_device(self, user_id, device_id, token):
-        room_id = self.collection.find_one({'device_id': device_id})['room_id']
-        return self.repositories.room_repository.authenticate_user_for_room(user_id, room_id, token)
+    def validate_token(self, device_id, token):
+        device = self.get_device_by_id(device_id)
+        if device is None:
+            return False
+        else:
+            house_id = device['house_id']
+            return self.repositories.house_repository.validate_token(house_id, token)
 
 
 class DeviceGroupRepository(Repository):
