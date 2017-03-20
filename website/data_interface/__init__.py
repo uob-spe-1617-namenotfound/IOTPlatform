@@ -2,6 +2,7 @@ import logging
 
 import requests
 
+import utilities.session
 from main import app
 
 
@@ -10,6 +11,13 @@ def get_api_url(endpoint):
 
 
 def get_user_id():
+    user = utilities.session.get_active_user()
+    if user is None or 'user_id' not in user:
+        return None
+    return user['user_id']
+
+
+def get_default_user_id():
     # TODO: remove once login functionality has been made
     r = requests.get(get_api_url('/user/default_user'))
     data = r.json()

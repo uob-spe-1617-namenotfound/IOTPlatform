@@ -1,0 +1,61 @@
+{% extends "internal/base.html" %}
+{% block title %}
+    IoT Homepage
+{% endblock %}
+{% block page_content %}
+    <h1> {% if admin %} User: {{ user_name }} {% else %}Welcome!{% endif %}</h1>
+    <br>
+    <a  href="#" data-toggle="modal" data-target="#myModal2" class="btn btn-primary" >
+        <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add New Room
+    </a>
+    <div id="myModal2" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-ms">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-body">
+                    <h1>Add a new room to your house!</h1>
+                    {{ wtf.quick_form(new_room_form, action=url_for('.add_new_room')) }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+
+    {% if rooms %}
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Rooms</th>
+                <th></th>
+
+            </tr>
+            </thead>
+            <tbody>
+            {% for room in rooms %}
+            <!-- TODO: fix sort, look at devices -->
+                <tr>
+                    <td><a href="{{ url_for('.view_room', room_id=room.room_id) }}">{{ room.name }}</a></td>
+                    <td><a href="#" data-toggle="modal" data-target="#myModal">x</a></td>
+                    <div id="myModal" class="modal fade" role="dialog">
+                        <div class="modal-dialog modal-sm">
+                            <!-- Modal content-->
+                            <div class="modal-content">
+                                <div class="modal-body">
+                                    <p>Are you sure you want to delete this room?</p>
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Back</button>
+                                    <button type="button" class="btn btn-danger" data-dismiss="modal">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+    {% else %}
+        <h1>No data to show!</h1>
+    {% endif %}
+
+{% endblock %}
