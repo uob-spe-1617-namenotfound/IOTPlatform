@@ -1,10 +1,10 @@
 import requests
 
-from data_interface import get_api_url, get_default_user_id
+import data_interface
 
 
 def register_user(email_address, password, name):
-    r = requests.post(get_api_url('/register'),
+    r = requests.post(data_interface.get_api_url('/register'),
                       json={"email_address": email_address,
                             "password": password,
                             "name": name})
@@ -15,11 +15,14 @@ def register_user(email_address, password, name):
 
 
 def login(email_address, password):
+    r = requests.post(data_interface.get_api_url('/login'),
+                      json={"email_address": email_address, "password": password})
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
     error = None
-    # TODO: don't login default user (blocked by API: feature request #2)
-
-    user_id = get_default_user_id()
-    admin = False
+    user_id = data['result']['user_id']
+    admin = data['result']['admin']
 
     result = {
         "user_id": user_id,

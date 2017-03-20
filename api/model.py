@@ -4,8 +4,8 @@ import time
 import requests
 
 
-def get_optional_attribute(attributes, key):
-    return attributes[key] if key in attributes else None
+def get_optional_attribute(attributes, key, default_value=None):
+    return attributes[key] if key in attributes else default_value
 
 
 class User(object):
@@ -19,11 +19,12 @@ class User(object):
         self.set_attributes(attributes)
 
     def set_attributes(self, attributes):
-        self.user_id = attributes['user_id']
+        self.user_id = attributes['_id']
         self.name = attributes['name']
+        self.email_address = attributes['email_address']
         self.password_hash = attributes['password_hash']
         self.is_admin = attributes['is_admin']
-        self.faulty = attributes['faulty']
+        self.faulty = get_optional_attribute(attributes, 'faulty', False)
 
     def get_user_attributes(self):
         return {'user_id': self.user_id, 'name': self.name, 'password_hash': self.password_hash,
@@ -42,10 +43,10 @@ class House(object):
         self.set_attributes(attributes)
 
     def set_attributes(self, attributes):
-        self.house_id = attributes['house_id']
+        self.house_id = attributes['_id']
         self.user_id = attributes['user_id']
         self.name = attributes['name']
-        self.location = attributes['location']
+        self.location = get_optional_attribute(attributes, 'location', None)
 
     def get_house_attributes(self):
         return {'house_id': self.house_id, 'user_id': self.user_id, 'name': self.name, 'location': self.location}
@@ -93,11 +94,11 @@ class Device(object):
         self.room_id = attributes['room_id']
         self.name = attributes['name']
         self.device_type = attributes['device_type']
-        self.faulty = attributes['faulty']
-        self.target = attributes['target']
-        self.status = attributes['status']
-        self.vendor = attributes['vendor'] if "vendor" in attributes else None
-        self.configuration = attributes['configuration'] if "configuration" in attributes else None
+        self.faulty = get_optional_attribute(attributes, 'faulty', False)
+        self.target = get_optional_attribute(attributes, 'target', {})
+        self.status = get_optional_attribute(attributes, 'status', {})
+        self.vendor = get_optional_attribute(attributes, 'vendor', None)
+        self.configuration = get_optional_attribute(attributes, 'configuration', None)
 
     def get_device_attributes(self):
         return {'_id': str(self.device_id), 'device_id': str(self.device_id), 'house_id': self.house_id,
@@ -209,14 +210,13 @@ class Thermostat(Device):
 
 class MotionSensor(Device):
     def __init__(self, attributes):
-        self.sensor_data = None
-        self.status['power_state'] = None
         Device.__init__(self, attributes)
+        self.sensor_data = None
+        self.status = {}
 
     def set_attributes(self, attributes):
         Device.set_attributes(self, attributes=attributes)
         self.sensor_data = get_optional_attribute(attributes, 'sensor_data')
-        self.status['power_state'] = get_optional_attribute(attributes, 'power_state')
 
     def get_device_attributes(self):
         attributes = Device.get_device_attributes(self)
@@ -227,7 +227,6 @@ class MotionSensor(Device):
 class LightSwitch(Device):
     def __init__(self, attributes):
         Device.__init__(self, attributes)
-        self.status['power_state'] = None
 
     def get_device_attributes(self):
         return Device.get_device_attributes(self)

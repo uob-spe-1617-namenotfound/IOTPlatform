@@ -16,11 +16,11 @@ class UserRepository(Repository):
         Repository.__init__(self, mongo_collection)
 
     def add_user(self, name, password_hash, email_address, is_admin):
-        all_users = self.get_all_users()
-        for user in all_users:
-            other_email = user.get_user_attributes()['email_address']
-            if email_address == other_email:
-                raise Exception("There is already an account with this email.")
+        logging.debug("adding user!")
+        existing_user = self.get_user_by_email(email_address)
+        logging.debug("existing user: {}".format(existing_user))
+        if existing_user is not None:
+            raise Exception("There is already an account with this email.")
         user = self.collection.insert_one({'name': name, 'password_hash': password_hash,
                                            'email_address': email_address, 'is_admin': is_admin})
         return user.inserted_id
@@ -30,24 +30,24 @@ class UserRepository(Repository):
 
     def get_user_by_id(self, user_id):
         user = self.collection.find_one({'_id': user_id})
-        target_user = User(user['_id'], user['name'],
-                           user['password_hash'], user['email_address'],
-                           user['is_admin'])
+        if user is None:
+            return None
+        target_user = User(user)
         return target_user
 
     def get_user_by_email(self, email_address):
+        logging.debug("All users: {}".format([x.email_address for x in self.get_all_users()]))
         user = self.collection.find_one({'email_address': email_address})
-        target_user = User(user['_id'], user['name'],
-                           user['password_hash'], user['email_address'],
-                           user['is_admin'])
+        if user is None:
+            return None
+        target_user = User(user)
         return target_user
 
     def get_all_users(self):
         users = self.collection.find()
         target_users = []
         for user in users:
-            target_users.append(User(user['_id'], user['name'], user['password_hash'], user['email_address'],
-                                     user['is_admin']))
+            target_users.append(User(user))
         return target_users
 
     def faulty_user_devices(self, user_id):
@@ -79,7 +79,7 @@ class HouseRepository(Repository):
 
     def get_house_by_id(self, house_id):
         house = self.collection.find_one({'_id': house_id})
-        target_house = House(house['_id'], house['user_id'], house['name'])
+        target_house = House(house)
         return target_house
 
     def get_houses_for_user(self, user_id):
@@ -87,14 +87,14 @@ class HouseRepository(Repository):
         target_houses = []
         logging.debug("Found {} houses".format(houses.count()))
         for house in houses:
-            target_houses.append(House(house['_id'], house['user_id'], house['name']))
+            target_houses.append(House(house))
         return target_houses
 
     def get_all_houses(self):
         houses = self.collection.find()
         target_houses = []
         for house in houses:
-            target_houses.append(House(house['_id'], house['user_id'], house['name']))
+            target_houses.append(House(house))
         return target_houses
 
 
@@ -151,7 +151,7 @@ class DeviceRepository(Repository):
         reading = device.read_current_state()
         logging.debug("Read current state of device {}: {}".format(device.get_device_id(), reading))
         self.collection.update_one({'_id': device.get_device_id()},
-                               {"$set": {'status': {"last_read": reading}}})
+                                   {"$set": {'status': {"last_read": reading}}})
 
     def update_all_device_readings(self):
         all_device_ids = [x['_id'] for x in self.collection.find({}, {})]
@@ -248,8 +248,10 @@ class DeviceRepository(Repository):
     def set_target_temperature(self, device_id, temp):
         device = self.collection.find_one({'_id': device_id})
         assert (device['device_type'] == "thermostat"), "Device is not a thermostat."
-        assert ('locked_min_temperature' not in device['target'] or device['target']['locked_min_temperature'] <= temp), "Chosen temperature is too low."
-        assert ('locked_max_temperature' not in device['target'] or device['target']['locked_max_temperature'] >= temp), "Chosen temperature is too high."
+        assert ('locked_min_temperature' not in device['target'] or device['target'][
+            'locked_min_temperature'] <= temp), "Chosen temperature is too low."
+        assert ('locked_max_temperature' not in device['target'] or device['target'][
+            'locked_max_temperature'] >= temp), "Chosen temperature is too high."
         self.collection.update_one({'_id': device_id}, {"$set": {'target': {'target_temperature': temp}}}, upsert=False)
         device = self.get_device_by_id(device_id)
         device.configure_target_temperature(temp)
@@ -271,10 +273,14 @@ class DeviceRepository(Repository):
             new_max_temperature = (device['target']['locked_max_temp'] - 32) * 5 / 9
             new_min_temperature = (device['target']['locked_min_temp'] - 32) * 5 / 9
             new_last_temperature = (device['target']['last_temperature'] - 32) * 5 / 9
-        self.collection.update_one({'_id': device_id}, {"$set": {'target': {'target_temperature': new_target_temperature}}}, upsert=False)
-        self.collection.update_one({'_id': device_id}, {"$set": {'target': {'locked_max_temp': new_max_temperature}}}, upsert=False)
-        self.collection.update_one({'_id': device_id}, {"$set": {'target': {'locked_min_temp': new_min_temperature}}}, upsert=False)
-        self.collection.update_one({'_id': device_id}, {"$set": {'status': {'last_temperature': new_last_temperature}}}, upsert=False)
+        self.collection.update_one({'_id': device_id},
+                                   {"$set": {'target': {'target_temperature': new_target_temperature}}}, upsert=False)
+        self.collection.update_one({'_id': device_id}, {"$set": {'target': {'locked_max_temp': new_max_temperature}}},
+                                   upsert=False)
+        self.collection.update_one({'_id': device_id}, {"$set": {'target': {'locked_min_temp': new_min_temperature}}},
+                                   upsert=False)
+        self.collection.update_one({'_id': device_id}, {"$set": {'status': {'last_temperature': new_last_temperature}}},
+                                   upsert=False)
 
 
 class DeviceGroupRepository(Repository):
