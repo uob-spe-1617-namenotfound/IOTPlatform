@@ -1,0 +1,15 @@
+machine:
+
+  python:
+    version: pypy-3.4.3
+
+  dependencies:
+    post:
+      - python ./install-packages
+
+  test:
+    override:
+      - python ./api/tests.py
+
+
+

@@ -57,20 +57,12 @@ def get_all_users():
     return jsonify({"users": [user.get_user_attributes() for user in users], "error": None})
 
 
-@api.route('/user/<string:user_id>/houses')
-def get_houses_for_user(user_id):
+@api.route('/user/<string:user_id>/house')
+def get_house_for_user(user_id):
     logging.debug("Getting houses for user {}".format(user_id))
-    houses = api.house_repository.get_houses_for_user(ObjectId(user_id))
-    if houses is None:
-        return jsonify({"houses": None, "error": {"code": 404, "message": "No such user found"}})
-    return jsonify({"houses": [house.get_house_attributes() for house in houses], "error": None})
-
-
-@api.route('/house/<string:house_id>')
-def get_house_info(house_id):
-    house = api.house_repository.get_house_by_id(ObjectId(house_id))
+    house = api.house_repository.get_houses_for_user(ObjectId(user_id))
     if house is None:
-        return jsonify({"house": None, "error": {"code": 404, "message": "No such house found"}})
+        return jsonify({"house": None, "error": {"code": 404, "message": "No such House found"}})
     return jsonify({"house": house.get_house_attributes(), "error": None})
 
 
@@ -245,9 +237,10 @@ def login(email_address, password):
 
 
 @api.route('/register', methods=['POST'])
-def register(email_address, password, name, location, is_admin):
+def register(password, email_address, location, name, is_admin):
     data = None
-    if email_address == api.user_repository.get_user_by_email(email_address):
+    users = api.user_repository.get_all_users()
+    if email_address == users.find_one({'email_address': email_address}):
         data['success'] = False
         data['error'] = {'code': 409, 'message': 'Email address is already registered'}
     else:
