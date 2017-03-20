@@ -208,6 +208,60 @@ def faulty_devices():
     })
 
 
+@api.route('/house/<string:house_id>')
+def location_attr(house_id):
+    attributes = api.house_repository.get_house_attributes(house_id)
+    attributes['location'] = {'lat': 51.529249, 'lng': -0.117973, 'description': 'University of Bristol'}
+    return attributes
+
+
+@api.route('/user/<string:user_id>')
+def faulty_user_devices(user_id):
+    api.user_repository.faulty_user_devices(user_id)
+
+
+from flask.ext.bcrypt import Bcrypt
+
+bcrypt = Bcrypt(api)
+
+
+@api.route('/login', methods=['POST'])
+def login(email_address, password):
+    data = None
+    login_user = api.user_repository.get_user_by_email(email_address)
+    if login_user.email_address == email_address:
+        if bcrypt.check_password_hash(login_user.password_hash, password):
+            data['success'] = True
+            data['admin'] = login_user.is_admin
+            data['user_id'] = login_user.user_id
+            data['error'] = None
+        else:
+            data['success'] = False
+            data['error'] = {'code': 406, 'message': 'Password is incorrect'}
+    else:
+        data['success'] = False
+        data['error'] = {'code': 404, 'message': 'Username not found'}
+    return jsonify(data)
+
+
+@api.route('/register', methods=['POST'])
+def register(email_address, password, name, location, is_admin):
+    data = None
+    if email_address == api.user_repository.get_user_by_email(email_address):
+        data['success'] = False
+        data['error'] = {'code': 409, 'message': 'Email address is already registered'}
+    else:
+        if password is not None:
+            hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+            new_user = api.user_repository.add_user(name, hashed_password, email_address, is_admin)
+            house_id = api.house_repository.add_house(new_user, "{}'s house".format(name), location)
+            data['success'] = True
+            data['user_id'] = new_user
+            data['house_id'] = house_id
+            data['error'] = None
+    return jsonify(data)
+
+
 from admin import *
 
 

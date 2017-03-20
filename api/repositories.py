@@ -35,6 +35,13 @@ class UserRepository(Repository):
                            user['is_admin'])
         return target_user
 
+    def get_user_by_email(self, email_address):
+        user = self.collection.find_one({'email_address': email_address})
+        target_user = User(user['_id'], user['name'],
+                           user['password_hash'], user['email_address'],
+                           user['is_admin'])
+        return target_user
+
     def get_all_users(self):
         users = self.collection.find()
         target_users = []
@@ -48,7 +55,7 @@ class HouseRepository(Repository):
     def __init__(self, mongo_collection):
         Repository.__init__(self, mongo_collection)
 
-    def add_house(self, user_id, name):
+    def add_house(self, user_id, name, location):
         user_houses = self.get_houses_for_user(user_id)
         for house in user_houses:
             other_name = house.get_house_attributes()['name']

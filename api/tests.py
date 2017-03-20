@@ -3,6 +3,7 @@ from test.model_user import UserTests
 from test.model_house import HouseTests
 from test.model_room import RoomTests
 from test.model_device import DeviceTests
+from test.model_usr_mgmt import MgmtTests
 import unittest
 
 import os
@@ -16,6 +17,7 @@ def main():
     HouseTests.collection = db.house_test
     RoomTests.collection = db.room_test
     DeviceTests.collection = db.device_test
+    MgmtTests.collection = db.user_test
     unittest.main()
 
 if __name__ == "__main__":
