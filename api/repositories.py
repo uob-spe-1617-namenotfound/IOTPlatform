@@ -366,7 +366,7 @@ class TokenRepository(Repository):
             return False
 
     def authenticate_user(self, owner_id, token):
-        valid = self.check_token_validity(token)
+        valid = self.check_token_validity(owner_id, token)
         if valid:
             token_user_id = self.collection.find_one({'token': token})['user_id']
             user_is_admin = self.repositories.user_repository.find_one({'user_id': token_user_id})['is_admin']
