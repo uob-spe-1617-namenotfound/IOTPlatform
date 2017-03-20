@@ -56,19 +56,6 @@ class UserRepository(Repository):
                                      user['is_admin']))
         return target_users
 
-    def authenticate_user(self, user_id, owner_id, token):
-        if self.repositories.token_repository.check_token_validity(user_id, token) is False:
-            return False
-        else:
-            if user_id != owner_id:
-                user = self.collection.find_one({'user_id': user_id})
-                if user['is_admin'] is True:
-                    return True
-                else:
-                    return False
-            else:
-                return True
-
 
 class HouseRepository(Repository):
     def __init__(self, mongo_collection, repository_collection):
@@ -106,11 +93,6 @@ class HouseRepository(Repository):
             target_houses.append(House(house['_id'], house['user_id'], house['name']))
         return target_houses
 
-    def authenticate_user_for_house(self, user_id, house_id, token):
-        self.repositories.token_repository.check_token_validity(user_id, token)
-        owner_id = self.collection.find_one({'house_id': house_id})['user_id']
-        return self.repositories.user_repository.authenticate_user(user_id, owner_id, token)
-
 
 class RoomRepository(Repository):
     def __init__(self, mongo_collection, repository_collection):
@@ -146,10 +128,6 @@ class RoomRepository(Repository):
         for room in rooms:
             target_rooms.append(Room(room['_id'], room['house_id'], room['name']))
         return target_rooms
-
-    def authenticate_user_for_room(self, user_id, room_id, token):
-        house_id = self.collection.find_one({'room_id': room_id})['house_id']
-        return self.repositories.house_repository.authenticate_user_for_house(user_id, house_id, token)
 
 
 class DeviceRepository(Repository):
