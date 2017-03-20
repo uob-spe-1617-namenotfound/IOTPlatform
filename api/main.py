@@ -218,6 +218,7 @@ bcrypt = Bcrypt(api)
 
 @api.route('/login', methods=['POST'])
 def login(email_address, password):
+    login_user = None
     data = None
     users = api.user_repository.get_all_users()
     login_user = users.find_one({'email_address': email_address})

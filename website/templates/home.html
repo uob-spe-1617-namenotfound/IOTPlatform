@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block page_content %}
+    <h1> {% if admin %} User: {{ user_name }} {% else %}Welcome!{% endif %}</h1>
+    <br>
+    <a class="btn btn-primary" href="{{ url_for('.add_new_room') }}">
+        <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add New Room
+    </a>
+    <a class="btn btn-primary" href="{{ url_for('.show_devices') }}">
+        <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span> View Devices
+    </a>
+    <br>
+
+    {% if rooms %}
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Rooms</th>
+                <th></th>
+
+            </tr>
+            </thead>
+            <tbody>
+            {% for room in rooms | sort(attribute='name') %}
+                <tr>
+                    <th scope="row">{{ loop.index }}</th>
+                    <td><a href="{{ url_for('.view_room', room_id=room.room_id) }}">{{ room.name }}</a></td>
+                    <td><a href="#">x</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+    {% else %}
+        <h1>No data to show!</h1>
+    {% endif %}
+
+{% endblock %}

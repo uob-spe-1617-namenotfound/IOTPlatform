@@ -1,11 +1,11 @@
-{% extends "admin/base.html" %}
+{% extends "base.html" %}
 {% block page_content %}
     <h1>Welcome!</h1>
 
 <ul class="nav nav-pills">
-        <li role="presentation"><a href="{{ url_for('.index') }}">List of Users</a></li>
+        <li role="presentation"><a href="{{ url_for('.admin') }}">List of Users</a></li>
         <li role="presentation" class="active"><a href="#">Map</a></li>
-        <li role="presentation"><a href="{{ url_for('.faulty_devices') }}">Faulty devices</a></li>
+        <li role="presentation"><a href="{{ url_for('.admin_faulty_devices') }}">Faulty devices</a></li>
     </ul>
 
 <br>
