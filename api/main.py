@@ -220,8 +220,8 @@ bcrypt = Bcrypt(api)
 def login(email_address, password):
     data = None
     login_user = api.user_repository.get_user_by_email(email_address)
-    if login_user['email_address'] == email_address:
-        if bcrypt.check_password_hash(login_user['password_hash'], password):
+    if login_user.email_address == email_address:
+        if bcrypt.check_password_hash(login_user.password_hash, password):
             data['success'] = True
             data['admin'] = login_user.is_admin
             data['user_id'] = login_user.user_id
