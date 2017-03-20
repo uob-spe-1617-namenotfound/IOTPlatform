@@ -35,6 +35,13 @@ class UserRepository(Repository):
                            user['is_admin'])
         return target_user
 
+    def get_user_by_email(self, email_address):
+        user = self.collection.find_one({'email_address': email_address})
+        target_user = User(user['_id'], user['name'],
+                           user['password_hash'], user['email_address'],
+                           user['is_admin'])
+        return target_user
+
     def get_all_users(self):
         users = self.collection.find()
         target_users = []

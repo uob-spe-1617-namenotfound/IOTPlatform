@@ -218,11 +218,8 @@ bcrypt = Bcrypt(api)
 
 @api.route('/login', methods=['POST'])
 def login(email_address, password):
-    login_user = None
     data = None
-    users = api.user_repository.get_all_users()
-    login_user = users.find_one({'email_address': email_address})
-
+    login_user = api.user_repository.get_user_by_email(email_address)
     if login_user['email_address'] == email_address:
         if bcrypt.check_password_hash(login_user['password_hash'], password):
             data['success'] = True
@@ -235,15 +232,13 @@ def login(email_address, password):
     else:
         data['success'] = False
         data['error'] = {'code': 404, 'message': 'Username not found'}
-
     return jsonify(data)
 
 
 @api.route('/register', methods=['POST'])
-def register(password, email_address, location, name, is_admin):
+def register(email_address, password, name, location, is_admin):
     data = None
-    users = api.user_repository.get_all_users()
-    if email_address == users.find_one({'email_address': email_address}):
+    if email_address == api.user_repository.get_user_by_email(email_address):
         data['success'] = False
         data['error'] = {'code': 409, 'message': 'Email address is already registered'}
     else:
@@ -255,6 +250,7 @@ def register(password, email_address, location, name, is_admin):
             data['user_id'] = new_user
             data['house_id'] = house_id
             data['error'] = None
+    return jsonify(data)
 
 from admin import *
 
