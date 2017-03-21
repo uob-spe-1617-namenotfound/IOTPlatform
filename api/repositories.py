@@ -206,7 +206,7 @@ class DeviceRepository(Repository):
             self.collection.update_one({'_id': device_id}, {"$set": {'sensor_data': 0}})
 
     def remove_device(self, device_id):
-        self.repositories.device_group_repository.remove_device_from_group(device_id)
+        #self.repositories.device_group_repository.remove_device_from_group(device_id)
         self.collection.delete_one({'_id': device_id})
 
     def get_device_by_id(self, device_id):
