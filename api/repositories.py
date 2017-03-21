@@ -31,11 +31,11 @@ class UserRepository(Repository):
         Repository.__init__(self, mongo_collection, repository_collection)
 
     def add_user(self, name, password_hash, email_address, is_admin):
-        all_users = self.get_all_users()
-        for user in all_users:
-            other_email = user.get_user_attributes()['email_address']
-            if email_address == other_email:
-                raise Exception("There is already an account with this email.")
+        logging.debug("adding user!")
+        existing_user = self.get_user_by_email(email_address)
+        logging.debug("existing user: {}".format(existing_user))
+        if existing_user is not None:
+            raise Exception("There is already an account with this email.")
         user = self.collection.insert_one({'name': name, 'password_hash': password_hash,
                                            'email_address': email_address, 'is_admin': is_admin})
         return user.inserted_id
@@ -45,25 +45,42 @@ class UserRepository(Repository):
 
     def get_user_by_id(self, user_id):
         user = self.collection.find_one({'_id': user_id})
-        target_user = User(user['_id'], user['name'],
-                           user['password_hash'], user['email_address'],
-                           user['is_admin'])
+        if user is None:
+            return None
+        target_user = User(user)
+        return target_user
+
+    def get_user_by_email(self, email_address):
+        logging.debug("All users: {}".format([x.email_address for x in self.get_all_users()]))
+        user = self.collection.find_one({'email_address': email_address})
+        if user is None:
+            return None
+        target_user = User(user)
         return target_user
 
     def get_all_users(self):
         users = self.collection.find()
         target_users = []
         for user in users:
-            target_users.append(User(user['_id'], user['name'], user['password_hash'], user['email_address'],
-                                     user['is_admin']))
+            target_users.append(User(user))
         return target_users
+
+    def faulty_user_devices(self, user_id):
+        faulty_devs = DeviceRepository.get_faulty_devices()
+        attributes = User.get_user_attributes(user_id)
+        fault_check = False
+        for device in faulty_devs:
+            if device.user_id == user_id:
+                fault_check = True
+        attributes['faulty'] = fault_check
+        return attributes
 
 
 class HouseRepository(Repository):
     def __init__(self, mongo_collection, repository_collection):
         Repository.__init__(self, mongo_collection, repository_collection)
 
-    def add_house(self, user_id, name):
+    def add_house(self, user_id, name, location):
         user_houses = self.get_houses_for_user(user_id)
         for house in user_houses:
             other_name = house.get_house_attributes()['name']
@@ -77,7 +94,7 @@ class HouseRepository(Repository):
 
     def get_house_by_id(self, house_id):
         house = self.collection.find_one({'_id': house_id})
-        target_house = House(house['_id'], house['user_id'], house['name'])
+        target_house = House(house)
         return target_house
 
     def get_houses_for_user(self, user_id):
@@ -85,14 +102,14 @@ class HouseRepository(Repository):
         target_houses = []
         logging.debug("Found {} houses".format(houses.count()))
         for house in houses:
-            target_houses.append(House(house['_id'], house['user_id'], house['name']))
+            target_houses.append(House(house))
         return target_houses
 
     def get_all_houses(self):
         houses = self.collection.find()
         target_houses = []
         for house in houses:
-            target_houses.append(House(house['_id'], house['user_id'], house['name']))
+            target_houses.append(House(house))
         return target_houses
 
     def validate_token(self, house_id, token):
@@ -165,7 +182,7 @@ class DeviceRepository(Repository):
         reading = device.read_current_state()
         logging.debug("Read current state of device {}: {}".format(device.get_device_id(), reading))
         self.collection.update_one({'_id': device.get_device_id()},
-                               {"$set": {"last_read": reading}})
+                                   {"$set": {'status': {"last_read": reading}}})
 
     def update_all_device_readings(self):
         all_device_ids = [x['_id'] for x in self.collection.find({}, {})]
@@ -185,7 +202,7 @@ class DeviceRepository(Repository):
                                              'configuration': configuration,
                                              'vendor': vendor})
         device_id = device.inserted_id
-        self.collection.update_one({'_id': device_id}, {"$set": {'last_read': 0}})
+        self.collection.update_one({'_id': device_id}, {"$set": {'status': {'last_read': 0}}})
         self.set_device_type(device_id)
         device = self.get_device_by_id(device_id=device_id)
         self.update_device_reading(device)
@@ -194,11 +211,11 @@ class DeviceRepository(Repository):
     def set_device_type(self, device_id):
         device = self.collection.find_one({'_id': device_id})
         if device['device_type'] == "thermostat":
-            self.collection.update_one({'_id': device_id}, {"$set": {'locked_max_temperature': 50}})
-            self.collection.update_one({'_id': device_id}, {"$set": {'locked_min_temperature': 0}})
+            self.collection.update_one({'_id': device_id}, {"$set": {'target': {'locked_max_temperature': 50}}})
+            self.collection.update_one({'_id': device_id}, {"$set": {'target': {'locked_min_temperature': 0}}})
             self.collection.update_one({'_id': device_id}, {"$set": {'temperature_scale': "C"}})
-            self.collection.update_one({'_id': device_id}, {"$set": {'target_temperature': 25}})
-            self.collection.update_one({'_id': device_id}, {"$set": {'last_temperature': 0}})
+            self.collection.update_one({'_id': device_id}, {"$set": {'target': {'target_temperature': 25}}})
+            self.collection.update_one({'_id': device_id}, {"$set": {'status': {'last_temperature': 0}}})
         elif device['device_type'] == "motion_sensor":
             self.collection.update_one({'_id': device_id}, {"$set": {'sensor_data': 0}})
         # elif device['device_type'] == "light_switch":
@@ -263,11 +280,11 @@ class DeviceRepository(Repository):
     def set_target_temperature(self, device_id, temp):
         device = self.collection.find_one({'_id': device_id})
         assert (device['device_type'] == "thermostat"), "Device is not a thermostat."
-        if device['locked_min_temperature'] > temp:
-            raise Exception("Chosen temperature is too low.")
-        if device['locked_max_temperature'] < temp:
-            raise Exception("Chosen temperature is too high.")
-        self.collection.update_one({'_id': device_id}, {"$set": {'target_temperature': temp}}, upsert=False)
+        assert ('locked_min_temperature' not in device['target'] or device['target'][
+            'locked_min_temperature'] <= temp), "Chosen temperature is too low."
+        assert ('locked_max_temperature' not in device['target'] or device['target'][
+            'locked_max_temperature'] >= temp), "Chosen temperature is too high."
+        self.collection.update_one({'_id': device_id}, {"$set": {'target': {'target_temperature': temp}}}, upsert=False)
         device = self.get_device_by_id(device_id)
         device.configure_target_temperature(temp)
         self.update_device_reading(device)
@@ -279,19 +296,23 @@ class DeviceRepository(Repository):
         if device['temperature_scale'] == "C":
             self.collection.update_one({'_id': device_id}, {"$set": {'temperature_scale': "F"}}, upsert=False)
             new_target_temperature = device['target_temperature'] * 9 / 5 + 32
-            new_max_temperature = device['locked_max_temp'] * 9 / 5 + 32
-            new_min_temperature = device['locked_min_temp'] * 9 / 5 + 32
-            new_last_temperature = device['last_temperature'] * 9 / 5 + 32
+            new_max_temperature = device['target']['locked_max_temp'] * 9 / 5 + 32
+            new_min_temperature = device['target']['locked_min_temp'] * 9 / 5 + 32
+            new_last_temperature = device['status']['last_temperature'] * 9 / 5 + 32
         else:
             self.collection.update_one({'_id': device_id}, {"$set": {'temperature_scale': "C"}}, upsert=False)
-            new_target_temperature = (device['target_temperature'] - 32) * 5 / 9
-            new_max_temperature = (device['locked_max_temp'] - 32) * 5 / 9
-            new_min_temperature = (device['locked_min_temp'] - 32) * 5 / 9
-            new_last_temperature = (device['last_temperature'] - 32) * 5 / 9
-        self.collection.update_one({'_id': device_id}, {"$set": {'target_temperature': new_target_temperature}}, upsert=False)
-        self.collection.update_one({'_id': device_id}, {"$set": {'locked_max_temp': new_max_temperature}}, upsert=False)
-        self.collection.update_one({'_id': device_id}, {"$set": {'locked_min_temp': new_min_temperature}}, upsert=False)
-        self.collection.update_one({'_id': device_id}, {"$set": {'last_temperature': new_last_temperature}}, upsert=False)
+            new_target_temperature = (device['target']['target_temperature'] - 32) * 5 / 9
+            new_max_temperature = (device['target']['locked_max_temp'] - 32) * 5 / 9
+            new_min_temperature = (device['target']['locked_min_temp'] - 32) * 5 / 9
+            new_last_temperature = (device['target']['last_temperature'] - 32) * 5 / 9
+        self.collection.update_one({'_id': device_id},
+                                   {"$set": {'target': {'target_temperature': new_target_temperature}}}, upsert=False)
+        self.collection.update_one({'_id': device_id}, {"$set": {'target': {'locked_max_temp': new_max_temperature}}},
+                                   upsert=False)
+        self.collection.update_one({'_id': device_id}, {"$set": {'target': {'locked_min_temp': new_min_temperature}}},
+                                   upsert=False)
+        self.collection.update_one({'_id': device_id}, {"$set": {'status': {'last_temperature': new_last_temperature}}},
+                                   upsert=False)
 
     def validate_token(self, device_id, token):
         device = self.get_device_by_id(device_id)

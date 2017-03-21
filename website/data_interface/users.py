@@ -1,18 +1,28 @@
+import requests
+
 import data_interface
 
 
 def register_user(email_address, password, name):
-    result = None
-    error = "Registration is not implemented in the API yet"
-    return result, error
+    r = requests.post(data_interface.get_api_url('/register'),
+                      json={"email_address": email_address,
+                            "password": password,
+                            "name": name})
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception('Error!')
+    return data['result'], data['error']
 
 
 def login(email_address, password):
+    r = requests.post(data_interface.get_api_url('/login'),
+                      json={"email_address": email_address, "password": password})
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
     error = None
-    # TODO: don't login default user (blocked by API: feature request #2)
-
-    user_id = data_interface.get_default_user_id()
-    admin = False
+    user_id = data['result']['user_id']
+    admin = data['result']['admin']
 
     result = {
         "user_id": user_id,

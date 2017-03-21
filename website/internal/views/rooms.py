@@ -1,20 +1,17 @@
 from flask import redirect, url_for, flash, render_template
-from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
 from internal import internal_site
 import data_interface
+from internal.views.forms import AddNewRoomForm
 
-
-class AddNewRoomForm(FlaskForm):
-    name = StringField("Room name")
-    submit = SubmitField()
-
-
-@internal_site.route('/rooms/add', methods=['POST', 'GET'])
+@internal_site.route('/room/add', methods=['POST', 'GET'])
 def add_new_room():
     form = AddNewRoomForm()
     if form.validate_on_submit():
-        data_interface.add_new_room(name=form.name.data)
+        try:
+            data_interface.add_new_room(name=form.name.data)
+        except Exception:
+            flash("Error", "danger")
+            return render_template("internal/new_room.html", new_room_form=form)
         flash("New room successfully added!", 'success')
         return redirect(url_for('.index'))
     return render_template("internal/new_room.html", new_room_form=form)

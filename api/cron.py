@@ -15,7 +15,7 @@ def update_all_readings():
 def setup_cron():
     scheduler.add_job(
         func=update_all_readings,
-        trigger=IntervalTrigger(seconds=10),
+        trigger=IntervalTrigger(seconds=100),
         id='update_all_readings',
         name='Get all device readings',
         replace_existing=True)
