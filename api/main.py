@@ -3,6 +3,7 @@ import logging
 
 from bson.objectid import ObjectId
 from flask import Flask, jsonify, request
+from flask_bcrypt import Bcrypt
 from pymongo import MongoClient
 
 from cron import setup_cron
@@ -57,20 +58,12 @@ def get_all_users():
     return jsonify({"users": [user.get_user_attributes() for user in users], "error": None})
 
 
-@api.route('/user/<string:user_id>/houses')
-def get_houses_for_user(user_id):
+@api.route('/user/<string:user_id>/house')
+def get_house_for_user(user_id):
     logging.debug("Getting houses for user {}".format(user_id))
-    houses = api.house_repository.get_houses_for_user(ObjectId(user_id))
-    if houses is None:
-        return jsonify({"houses": None, "error": {"code": 404, "message": "No such user found"}})
-    return jsonify({"houses": [house.get_house_attributes() for house in houses], "error": None})
-
-
-@api.route('/house/<string:house_id>')
-def get_house_info(house_id):
-    house = api.house_repository.get_house_by_id(ObjectId(house_id))
+    house = api.house_repository.get_houses_for_user(ObjectId(user_id))[0]
     if house is None:
-        return jsonify({"house": None, "error": {"code": 404, "message": "No such house found"}})
+        return jsonify({"house": None, "error": {"code": 404, "message": "No such House found"}})
     return jsonify({"house": house.get_house_attributes(), "error": None})
 
 
@@ -206,6 +199,65 @@ def faulty_devices():
         "devices": [x.get_device_attributes() for x in faulty_devices],
         "error": None
     })
+
+
+@api.route('/house/<string:house_id>')
+def location_attr(house_id):
+    attributes = api.house_repository.get_house_attributes(house_id)
+    attributes['location'] = {'lat': 51.529249, 'lng': -0.117973, 'description': 'University of Bristol'}
+    return attributes
+
+
+@api.route('/user/<string:user_id>')
+def faulty_user_devices(user_id):
+    api.user_repository.faulty_user_devices(user_id)
+
+
+bcrypt = Bcrypt(api)
+
+
+@api.route('/login', methods=['POST'])
+def login():
+    login_data = request.get_json()
+    email_address, password = login_data['email_address'], login_data['password']
+    data = dict()
+    login_user = api.user_repository.get_user_by_email(email_address)
+    if login_user is not None:
+        if bcrypt.check_password_hash(login_user.password_hash, password):
+            data['result'] = {'success': True, 'admin': login_user.is_admin, 'user_id': login_user.user_id}
+            data['error'] = None
+        else:
+            data['success'] = False
+            data['error'] = {'code': 406, 'message': 'Password is incorrect'}
+    else:
+        data['success'] = False
+        data['error'] = {'code': 404, 'message': 'Username not found'}
+    return jsonify(data)
+
+
+@api.route('/register', methods=['POST'])
+def register():
+    registration = request.get_json()
+    data = dict()
+    logging.debug("Data: {}".format(registration))
+    user = api.user_repository.get_user_by_email(registration['email_address'])
+    logging.debug("Found user: {}".format(user))
+    if user is not None:
+        data['success'] = False
+        data['error'] = {'code': 409, 'message': 'Email address is already registered'}
+    else:
+        if registration['password'] is not None:
+            logging.debug("Password!")
+            hashed_password = bcrypt.generate_password_hash(registration['password']).decode('utf-8')
+            logging.debug("Hashed: {}".format(hashed_password))
+            new_user = api.user_repository.add_user(registration['name'], hashed_password,
+                                                    registration['email_address'], False)
+            logging.debug("New user: {}".format(new_user))
+            house_id = api.house_repository.add_house(new_user, "{}'s house".format(registration['name']), None)
+            logging.debug("Add house: {}".format(house_id))
+            data['result'] = {'success': True, 'user_id': str(new_user), 'house_id': str(house_id)}
+            data['error'] = None
+    return jsonify(data)
 
 
 from admin import *

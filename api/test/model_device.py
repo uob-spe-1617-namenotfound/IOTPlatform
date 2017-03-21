@@ -9,9 +9,12 @@ class DeviceTests(unittest.TestCase):
         self.devices = repositories.DeviceRepository(DeviceTests.collection)
         self.house1id = ObjectId()
         self.room1id = ObjectId()
-        self.device1id = self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat", 1, None, "example")
-        self.device2id = self.devices.add_device(self.house1id, None, "Kitchen Motion Sensor", "motion_sensor", 1, None, "example")
-        self.device3id = self.devices.add_device(self.house1id, None, "Kitchen Light Switch", "light_switch", 1, None, "example")
+        self.device1id = self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat",
+                                                 {'power_state': 1}, None, "example")
+        self.device2id = self.devices.add_device(self.house1id, None, "Kitchen Motion Sensor", "motion_sensor",
+                                                 {'power_state': 1}, None, "example")
+        self.device3id = self.devices.add_device(self.house1id, None, "Kitchen Light Switch", "light_switch",
+                                                 {'power_state': 1}, None, "example")
 
     def tearDown(self):
         self.devices.clear_db()
@@ -23,7 +26,7 @@ class DeviceTests(unittest.TestCase):
         self.assertEqual(attributes['room_id'], None, "Device room not added correctly.")
         self.assertEqual(attributes['name'], "Kitchen Light Switch", "Device name not added correctly.")
         self.assertEqual(attributes['device_type'], "light_switch", "Device type not added correctly.")
-        self.assertEqual(attributes['power_state'], 1, "Device power state not added correctly.")
+        self.assertEqual(attributes['status']['power_state'], 1, "Device power state not added correctly.")
         self.assertEqual(attributes['configuration'], None, "Device configuration not added correctly.")
         self.assertEqual(attributes['vendor'], "example", "Device vendor not added correctly.")
 
@@ -67,13 +70,13 @@ class DeviceTests(unittest.TestCase):
     def test_SetPowerState(self):
         self.devices.set_power_state(self.device3id, 0)
         device3 = self.devices.get_device_by_id(self.device3id)
-        power_state = device3.get_device_attributes()['power_state']
+        power_state = device3.get_device_attributes()['status']['power_state']
         self.assertEqual(power_state, 0, "Device power state not configured correctly.")
 
     def test_SetTargetTemp(self):
         self.devices.set_target_temperature(self.device1id, 30)
         device1 = self.devices.get_device_by_id(self.device1id)
-        target_temperature = device1.get_device_attributes()['target_temperature']
+        target_temperature = device1.get_device_attributes()['target']['target_temperature']
         self.assertEqual(target_temperature, 30, "Incorrect target temperature.")
 
     def test_GetAllDevices(self):

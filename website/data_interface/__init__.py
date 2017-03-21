@@ -12,6 +12,7 @@ def get_api_url(endpoint):
 
 def get_user_id():
     user = utilities.session.get_active_user()
+    logging.debug("Current user: {}".format(user))
     if user is None or 'user_id' not in user:
         return None
     return user['user_id']
@@ -25,19 +26,19 @@ def get_default_user_id():
 
 
 def get_default_house_id():
-    return get_current_user_houses()[0]["house_id"]
+    return get_current_user_house()["house_id"]
 
 
-def get_current_user_houses():
-    return get_houses_for_user(get_user_id())
+def get_current_user_house():
+    return get_house_for_user(get_user_id())
 
 
-def get_houses_for_user(user_id):
-    r = requests.get(get_api_url('/user/{}/houses'.format(user_id)))
+def get_house_for_user(user_id):
+    r = requests.get(get_api_url('/user/{}/house'.format(user_id)))
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
-    return data['houses']
+    return data['house']
 
 
 def get_user_default_rooms():
@@ -49,7 +50,7 @@ def get_user_default_rooms():
 
 
 def get_default_house_id_for_user(user_id):
-    return get_houses_for_user(user_id)[0]["house_id"]
+    return get_house_for_user(user_id)["house_id"]
 
 
 def get_default_rooms_for_user(user_id):
