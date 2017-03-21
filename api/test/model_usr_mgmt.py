@@ -7,7 +7,7 @@ import unittest
 class MgmtTests(unittest.TestCase):
     def __init__(self, testName):
         unittest.TestCase.__init__(self, testName)
-        self.users = repositories.UserRepository(MgmtTests.collection)
+        self.users = repositories.UserRepository(MgmtTests.collection, MgmtTests.repositories)
         self.user1id = self.users.add_user("Benny Clark", "password1", "benny@example.com", False)
 
     def test_CorrectLogin(self):

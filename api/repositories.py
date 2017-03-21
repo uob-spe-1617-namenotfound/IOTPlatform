@@ -371,7 +371,10 @@ class TokenRepository(Repository):
         Repository.__init__(self, mongo_collection, repository_collection)
 
     def generate_token(self, user_id):
-        token = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        unique = False
+        while unique is False:
+            token = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+            unique = self.check_token_is_new(token)
         self.add_token(user_id, token)
         return token
 

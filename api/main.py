@@ -290,7 +290,8 @@ def login():
     login_user = api.user_repository.get_user_by_email(email_address)
     if login_user is not None:
         if bcrypt.check_password_hash(login_user.password_hash, password):
-            data['result'] = {'success': True, 'admin': login_user.is_admin, 'user_id': login_user.user_id}
+            token = api.token_repository.generate_token()
+            data['result'] = {'success': True, 'admin': login_user.is_admin, 'user_id': login_user.user_id, 'token': token}
             data['error'] = None
         else:
             data['success'] = False
