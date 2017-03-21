@@ -5,7 +5,7 @@ import unittest
 
 class UserTests(unittest.TestCase):
     def setUp(self):
-        self.users = repositories.UserRepository(UserTests.collection)
+        self.users = repositories.UserRepository(UserTests.collection, UserTests.repositories)
         self.user1id = self.users.add_user("Benny Clark", "xxxxxxxx", "benny@example.com", False)
         self.user2id = self.users.add_user("Floris Kint", "xxxxxxxx", "floris@example.com", True)
         self.user3id = self.users.add_user("Ben Fossett", "xxxxxxxx", "ben@example.com", True)

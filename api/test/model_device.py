@@ -6,7 +6,7 @@ from bson import ObjectId
 
 class DeviceTests(unittest.TestCase):
     def setUp(self):
-        self.devices = repositories.DeviceRepository(DeviceTests.collection)
+        self.devices = repositories.DeviceRepository(DeviceTests.collection, DeviceTests.repositories)
         self.house1id = ObjectId()
         self.room1id = ObjectId()
         self.device1id = self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat",

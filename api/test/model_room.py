@@ -6,7 +6,7 @@ from bson import ObjectId
 
 class RoomTests(unittest.TestCase):
     def setUp(self):
-        self.rooms = repositories.RoomRepository(RoomTests.collection)
+        self.rooms = repositories.RoomRepository(RoomTests.collection, RoomTests.repositories)
         self.house1id = ObjectId()
         self.room1id = self.rooms.add_room(self.house1id, "Living Room")
         self.room2id = self.rooms.add_room(self.house1id, "Kitchen")
