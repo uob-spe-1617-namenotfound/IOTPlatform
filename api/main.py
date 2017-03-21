@@ -69,7 +69,10 @@ def get_user_info(user_id, token):
 
 
 @api.route('/users')
-def get_all_users():
+def get_all_users(token):
+    access = api.token_repository.authenticate_admin(token)
+    if access is False:
+        return jsonify({"users": None, "error": {"code": 401, "message": "Authentication failed"}})
     users = api.user_repository.get_all_users()
     return jsonify({"users": [user.get_user_attributes() for user in users], "error": None})
 
@@ -153,7 +156,10 @@ def get_device_info(device_id, token):
 
 
 @api.route('/devicegroup/<string:device_group_id>')
-def get_devicegroup_info(device_group_id):
+def get_devicegroup_info(device_group_id, token):
+    access = api.devicegroup_repository.validate_token(ObjectId(device_group_id), token)
+    if access is False:
+        return jsonify({"user": None, "error": {"code": 401, "message": "Authentication failed"}})
     device_group = api.devicegroup_repository.get_device_group_by_id(ObjectId(device_group_id))
     if device_group is None:
         return jsonify({"device_group": None, "error": {"code": 404, "message": "No such device group found"}})
@@ -260,7 +266,10 @@ def configure_switch(device_id, token):
 
 
 @api.route('/devices/faulty')
-def faulty_devices():
+def faulty_devices(token):
+    access = api.token_repository.authenticate_admin(token)
+    if access is False:
+        return jsonify({"devices": None, "error": {"code": 401, "message": "Authentication failed"}})
     faulty_devices = api.device_repository.get_faulty_devices()
     return jsonify({
         "devices": [x.get_device_attributes() for x in faulty_devices],

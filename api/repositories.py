@@ -206,6 +206,7 @@ class DeviceRepository(Repository):
             self.collection.update_one({'_id': device_id}, {"$set": {'sensor_data': 0}})
 
     def remove_device(self, device_id):
+        self.repositories.device_group_repository.remove_device_from_group(device_id)
         self.collection.delete_one({'_id': device_id})
 
     def get_device_by_id(self, device_id):
@@ -324,6 +325,14 @@ class DeviceGroupRepository(Repository):
                                           device_group['name'])
         return target_device_group
 
+    def validate_token(self, device_group_id, token):
+        device_group = self.get_device_group_by_id(device_group_id)
+        if device_group is None:
+            return False
+        else:
+            device_id = device_group['device_ids'][0]
+            return self.repositories.device_repository(device_id)
+
 
 class TriggerRepository(Repository):
     def __init__(self, mongo_collection, repository_collection):
@@ -377,3 +386,11 @@ class TokenRepository(Repository):
                 return True
             else:
                 return False
+
+    def authenticate_admin(self, token):
+        valid = self.check_token_validity(token)
+        if valid:
+            token_user_id = self.collection.find_one({'token': token})['user_id']
+            user_is_admin = self.repositories.user_repository.find_one({'user_id': token_user_id})['is_admin']
+            return user_is_admin
+        return False
