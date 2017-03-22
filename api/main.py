@@ -40,6 +40,10 @@ api.trigger_repository = api.repository_collection.trigger_repository
 api.token_repository = api.repository_collection.token_repository
 
 
+def get_request_token():
+    return request.get_json()['token']
+
+
 @api.route('/user/default_user')
 def get_first_user_id():
     users = api.user_repository.get_all_users()
@@ -67,10 +71,10 @@ def get_all_users(token):
     users = api.user_repository.get_all_users()
     return jsonify({"users": [user.get_user_attributes() for user in users], "error": None})
 
-  
-@api.route('/user/<string:user_id>/houses')
-def get_house_for_user(user_id, token):
-    access = api.token_repository.authenticate_user(ObjectId(user_id), token)
+
+@api.route('/user/<string:user_id>/house', methods=['POST'])
+def get_house_for_user(user_id):
+    access = api.token_repository.authenticate_user(ObjectId(user_id), get_request_token())
     if access is False:
         return jsonify({"house": None, "error": {"code": 401, "message": "Authentication failed"}})
     logging.debug("Getting house for user {}".format(user_id))
@@ -91,9 +95,9 @@ def get_room_info(room_id, token):
     return jsonify({"room": room.get_room_attributes(), "error": None})
 
 
-@api.route('/house/<string:house_id>/rooms')
-def get_rooms_for_house(house_id, token):
-    access = api.house_repository.validate_token(ObjectId(house_id), token)
+@api.route('/house/<string:house_id>/rooms', methods=['POST'])
+def get_rooms_for_house(house_id):
+    access = api.house_repository.validate_token(ObjectId(house_id), get_request_token())
     if access is False:
         return jsonify({"house": None, "error": {"code": 401, "message": "Authentication failed"}})
     rooms = api.room_repository.get_rooms_for_house(ObjectId(house_id))
@@ -277,11 +281,16 @@ def login():
     login_data = request.get_json()
     email_address, password = login_data['email_address'], login_data['password']
     data = dict()
+    logging.debug("API login, received data: {} {}".format(email_address, password))
     login_user = api.user_repository.get_user_by_email(email_address)
     if login_user is not None:
+        logging.debug("Checking password hash")
         if bcrypt.check_password_hash(login_user.password_hash, password):
+            logging.debug("Password hash matched")
             token = api.token_repository.generate_token(login_user.user_id)
-            data['result'] = {'success': True, 'admin': login_user.is_admin, 'user_id': login_user.user_id, 'token': token}
+            logging.debug("Token generated: {}".format(token))
+            data['result'] = {'success': True, 'admin': login_user.is_admin, 'user_id': login_user.user_id,
+                              'token': token}
             data['error'] = None
         else:
             data['success'] = False

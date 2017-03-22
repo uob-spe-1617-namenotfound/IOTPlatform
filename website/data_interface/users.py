@@ -23,9 +23,10 @@ def login(email_address, password):
     error = None
     user_id = data['result']['user_id']
     admin = data['result']['admin']
-
+    token = data['result']['token']
     result = {
         "user_id": user_id,
-        "admin": admin
+        "admin": admin,
+        "token": token
     }
     return result, error
