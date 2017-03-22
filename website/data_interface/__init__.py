@@ -33,8 +33,13 @@ def get_current_user_house():
     return get_house_for_user(get_user_id())
 
 
+def get_authentication_token():
+    return {"token": utilities.session.get_active_user_token()}
+
+
 def get_house_for_user(user_id):
-    r = requests.get(get_api_url('/user/{}/house'.format(user_id)))
+    r = requests.post(get_api_url('/user/{}/house'.format(user_id)),
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
@@ -42,7 +47,8 @@ def get_house_for_user(user_id):
 
 
 def get_user_default_rooms():
-    r = requests.get(get_api_url('/house/{}/rooms'.format(get_default_house_id())))
+    r = requests.post(get_api_url('/house/{}/rooms'.format(get_default_house_id())),
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
@@ -54,7 +60,8 @@ def get_default_house_id_for_user(user_id):
 
 
 def get_default_rooms_for_user(user_id):
-    r = requests.get(get_api_url('/house/{}/rooms'.format(get_default_house_id_for_user(user_id))))
+    r = requests.post(get_api_url('/house/{}/rooms'.format(get_default_house_id_for_user(user_id))),
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")

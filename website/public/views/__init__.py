@@ -4,6 +4,7 @@ import data_interface.users
 import utilities.session
 from public import public_site
 from public.views.forms import RegisterForm, LoginForm
+import logging
 
 
 @public_site.route('/')
@@ -38,12 +39,14 @@ def register():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
+        logging.debug("Form validated!")
         result, error = data_interface.users.login(
             email_address=form.email_address.data,
             password=form.password.data
         )
+        logging.debug("data interface login result: {} {}".format(result, error))
         if error is None:
-            error = utilities.session.login(result['user_id'], result['admin'])
+            error = utilities.session.login(result['user_id'], result['token'], result['admin'])
         if error is None:
             flash('Successfully logged in', 'success')
             return redirect(url_for('internal.index'))

@@ -117,7 +117,7 @@ class HouseRepository(Repository):
         if house is None:
             return False
         else:
-            user_id = house['user_id']
+            user_id = house.user_id
             return self.repositories.token_repository.authenticate_user(user_id, token)
 
 
@@ -372,7 +372,8 @@ class TokenRepository(Repository):
 
     def generate_token(self, user_id):
         unique = False
-        while unique is False:
+        token = ""
+        while not unique:
             token = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
             unique = self.check_token_is_new(token)
         self.add_token(user_id, token)
@@ -386,7 +387,7 @@ class TokenRepository(Repository):
         self.collection.delete_one({'_id': token_id})
 
     def check_token_is_new(self, token):
-        result = self.collection.find({'token': token})
+        result = self.collection.find_one({'token': token})
         if result is not None:
             return False
         else:
@@ -403,7 +404,7 @@ class TokenRepository(Repository):
         valid = self.check_token_validity(token)
         if valid:
             token_user_id = self.collection.find_one({'token': token})['user_id']
-            user_is_admin = self.repositories.user_repository.find_one({'user_id': token_user_id})['is_admin']
+            user_is_admin = self.repositories.user_repository.get_user_by_id(token_user_id).is_admin
             if token_user_id == owner_id:
                 return True
             elif user_is_admin:
