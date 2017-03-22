@@ -3,6 +3,7 @@ import model
 import unittest
 from bson import ObjectId
 
+
 class TokenTests(unittest.TestCase):
     def setUp(self):
         self.tokens = repositories.TokenRepository(TokenTests.collection, TokenTests.repositories)

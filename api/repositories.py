@@ -117,7 +117,7 @@ class HouseRepository(Repository):
         if house is None:
             return False
         else:
-            user_id = house.user_id
+            user_id = house.get_house_attributes()['user_id']
             return self.repositories.token_repository.authenticate_user(user_id, token)
 
 
@@ -139,21 +139,21 @@ class RoomRepository(Repository):
 
     def get_room_by_id(self, room_id):
         room = self.collection.find_one({'_id': room_id})
-        target_room = Room(room['_id'], room['house_id'], room['name'])
+        target_room = Room(room)
         return target_room
 
     def get_rooms_for_house(self, house_id):
         rooms = self.collection.find({'house_id': house_id})
         target_rooms = []
         for room in rooms:
-            target_rooms.append(Room(room['_id'], house_id, room['name']))
+            target_rooms.append(Room(room))
         return target_rooms
 
     def get_all_rooms(self):
         rooms = self.collection.find()
         target_rooms = []
         for room in rooms:
-            target_rooms.append(Room(room['_id'], room['house_id'], room['name']))
+            target_rooms.append(Room(room))
         return target_rooms
 
     def validate_token(self, room_id, token):
@@ -161,7 +161,7 @@ class RoomRepository(Repository):
         if room is None:
             return False
         else:
-            house_id = room['house_id']
+            house_id = room.get_room_attributes()['house_id']
             return self.repositories.house_repository.validate_token(house_id, token)
 
 
@@ -319,7 +319,7 @@ class DeviceRepository(Repository):
         if device is None:
             return False
         else:
-            house_id = device['house_id']
+            house_id = device.get_device_attributes()['house_id']
             return self.repositories.house_repository.validate_token(house_id, token)
 
 

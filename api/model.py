@@ -63,7 +63,7 @@ class Room(object):
         self.set_attributes(attributes)
 
     def set_attributes(self, attributes):
-        self.room_id = attributes['room_id']
+        self.room_id = attributes['_id']
         self.house_id = attributes['house_id']
         self.name = attributes['name']
 
