@@ -40,16 +40,6 @@ api.trigger_repository = api.repository_collection.trigger_repository
 api.token_repository = api.repository_collection.token_repository
 
 
-@api.route('/login')
-def login():
-    pass
-
-
-@api.route('/logout')
-def logout():
-    pass
-
-
 @api.route('/user/default_user')
 def get_first_user_id():
     users = api.user_repository.get_all_users()
@@ -290,7 +280,7 @@ def login():
     login_user = api.user_repository.get_user_by_email(email_address)
     if login_user is not None:
         if bcrypt.check_password_hash(login_user.password_hash, password):
-            token = api.token_repository.generate_token()
+            token = api.token_repository.generate_token(login_user.user_id)
             data['result'] = {'success': True, 'admin': login_user.is_admin, 'user_id': login_user.user_id, 'token': token}
             data['error'] = None
         else:
@@ -325,6 +315,11 @@ def register():
             data['result'] = {'success': True, 'user_id': str(new_user), 'house_id': str(house_id)}
             data['error'] = None
     return jsonify(data)
+
+
+@api.route('/logout')
+def logout(token):
+    api.token_repository.invalidate_token(token)
 
 
 from admin import *
