@@ -178,6 +178,15 @@ def get_faulty_devices():
     return data['devices']
 
 
+def get_all_faults():
+    r = requests.get(get_api_url('/admin/faults'),
+                     json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception('Error!')
+    return data['devices']
+
+
 def get_user_info(user_id):
     r = requests.get(get_api_url("/user/{}".format(user_id)),
                      json=get_authentication_token())

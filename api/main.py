@@ -281,6 +281,29 @@ def faulty_user_devices(user_id):
     return jsonify({"devices": [x.get_device_attributes for x in faulty_devices],
                     "error": None})
 
+
+@api.route('/admin/faults')
+def faulty_users():
+    access = api.token_repository.authenticate_admin(get_request_token())
+    if access is False:
+        return jsonify({"devices": None, "error": {"code": 401, "message": "Authentication failed"}})
+    devices = []
+    faulty_devices = api.device_repository.get_faulty_devices()
+    if faulty_devices is None:
+        return jsonify({"devices": None, "error": None})
+    else:
+        for device in faulty_devices:
+            attributes = device.get_device_attributes()
+            faulty_device = dict()
+            faulty_device['user_id'] = attributes['user_id']
+            faulty_device['device_id'] = attributes['device_id']
+            faulty_device['device_type'] = attributes['device_type']
+            faulty_device['vendor'] = attributes['vendor']
+            faulty_device['fault'] = attributes['fault']
+            devices.append(faulty_device)
+        return jsonify({"devices": devices, "error": None})
+
+
 bcrypt = Bcrypt(api)
 
 
