@@ -4,44 +4,68 @@ import time
 import requests
 
 
-def get_optional_attribute(attributes, key):
-    return attributes[key] if key in attributes else None
+def get_optional_attribute(attributes, key, default_value=None):
+    return attributes[key] if key in attributes else default_value
 
 
 class User(object):
-    def __init__(self, user_id, name, password_hash, email_address, is_admin):
-        self.user_id = user_id
-        self.name = name
-        self.password_hash = password_hash
-        self.email_address = email_address
-        self.is_admin = is_admin
+    def __init__(self, attributes):
+        self.user_id = None
+        self.name = None
+        self.password_hash = None
+        self.email_address = None
+        self.is_admin = None
+        self.faulty = None
+        self.set_attributes(attributes)
+
+    def set_attributes(self, attributes):
+        self.user_id = attributes['_id']
+        self.name = attributes['name']
+        self.email_address = attributes['email_address']
+        self.password_hash = attributes['password_hash']
+        self.is_admin = attributes['is_admin']
+        self.faulty = get_optional_attribute(attributes, 'faulty', False)
 
     def get_user_attributes(self):
         return {'user_id': self.user_id, 'name': self.name, 'password_hash': self.password_hash,
-                'email_address': self.email_address, 'is_admin': self.is_admin}
+                'faulty': self.faulty, 'email_address': self.email_address, 'is_admin': self.is_admin}
 
     def get_user_id(self):
         return self.user_id
 
 
 class House(object):
-    def __init__(self, house_id, user_id, name):
-        self.house_id = house_id
-        self.user_id = user_id
-        self.name = name
+    def __init__(self, attributes):
+        self.house_id = None
+        self.user_id = None
+        self.name = None
+        self.location = None
+        self.set_attributes(attributes)
+
+    def set_attributes(self, attributes):
+        self.house_id = attributes['_id']
+        self.user_id = attributes['user_id']
+        self.name = attributes['name']
+        self.location = get_optional_attribute(attributes, 'location', None)
 
     def get_house_attributes(self):
-        return {'house_id': self.house_id, 'user_id': self.user_id, 'name': self.name}
+        return {'house_id': self.house_id, 'user_id': self.user_id, 'name': self.name, 'location': self.location}
 
     def get_house_id(self):
         return self.house_id
 
 
 class Room(object):
-    def __init__(self, room_id, house_id, name):
-        self.room_id = room_id
-        self.house_id = house_id
-        self.name = name
+    def __init__(self, attributes):
+        self.room_id = None
+        self.house_id = None
+        self.name = None
+        self.set_attributes(attributes)
+
+    def set_attributes(self, attributes):
+        self.room_id = attributes['_id']
+        self.house_id = attributes['house_id']
+        self.name = attributes['name']
 
     def get_room_attributes(self):
         return {'room_id': self.room_id, 'house_id': self.house_id, 'name': self.name}
@@ -57,10 +81,11 @@ class Device(object):
         self.room_id = None
         self.name = None
         self.device_type = None
-        self.power_state = None
-        self.last_read = None
         self.vendor = None
         self.configuration = None
+        self.faulty = None
+        self.target = {}
+        self.status = {}
         self.set_attributes(attributes)
 
     def set_attributes(self, attributes):
@@ -69,16 +94,17 @@ class Device(object):
         self.room_id = attributes['room_id']
         self.name = attributes['name']
         self.device_type = attributes['device_type']
-        self.power_state = attributes['power_state']
-        self.last_read = attributes['last_read']
-        self.vendor = attributes['vendor'] if "vendor" in attributes else None
-        self.configuration = attributes['configuration'] if "configuration" in attributes else None
+        self.faulty = get_optional_attribute(attributes, 'faulty', False)
+        self.target = get_optional_attribute(attributes, 'target', {})
+        self.status = get_optional_attribute(attributes, 'status', {})
+        self.vendor = get_optional_attribute(attributes, 'vendor', None)
+        self.configuration = get_optional_attribute(attributes, 'configuration', None)
 
     def get_device_attributes(self):
         return {'_id': str(self.device_id), 'device_id': str(self.device_id), 'house_id': self.house_id,
-                'room_id': self.room_id, 'name': self.name,
-                'device_type': self.device_type, 'power_state': self.power_state,
-                'last_read': self.last_read, 'vendor': self.vendor, 'configuration': self.configuration}
+                'room_id': self.room_id, 'name': self.name, 'device_type': self.device_type,
+                'faulty': self.faulty, 'target': self.target, 'status': self.status,
+                'vendor': self.vendor, 'configuration': self.configuration}
 
     def get_device_id(self):
         return self.device_id
@@ -129,35 +155,37 @@ class Device(object):
         return {"data": data, "timestamp": timestamp}
 
     def is_faulty(self):
-        if "error" in self.last_read and self.last_read['error'] is not None:
-            return True
-        return False
+        if "error" in self.status['last_read'] and self.status['last_read']['error'] is not None:
+            self.faulty = True
+        return self.faulty
 
 
 class Thermostat(Device):
     def __init__(self, attributes):
-        self.last_temperature = None
-        self.target_temperature = None
-        self.locked_max_temp = None
-        self.locked_min_temp = None
-        self.temperature_scale = None
         Device.__init__(self, attributes)
+        self.temperature_scale = None
+        self.target['target_temperature'] = None
+        self.status['last_temperature'] = None
+        self.status['power_state'] = None
+        if self.vendor == 'netatmo':
+            self.target['locked_max_temp'] = None
+            self.target['locked_min_temp'] = None
 
     def set_attributes(self, attributes):
         attributes['device_type'] = "thermostat"
         Device.set_attributes(self, attributes=attributes)
-        self.last_temperature = get_optional_attribute(attributes, 'last_temperature')
-        self.target_temperature = get_optional_attribute(attributes, 'target_temperature')
-        self.locked_max_temp = get_optional_attribute(attributes, 'locked_max_temperature')
-        self.locked_min_temp = get_optional_attribute(attributes, 'locked_min_temperature')
         self.temperature_scale = get_optional_attribute(attributes, 'temperature_scale')
+        self.target['target_temperature'] = get_optional_attribute(attributes, 'target_temperature')
+        self.status['last_temperature'] = get_optional_attribute(attributes, 'last_temperature')
+        self.status['power_state'] = get_optional_attribute(attributes, 'power_state')
+        if self.vendor == 'netatmo':
+            self.target['locked_max_temp'] = get_optional_attribute(attributes, 'locked_max_temperature')
+            self.target['locked_min_temp'] = get_optional_attribute(attributes, 'locked_min_temperature')
 
     def get_device_attributes(self):
         attributes = Device.get_device_attributes(self)
         attributes.update({
-            'last_temperature': self.last_temperature, 'target_temperature': self.target_temperature,
-            'locked_max_temp': self.locked_max_temp, 'locked_min_temp': self.locked_min_temp,
-            'temperature_scale': self.temperature_scale
+            'target': self.target, 'status': self.status, 'temperature_scale': self.temperature_scale
         })
         return attributes
 
@@ -182,8 +210,9 @@ class Thermostat(Device):
 
 class MotionSensor(Device):
     def __init__(self, attributes):
-        self.sensor_data = None
         Device.__init__(self, attributes)
+        self.sensor_data = None
+        self.status = {}
 
     def set_attributes(self, attributes):
         Device.set_attributes(self, attributes=attributes)
@@ -266,3 +295,19 @@ class Trigger:
     def get_trigger_attributes(self):
         return {'trigger_id': self.trigger_id, 'trigger_sensor_id': self.trigger_sensor_id,
                 'trigger': self.trigger, 'actor_id': self.actor_id, 'action': self.action}
+
+
+class Token:
+    def __init__(self, attributes):
+        self.token_id = None
+        self.user_id = None
+        self.token = None
+        self.set_attributes(attributes)
+
+    def set_attributes(self, attributes):
+        self.token_id = attributes['_id']
+        self.user_id = attributes['user_id']
+        self.token = attributes['token']
+
+    def get_token_attributes(self):
+        return {'token_id': self.token_id, 'user_id': self.user_id, 'key': self.token}
