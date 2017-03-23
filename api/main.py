@@ -334,9 +334,17 @@ def register():
     return jsonify(data)
 
 
-@api.route('/logout')
-def logout(token):
-    api.token_repository.invalidate_token(token)
+@api.route('/logout', methods=['POST'])
+def logout():
+    access = api.token_repository.check_token_validity(get_request_token())
+    if access is False:
+        return jsonify({"devices": None, "error": {"code": 401, "message": "Authentication failed"}})
+    api.token_repository.invalidate_token(get_request_token())
+    valid = api.token_repository.check_token_validity(get_request_token())
+    if valid is False:
+        return jsonify({"success": True, "error": None})
+    else:
+        return jsonify({"success": False, "error": {"code": 401, "message": "Logout failed"}})
 
 
 from admin import *
