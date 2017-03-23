@@ -298,10 +298,16 @@ class Trigger:
 
 
 class Token:
-    def __init__(self, token_id, user_id, token):
-        self.token_id = token_id
-        self.user_id = user_id
-        self.token = token
+    def __init__(self, attributes):
+        self.token_id = None
+        self.user_id = None
+        self.token = None
+        self.set_attributes(attributes)
+
+    def set_attributes(self, attributes):
+        self.token_id = attributes['_id']
+        self.user_id = attributes['user_id']
+        self.token = attributes['token']
 
     def get_token_attributes(self):
         return {'token_id': self.token_id, 'user_id': self.user_id, 'key': self.token}

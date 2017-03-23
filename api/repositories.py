@@ -2,7 +2,7 @@ import logging
 import random
 import string
 
-from model import House, Room, User, Device, DeviceGroup, Thermostat, MotionSensor, LightSwitch, OpenSensor
+from model import House, Room, User, Device, DeviceGroup, Thermostat, MotionSensor, LightSwitch, OpenSensor, Token
 
 
 class Repository(object):
@@ -419,3 +419,10 @@ class TokenRepository(Repository):
             user_is_admin = self.repositories.user_repository.find_one({'user_id': token_user_id})['is_admin']
             return user_is_admin
         return False
+
+    def get_all_tokens(self):
+        tokens = self.collection.find()
+        target_tokens = []
+        for token in tokens:
+            target_tokens.append(Token(token))
+        return target_tokens
