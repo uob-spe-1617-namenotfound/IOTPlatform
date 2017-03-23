@@ -18,13 +18,6 @@ def get_user_id():
     return user['user_id']
 
 
-def get_default_user_id():
-    # TODO: remove once login functionality has been made
-    r = requests.get(get_api_url('/user/default_user'))
-    data = r.json()
-    return data['user_id']
-
-
 def get_default_house_id():
     return get_current_user_house()['house_id']
 
@@ -169,8 +162,8 @@ def set_switch_state(device_id, state):
     return data['device']
 
 
-def get_faulty_devices():
-    r = requests.get(get_api_url('/devices/faulty'),
+def get_all_faulty_devices():
+    r = requests.get(get_api_url('/admin/faulty'),
                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
@@ -178,8 +171,8 @@ def get_faulty_devices():
     return data['devices']
 
 
-def get_all_faults():
-    r = requests.get(get_api_url('/admin/faults'),
+def get_user_faulty_devices(user_id):
+    r = requests.get(get_api_url('user/{}/faulty').format(user_id),
                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:

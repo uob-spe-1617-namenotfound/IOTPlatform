@@ -2,7 +2,7 @@ import logging
 import random
 import string
 
-from model import House, Room, User, Device, DeviceGroup, Thermostat, MotionSensor, LightSwitch, OpenSensor, Token
+from model import House, Room, User, Device, Thermostat, MotionSensor, LightSwitch, OpenSensor, Token
 
 
 class Repository(object):
@@ -21,7 +21,6 @@ class RepositoryCollection(object):
         self.house_repository = HouseRepository(db.houses, self)
         self.room_repository = RoomRepository(db.rooms, self)
         self.device_repository = DeviceRepository(db.devices, self)
-        self.devicegroup_repository = DeviceGroupRepository(db.devicegroups, self)
         self.trigger_repository = TriggerRepository(db.triggers, self)
         self.token_repository = TokenRepository(db.token, self)
 
@@ -37,7 +36,8 @@ class UserRepository(Repository):
         if existing_user is not None:
             raise Exception("There is already an account with this email.")
         user = self.collection.insert_one({'name': name, 'password_hash': password_hash,
-                                           'email_address': email_address, 'is_admin': is_admin})
+                                           'email_address': email_address, 'is_admin': is_admin,
+                                           'faulty': False})
         return user.inserted_id
 
     def remove_user(self, user_id):
@@ -65,11 +65,12 @@ class UserRepository(Repository):
             target_users.append(User(user))
         return target_users
 
-    def faulty_user_devices(self, user_id):
-        faulty_devs = DeviceRepository.get_faulty_devices()
-        attributes = User.get_user_attributes(user_id)
+    def get_faulty_devices_for_user(self, user_id):
+        faulty_devices = self.repositories.device_repository.get_faulty_devices()
+        user = self.collection.get_user_by_id(user_id)
+        attributes = user.get_user_attributes()
         fault_check = False
-        for device in faulty_devs:
+        for device in faulty_devices:
             if device.user_id == user_id:
                 fault_check = True
         attributes['faulty'] = fault_check
@@ -223,7 +224,6 @@ class DeviceRepository(Repository):
             self.collection.update_one({'_id': device_id}, {"$set": {'sensor_data': 0}})
 
     def remove_device(self, device_id):
-        #self.repositories.device_group_repository.remove_device_from_group(device_id)
         self.collection.delete_one({'_id': device_id})
 
     def get_device_by_id(self, device_id):
@@ -324,38 +324,6 @@ class DeviceRepository(Repository):
         else:
             house_id = device.get_device_attributes()['house_id']
             return self.repositories.house_repository.validate_token(house_id, token)
-
-
-class DeviceGroupRepository(Repository):
-    def __init__(self, mongo_collection, repository_collection):
-        Repository.__init__(self, mongo_collection, repository_collection)
-
-    def add_device_group(self, device_ids, name):
-        device_group = self.collection.insert_one({'device_ids': device_ids, 'name': name})
-        return device_group.inserted_id
-
-    def add_device_to_group(self, device_group_id, device_id):
-        self.collection.update_one({'_id': device_group_id}, {"$push": {'device_ids': device_id}}, upsert=False)
-
-    def remove_device_group(self, device_group_id):
-        self.collection.delete_one({'_id': device_group_id})
-
-    def remove_device_from_group(self, device_group_id, device_id):
-        self.collection.update_one({'_id': device_group_id}, {"$pull": {'device_ids': device_id}}, upsert=False)
-
-    def get_device_group_by_id(self, device_group_id):
-        device_group = self.collection.find_one({'_id': device_group_id})
-        target_device_group = DeviceGroup(device_group['device_group_id'], device_group['device_ids'],
-                                          device_group['name'])
-        return target_device_group
-
-    def validate_token(self, device_group_id, token):
-        device_group = self.get_device_group_by_id(device_group_id)
-        if device_group is None:
-            return False
-        else:
-            device_id = device_group['device_ids'][0]
-            return self.repositories.device_repository(device_id)
 
 
 class TriggerRepository(Repository):

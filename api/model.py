@@ -101,7 +101,7 @@ class Device(object):
         self.configuration = get_optional_attribute(attributes, 'configuration', None)
 
     def get_device_attributes(self):
-        return {'_id': str(self.device_id), 'device_id': str(self.device_id), 'house_id': self.house_id,
+        return {'device_id': self.device_id, 'house_id': self.house_id,
                 'room_id': self.room_id, 'name': self.name, 'device_type': self.device_type,
                 'faulty': self.faulty, 'target': self.target, 'status': self.status,
                 'vendor': self.vendor, 'configuration': self.configuration}
@@ -112,7 +112,7 @@ class Device(object):
     def read_current_state(self):
         error = None
         data = None
-        timestamp = str(time.time())
+        timestamp = str(time())
         if self.vendor == "OWN":
             if "url" in self.configuration:
                 url = self.configuration['url']
@@ -305,16 +305,6 @@ class OpenSensor(Device):
         attributes = Device.get_device_attributes(self)
         attributes.update({'sensor_data': self.sensor_data})
         return attributes
-
-
-class DeviceGroup(object):
-    def __init__(self, device_group_id, device_ids, name):
-        self.device_group_id = device_group_id
-        self.device_ids = device_ids
-        self.name = name
-
-    def get_device_group_attributes(self):
-        return {'device_group_id': self.device_group_id, 'device_ids': self.device_ids, 'name': self.name}
 
 
 class Trigger:
