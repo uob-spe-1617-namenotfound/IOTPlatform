@@ -1,5 +1,5 @@
 import logging
-import time
+from datetime import time, timedelta
 
 import requests
 
@@ -153,6 +153,39 @@ class Device(object):
         if error is not None:
             return {"error": error, "timestamp": timestamp}
         return {"data": data, "timestamp": timestamp}
+
+    def get_energy_readings(self):
+        error = None
+        if self.vendor == "energenie":
+            if "username" in self.configuration and "password" in self.configuration and "device_id" in self.configuration:
+                try:
+                    username = self.configuration['username']
+                    password = self.configuration['password']
+                    dev_id = int(self.configuration['device_id'])
+                    logging.debug(
+                        "Obtaining energy usage for past day. Auth = {}, json = {}".format((username, password),
+                                                                                           {"id": dev_id}))
+                    r = requests.get(
+                        "https://mihome4u.co.uk/api/v1/subdevices/get_data",
+                        auth=(username, password),
+                        json={"id": dev_id,
+                              "data_type": "watts",
+                              "resolution": "instant",
+                              "start_time": time() - timedelta(days=7),
+                              "end_time": time(),
+                              "limit": 7}
+                    )
+                    data = r.json()
+                    logging.debug("Obtained energy usage for device {}".format(self.device_id))
+                    if data['status'] != "success":
+                        error = "External error: {}".format(data['status'])
+                except Exception as ex:
+                    error = "Cannot get energy reading: {}".format(ex)
+            else:
+                error = "Not all required information is set in the configuration"
+        else:
+            error = "get_energy_reading not implemented for vendor {}".format(self.vendor)
+        return error
 
     def is_faulty(self):
         if "error" in self.status['last_read'] and self.status['last_read']['error'] is not None:

@@ -205,6 +205,15 @@ def get_all_users():
     return data['users']
 
 
+def get_weekly_power_consumption():
+    r = requests.get(get_api_url('/admin/graph'),
+                     json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception('Error!')
+    return data['devices']
+
+
 def logout():
     r = requests.get(get_api_url("/logout"),
                      json=get_authentication_token())

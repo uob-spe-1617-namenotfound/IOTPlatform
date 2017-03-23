@@ -304,6 +304,19 @@ def faulty_users():
         return jsonify({"devices": devices, "error": None})
 
 
+@api.route('/admin/graph')
+def get_weekly_consumption():
+    access = api.token_repository.authenticate_admin(get_request_token())
+    if access is False:
+        return jsonify({"consumption": None, "error": {"code": 401, "message": "Authentication failed"}})
+    devices = api.user_repository.get_all_devices()
+    for device in devices:
+        dev = api.device_repository.get_device_by_id(device['_id'])
+        device_consumption = dev.get_energy_readings()
+    pass
+
+
+
 bcrypt = Bcrypt(api)
 
 
