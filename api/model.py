@@ -191,6 +191,8 @@ class Thermostat(Device):
 
     def configure_target_temperature(self, temperature):
         error = None
+        data = None
+        timestamp = str(time.time())
         if self.vendor == "OWN":
             if "url" in self.configuration:
                 url = self.configuration['url'] + "/write"
@@ -203,9 +205,31 @@ class Thermostat(Device):
                     error = "Cannot configure target temperature from configuration URL: {}".format(ex)
             else:
                 error = "Can't configure target temperature as no url is set in configuration"
+        elif self.vendor == "energenie":
+            if "username" in self.configuration and "password" in self.configuration and "device_id" in self.configuration:
+                try:
+                    username = self.configuration['username']
+                    password = self.configuration['password']
+                    dev_id = int(self.configuration['device_id'])
+                    logging.debug(
+                        "Configuring target temp for mihome4u data. Auth = {}, json = {}".format((username, password), {"id": dev_id}))
+                    r = requests.get("https://mihome4u.co.uk/api/v1/subdevices/set_target_temperature", auth=(username, password),
+                                     json={"id": dev_id, "target_temperature": temperature}, params={"id": dev_id, "temperature": temperature})
+                    r_data = r.json()
+                    logging.debug("Got: {}".format(r_data))
+                    if r_data["status"] != "success":
+                        error = "External error: {}".format(r_data['status'])
+                    else:
+                        data = {'target_temperature': r_data['data']['target_temperature'], 'voltage': r_data['data']['voltage']}
+                except Exception as ex:
+                    error = "Cannot read device data from URL: {}".format(ex)
+            else:
+                error = "Not all required information is set in the configuration"
+            logging.debug("Read current data for the device: {}".format(data))
         else:
             error = "configure_target_temperature not implemented for vendor {}".format(self.vendor)
-        return error
+        if error is not None:
+            return {"error": error, "timestamp": timestamp}
 
 
 class MotionSensor(Device):
@@ -222,6 +246,36 @@ class MotionSensor(Device):
         attributes = Device.get_device_attributes(self)
         attributes.update({'sensor_data': self.sensor_data})
         return attributes
+
+    def get_sensor_data(self):
+        error = None
+        data = None
+        timestamp = str(time.time())
+        if self.vendor == "OWN":
+            if "url" in self.configuration:
+                url = self.configuration['url'] + "/write"
+                try:
+                    r = requests.post(url, json={"data": data})
+                    r_data = r.json()
+                    if "error" in r_data and r_data["error"] is not None:
+                        error = r_data["error"]
+                except Exception as ex:
+                    error = "Cannot get sensor data from configuration URL: {}".format(ex)
+            else:
+                error = "Can't get sensor data as no url is set in configuration"
+        # elif self.vendor == "energenie":
+        #     if "username" in self.configuration and "password" in self.configuration and "device_id" in self.configuration:
+        #         try:
+        #             device_state = Device.read_current_state(self)
+        #             if device_state['error'] is None:
+        #                 first_data = device_state['data']
+        #                 second_data = first_data['data']
+        #                 sensor_data = second_data['historical_sensor_data']
+        else:
+            error = "get_sensor_data not implemented for vendor {}".format(self.vendor)
+        if error is not None:
+            return {"error": error, "timestamp": timestamp}
+        return {"data": data, "timestamp": timestamp}
 
 
 class LightSwitch(Device):
@@ -272,6 +326,28 @@ class OpenSensor(Device):
         attributes = Device.get_device_attributes(self)
         attributes.update({'sensor_data': self.sensor_data})
         return attributes
+
+    def get_sensor_data(self):
+        error = None
+        data = None
+        timestamp = str(time.time())
+        if self.vendor == "OWN":
+            if "url" in self.configuration:
+                url = self.configuration['url'] + "/write"
+                try:
+                    r = requests.post(url, json={"data": data})
+                    r_data = r.json()
+                    if "error" in r_data and r_data["error"] is not None:
+                        error = r_data["error"]
+                except Exception as ex:
+                    error = "Cannot get sensor data from configuration URL: {}".format(ex)
+            else:
+                error = "Can't get sensor data as no url is set in configuration"
+        else:
+            error = "get_sensor_data not implemented for vendor {}".format(self.vendor)
+        if error is not None:
+            return {"error": error, "timestamp": timestamp}
+        return {"data": data, "timestamp": timestamp}
 
 
 class DeviceGroup(object):
