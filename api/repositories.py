@@ -269,13 +269,14 @@ class DeviceRepository(Repository):
             target_devices.append(Device(device))
         return target_devices
 
+    # TODO: Assert power_state is 1 or 0
     def set_power_state(self, device_id, power_state):
         device = self.get_device_by_id(device_id)
         if device.device_type != "light_switch":
             raise Exception("Device is not a switch.")
         device.configure_power_state(power_state)
         self.update_device_reading(device)
-        self.collection.update_one({'_id': device_id}, {"$set": {'power_state': power_state}}, upsert=False)
+        self.collection.update_one({'_id': device_id}, {"$set": {'status': {'power_state': power_state}}}, upsert=False)
 
     def set_target_temperature(self, device_id, temp):
         device = self.collection.find_one({'_id': device_id})

@@ -159,7 +159,7 @@ class Device(object):
             self.faulty = True
         return self.faulty
 
-
+# TODO: Fix set_attribute method names.
 class Thermostat(Device):
     def __init__(self, attributes):
         Device.__init__(self, attributes)
@@ -247,6 +247,7 @@ class MotionSensor(Device):
         attributes.update({'sensor_data': self.sensor_data})
         return attributes
 
+    # TODO: verify if this + OpenSensor get_data method are needed or if to just call read_current_state
     def get_sensor_data(self):
         error = None
         data = None
@@ -281,6 +282,11 @@ class MotionSensor(Device):
 class LightSwitch(Device):
     def __init__(self, attributes):
         Device.__init__(self, attributes)
+        self.status['power_state'] = None
+
+    def set_attributes(self, attributes):
+        Device.set_attributes(self, attributes=attributes)
+        self.status['power_state'] = get_optional_attribute(attributes, 'power_state')
 
     def get_device_attributes(self):
         return Device.get_device_attributes(self)
