@@ -214,7 +214,7 @@ class Thermostat(Device):
                     logging.debug(
                         "Configuring target temp for mihome4u data. Auth = {}, json = {}".format((username, password), {"id": dev_id}))
                     r = requests.get("https://mihome4u.co.uk/api/v1/subdevices/set_target_temperature", auth=(username, password),
-                                     json={"id": dev_id, "target_temperature": temperature}, params={"id": dev_id, "temperature": temperature})
+                                     json={"id": dev_id, "temperature": temperature})
                     r_data = r.json()
                     logging.debug("Got: {}".format(r_data))
                     if r_data["status"] != "success":
