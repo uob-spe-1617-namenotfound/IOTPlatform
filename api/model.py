@@ -248,6 +248,7 @@ class MotionSensor(Device):
         return attributes
 
     # TODO: verify if this + OpenSensor get_data method are needed or if to just call read_current_state
+    # |-> Could just add include_usage_data parameter to read_current_state method
     def get_sensor_data(self):
         error = None
         data = None
@@ -264,14 +265,6 @@ class MotionSensor(Device):
                     error = "Cannot get sensor data from configuration URL: {}".format(ex)
             else:
                 error = "Can't get sensor data as no url is set in configuration"
-        # elif self.vendor == "energenie":
-        #     if "username" in self.configuration and "password" in self.configuration and "device_id" in self.configuration:
-        #         try:
-        #             device_state = Device.read_current_state(self)
-        #             if device_state['error'] is None:
-        #                 first_data = device_state['data']
-        #                 second_data = first_data['data']
-        #                 sensor_data = second_data['historical_sensor_data']
         else:
             error = "get_sensor_data not implemented for vendor {}".format(self.vendor)
         if error is not None:
