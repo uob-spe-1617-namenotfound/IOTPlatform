@@ -1,7 +1,11 @@
+import logging
+
 from flask import redirect, url_for, flash, render_template
-from internal import internal_site
+
 import data_interface
+from internal import internal_site
 from internal.views.forms import AddNewRoomForm
+
 
 @internal_site.route('/room/add', methods=['POST', 'GET'])
 def add_new_room():
@@ -9,7 +13,8 @@ def add_new_room():
     if form.validate_on_submit():
         try:
             data_interface.add_new_room(name=form.name.data)
-        except Exception:
+        except Exception as ex:
+            logging.error("Adding new room failed: {}".format(ex))
             flash("Error", "danger")
             return render_template("internal/new_room.html", new_room_form=form)
         flash("New room successfully added!", 'success')

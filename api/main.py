@@ -35,7 +35,6 @@ api.user_repository = api.repository_collection.user_repository
 api.house_repository = api.repository_collection.house_repository
 api.room_repository = api.repository_collection.room_repository
 api.device_repository = api.repository_collection.device_repository
-api.devicegroup_repository = api.repository_collection.devicegroup_repository
 api.trigger_repository = api.repository_collection.trigger_repository
 api.token_repository = api.repository_collection.token_repository
 
@@ -164,6 +163,8 @@ def remove_device(device_id):
 
 @api.route('/house/<string:house_id>/rooms/add', methods=['POST'])
 def add_room(house_id):
+    logging.debug("Add new room to house: {}".format(house_id))
+    logging.debug("JSON: {}".format(request.get_json()))
     access = api.house_repository.validate_token(ObjectId(house_id), get_request_token())
     if not access:
         return jsonify({"house": None, "error": {"code": 401, "message": "Authentication failed"}})
@@ -261,6 +262,7 @@ def faulty_user_devices(user_id):
     faulty_devices = api.user_repository.faulty_user_devices(user_id)
     return jsonify({"devices": [x.get_device_attributes for x in faulty_devices],
                     "error": None})
+
 
 bcrypt = Bcrypt(api)
 
