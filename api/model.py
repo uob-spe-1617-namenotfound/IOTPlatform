@@ -274,16 +274,6 @@ class OpenSensor(Device):
         return attributes
 
 
-class DeviceGroup(object):
-    def __init__(self, device_group_id, device_ids, name):
-        self.device_group_id = device_group_id
-        self.device_ids = device_ids
-        self.name = name
-
-    def get_device_group_attributes(self):
-        return {'device_group_id': self.device_group_id, 'device_ids': self.device_ids, 'name': self.name}
-
-
 class Trigger:
     def __init__(self, trigger, action):
         self.trigger_id = None
@@ -310,4 +300,4 @@ class Token:
         self.token = attributes['token']
 
     def get_token_attributes(self):
-        return {'token_id': self.token_id, 'user_id': self.user_id, 'key': self.token}
+        return {'_id': self.token_id, 'user_id': self.user_id, 'key': self.token}
