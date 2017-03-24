@@ -83,7 +83,7 @@ class HouseRepository(Repository):
     def add_house(self, user_id, name, location):
         user_houses = self.get_houses_for_user(user_id)
         for house in user_houses:
-            other_name = house.get_house_attributes().name
+            other_name = house.name
             if name == other_name:
                 raise Exception("There is already a house with this name.")
         house = self.collection.insert_one({'user_id': user_id, 'name': name})
@@ -128,7 +128,7 @@ class RoomRepository(Repository):
     def add_room(self, house_id, name):
         house_rooms = self.get_rooms_for_house(house_id)
         for room in house_rooms:
-            other_name = room.get_room_attributes().name
+            other_name = room.name
             if name == other_name:
                 raise Exception("There is already a room with this name.")
         room = self.collection.insert_one({'house_id': house_id, 'name': name})
