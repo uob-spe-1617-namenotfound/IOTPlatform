@@ -2,7 +2,7 @@ import logging
 import random
 import string
 
-from model import House, Room, User, Device, DeviceGroup, Thermostat, MotionSensor, LightSwitch, OpenSensor
+from model import House, Room, User, Device, Thermostat, MotionSensor, LightSwitch, OpenSensor, Token
 
 
 class Repository(object):
@@ -21,7 +21,6 @@ class RepositoryCollection(object):
         self.house_repository = HouseRepository(db.houses, self)
         self.room_repository = RoomRepository(db.rooms, self)
         self.device_repository = DeviceRepository(db.devices, self)
-        self.devicegroup_repository = DeviceGroupRepository(db.devicegroups, self)
         self.trigger_repository = TriggerRepository(db.triggers, self)
         self.token_repository = TokenRepository(db.token, self)
 
@@ -83,7 +82,7 @@ class HouseRepository(Repository):
     def add_house(self, user_id, name, location):
         user_houses = self.get_houses_for_user(user_id)
         for house in user_houses:
-            other_name = house.get_house_attributes()['name']
+            other_name = house.name
             if name == other_name:
                 raise Exception("There is already a house with this name.")
         house = self.collection.insert_one({'user_id': user_id, 'name': name})
@@ -117,7 +116,7 @@ class HouseRepository(Repository):
         if house is None:
             return False
         else:
-            user_id = house['user_id']
+            user_id = house.user_id
             return self.repositories.token_repository.authenticate_user(user_id, token)
 
 
@@ -128,7 +127,7 @@ class RoomRepository(Repository):
     def add_room(self, house_id, name):
         house_rooms = self.get_rooms_for_house(house_id)
         for room in house_rooms:
-            other_name = room.get_room_attributes()['name']
+            other_name = room.name
             if name == other_name:
                 raise Exception("There is already a room with this name.")
         room = self.collection.insert_one({'house_id': house_id, 'name': name})
@@ -139,21 +138,21 @@ class RoomRepository(Repository):
 
     def get_room_by_id(self, room_id):
         room = self.collection.find_one({'_id': room_id})
-        target_room = Room(room['_id'], room['house_id'], room['name'])
+        target_room = Room(room)
         return target_room
 
     def get_rooms_for_house(self, house_id):
         rooms = self.collection.find({'house_id': house_id})
         target_rooms = []
         for room in rooms:
-            target_rooms.append(Room(room['_id'], house_id, room['name']))
+            target_rooms.append(Room(room))
         return target_rooms
 
     def get_all_rooms(self):
         rooms = self.collection.find()
         target_rooms = []
         for room in rooms:
-            target_rooms.append(Room(room['_id'], room['house_id'], room['name']))
+            target_rooms.append(Room(room))
         return target_rooms
 
     def validate_token(self, room_id, token):
@@ -161,7 +160,7 @@ class RoomRepository(Repository):
         if room is None:
             return False
         else:
-            house_id = room['house_id']
+            house_id = room.house_id
             return self.repositories.house_repository.validate_token(house_id, token)
 
 
@@ -193,7 +192,7 @@ class DeviceRepository(Repository):
     def add_device(self, house_id, room_id, name, device_type, power_state, configuration, vendor):
         house_devices = self.get_devices_for_house(house_id)
         for device in house_devices:
-            other_name = device.get_device_attributes()['name']
+            other_name = device.name
             if name == other_name:
                 raise Exception("There is already a device with this name.")
         device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
@@ -319,40 +318,8 @@ class DeviceRepository(Repository):
         if device is None:
             return False
         else:
-            house_id = device['house_id']
+            house_id = device.house_id
             return self.repositories.house_repository.validate_token(house_id, token)
-
-
-class DeviceGroupRepository(Repository):
-    def __init__(self, mongo_collection, repository_collection):
-        Repository.__init__(self, mongo_collection, repository_collection)
-
-    def add_device_group(self, device_ids, name):
-        device_group = self.collection.insert_one({'device_ids': device_ids, 'name': name})
-        return device_group.inserted_id
-
-    def add_device_to_group(self, device_group_id, device_id):
-        self.collection.update_one({'_id': device_group_id}, {"$push": {'device_ids': device_id}}, upsert=False)
-
-    def remove_device_group(self, device_group_id):
-        self.collection.delete_one({'_id': device_group_id})
-
-    def remove_device_from_group(self, device_group_id, device_id):
-        self.collection.update_one({'_id': device_group_id}, {"$pull": {'device_ids': device_id}}, upsert=False)
-
-    def get_device_group_by_id(self, device_group_id):
-        device_group = self.collection.find_one({'_id': device_group_id})
-        target_device_group = DeviceGroup(device_group['device_group_id'], device_group['device_ids'],
-                                          device_group['name'])
-        return target_device_group
-
-    def validate_token(self, device_group_id, token):
-        device_group = self.get_device_group_by_id(device_group_id)
-        if device_group is None:
-            return False
-        else:
-            device_id = device_group['device_ids'][0]
-            return self.repositories.device_repository(device_id)
 
 
 class TriggerRepository(Repository):
@@ -371,7 +338,11 @@ class TokenRepository(Repository):
         Repository.__init__(self, mongo_collection, repository_collection)
 
     def generate_token(self, user_id):
-        token = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        unique = False
+        token = ""
+        while not unique:
+            token = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+            unique = self.check_token_is_new(token)
         self.add_token(user_id, token)
         return token
 
@@ -383,7 +354,7 @@ class TokenRepository(Repository):
         self.collection.delete_one({'_id': token_id})
 
     def check_token_is_new(self, token):
-        result = self.collection.find({'token': token})
+        result = self.collection.find_one({'token': token})
         if result is not None:
             return False
         else:
@@ -400,7 +371,7 @@ class TokenRepository(Repository):
         valid = self.check_token_validity(token)
         if valid:
             token_user_id = self.collection.find_one({'token': token})['user_id']
-            user_is_admin = self.repositories.user_repository.find_one({'user_id': token_user_id})['is_admin']
+            user_is_admin = self.repositories.user_repository.get_user_by_id(token_user_id).is_admin
             if token_user_id == owner_id:
                 return True
             elif user_is_admin:
@@ -415,3 +386,10 @@ class TokenRepository(Repository):
             user_is_admin = self.repositories.user_repository.find_one({'user_id': token_user_id})['is_admin']
             return user_is_admin
         return False
+
+    def get_all_tokens(self):
+        tokens = self.collection.find()
+        target_tokens = []
+        for token in tokens:
+            target_tokens.append(Token(token))
+        return target_tokens

@@ -5,10 +5,12 @@ import unittest
 
 
 class MgmtTests(unittest.TestCase):
-    def __init__(self, testName):
-        unittest.TestCase.__init__(self, testName)
-        self.users = repositories.UserRepository(MgmtTests.collection)
+    def setUp(self):
+        self.users = repositories.UserRepository(MgmtTests.collection, MgmtTests.repositories)
         self.user1id = self.users.add_user("Benny Clark", "password1", "benny@example.com", False)
+
+    def tearDown(self):
+        self.users.clear_db()
 
     def test_CorrectLogin(self):
         user = self.users.get_user_by_id(self.user1id)

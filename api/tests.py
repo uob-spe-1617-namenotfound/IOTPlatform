@@ -25,8 +25,9 @@ def main():
     RoomTests.collection = db.room_test
     RoomTests.repositories = repository_collection
     DeviceTests.collection = db.device_test
-    MgmtTests.collection = db.user_test
     DeviceTests.repositories = repository_collection
+    MgmtTests.collection = db.user_test
+    MgmtTests.repositories = repository_collection
     TokenTests.collection = db.token_test
     TokenTests.repositories = repository_collection
     unittest.main()
