@@ -21,7 +21,6 @@ class RepositoryCollection(object):
         self.house_repository = HouseRepository(db.houses, self)
         self.room_repository = RoomRepository(db.rooms, self)
         self.device_repository = DeviceRepository(db.devices, self)
-        self.devicegroup_repository = DeviceGroupRepository(db.devicegroups, self)
         self.trigger_repository = TriggerRepository(db.triggers, self)
         self.token_repository = TokenRepository(db.token, self)
 
