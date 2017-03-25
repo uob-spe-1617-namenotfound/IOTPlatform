@@ -156,6 +156,7 @@ class Device(object):
 
     def get_energy_readings(self):
         error = None
+        data = None
         if self.vendor == "energenie":
             if "username" in self.configuration and "password" in self.configuration and "device_id" in self.configuration:
                 try:
@@ -170,7 +171,7 @@ class Device(object):
                         auth=(username, password),
                         json={"id": dev_id,
                               "data_type": "watts",
-                              "resolution": "instant",
+                              "resolution": "daily",
                               "start_time": time() - timedelta(days=7),
                               "end_time": time(),
                               "limit": 7}
@@ -185,7 +186,9 @@ class Device(object):
                 error = "Not all required information is set in the configuration"
         else:
             error = "get_energy_reading not implemented for vendor {}".format(self.vendor)
-        return error
+        if error is not None:
+            return {"error": error}
+        return {"data": data}
 
     def is_faulty(self):
         if "error" in self.status['last_read'] and self.status['last_read']['error'] is not None:

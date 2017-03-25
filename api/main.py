@@ -299,10 +299,11 @@ def get_weekly_consumption():
     if access is False:
         return jsonify({"consumption": None, "error": {"code": 401, "message": "Authentication failed"}})
     devices = api.user_repository.get_all_devices()
+    overall_consumption = []
     for device in devices:
         dev = api.device_repository.get_device_by_id(device['_id'])
         device_consumption = dev.get_energy_readings()
-    pass
+    return overall_consumption
 
 
 bcrypt = Bcrypt(api)
