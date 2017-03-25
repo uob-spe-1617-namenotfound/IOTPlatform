@@ -331,7 +331,7 @@ class TriggerRepository(Repository):
     def __init__(self, mongo_collection, repository_collection):
         Repository.__init__(self, mongo_collection, repository_collection)
 
-    def add_trigger(self, trigger_sensor_id, trigger, actor_id, action):
+    def add_trigger(self, trigger_sensor_id, event, actor_id, action, action_params, user_id, reading):
         pass
 
     def get_trigger_by_id(self, trigger_id):

@@ -193,24 +193,6 @@ def link_device_to_room(room_id, device_id):
     return jsonify({"device": result.get_device_attributes(), "error": None})
 
 
-@api.route('/device/<string:device_id>/triggers/add', methods=['POST'])
-def add_trigger(device_id):
-    access = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
-    if not access:
-        return jsonify({"trigger": None, "error": {"code": 401, "message": "Authentication failed"}})
-    device = api.device_repository.get_device_by_id(ObjectId(device_id))
-    if device is None:
-        return jsonify({"trigger": None, "error": {"code": 404, "message": "No such device found"}})
-    data = request.get_json()
-    trigger = data['trigger']
-    actor_id = data['actor_id']
-    action = data['action']
-    result = api.trigger_repository.add_trigger(ObjectId(device_id), trigger, ObjectId(actor_id), action)
-    if result is None:
-        return jsonify({"trigger": None, "error": {"code": 404, "message": "Trigger couldn't be created."}})
-    return jsonify({"trigger": result.get_trigger_attributes(), "error": None})
-
-
 @api.route('/device/<string:device_id>/thermostat/configure', methods=['POST'])
 def configure_thermostat(device_id):
     access = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
@@ -249,6 +231,41 @@ def location_attr(house_id):
     attributes = api.house_repository.get_house_attributes(house_id)
     attributes['location'] = {'lat': 51.529249, 'lng': -0.117973, 'description': 'University of Bristol'}
     return attributes
+
+
+@api.route('/trigger/<string:trigger_id>', methods=['POST'])
+def get_trigger_info(trigger_id):
+    pass
+
+
+@api.route('/device/<string:device_id>/triggers')
+def get_triggers_for_device(device_id):
+    pass
+
+
+@api.route('/device/<string:device_id>/actions', methods=['POST'])
+def get_actions_for_device(device_id):
+    pass
+
+
+@api.route('trigger/create', methods=['POST'])
+def add_new_trigger():
+    pass
+
+
+@api.route('trigger/<string:trigger_id>/edit', methods=['POST'])
+def edit_trigger(trigger_id):
+    pass
+
+
+@api.route('/trigger/<string:trigger_id>/delete', methods=['POST'])
+def remove_trigger(trigger_id):
+    pass
+
+
+@api.route('/user/<string:user_id>/triggers', methods=['POST'])
+def get_triggers_for_user(user_id):
+    pass
 
 
 @api.route('/user/<string:user_id>/faults', methods=['POST'])

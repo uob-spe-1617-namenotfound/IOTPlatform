@@ -311,16 +311,34 @@ class OpenSensor(Device):
 
 
 class Trigger:
-    def __init__(self, trigger, action):
+    def __init__(self, attributes):
         self.trigger_id = None
-        self.trigger_sensor_id = None
-        self.trigger = trigger
+        self.sensor_id = None
+        self.event = None
+        self.event_params = None
         self.actor_id = None
-        self.action = action
+        self.action = None
+        self.action_params = None
+        self.user_id = None
+        self.reading = None
+        self.set_attributes(attributes)
+
+    def set_attributes(self, attributes):
+        self.trigger_id = attributes['_id']
+        self.sensor_id = attributes['sensor_id']
+        self.event = attributes['event']
+        self.event_params = attributes['event_params']
+        self.actor_id = attributes['actor_id']
+        self.action = attributes['action']
+        self.action_params = attributes['action_params']
+        self.user_id = attributes['user_id']
+        self.reading = attributes['reading']
 
     def get_trigger_attributes(self):
-        return {'trigger_id': self.trigger_id, 'trigger_sensor_id': self.trigger_sensor_id,
-                'trigger': self.trigger, 'actor_id': self.actor_id, 'action': self.action}
+        return {'trigger_id': self.trigger_id, 'sensor_id': self.sensor_id,
+                'event': self.event, 'event_params': self.event_params, 'actor_id': self.actor_id,
+                'action': self.action, 'action_params': self.action_params, 'user_id': self.user_id,
+                'reading': self.reading}
 
 
 class Token:
