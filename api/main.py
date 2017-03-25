@@ -241,18 +241,6 @@ def configure_switch(device_id):
     })
 
 
-@api.route('/devices/faulty', methods=['POST'])
-def faulty_devices():
-    access = api.token_repository.authenticate_admin(get_request_token())
-    if not access:
-        return jsonify({"devices": None, "error": {"code": 401, "message": "Authentication failed"}})
-    faulty_devices = api.device_repository.get_faulty_devices()
-    return jsonify({
-        "devices": [x.get_device_attributes() for x in faulty_devices],
-        "error": None
-    })
-
-
 @api.route('/house/<string:house_id>', methods=['POST'])
 def location_attr(house_id):
     access = api.house_repository.validate_token(ObjectId(house_id), get_request_token())

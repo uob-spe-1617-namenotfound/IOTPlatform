@@ -314,8 +314,9 @@ class DeviceRepository(Repository):
         self.collection.update_one({'_id': device_id}, {"$set": {'status': {'last_temperature': new_last_temperature}}},
                                    upsert=False)
 
-    def get_power_consumption(self, device_id):
-        pass
+    def get_energy_consumption(self, device_id):
+        device = self.collection.get_device_by_id(device_id)
+        return device.get_energy_readings()
 
     def validate_token(self, device_id, token):
         device = self.get_device_by_id(device_id)
