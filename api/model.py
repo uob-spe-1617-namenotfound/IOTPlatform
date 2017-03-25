@@ -1,5 +1,5 @@
 import logging
-import time
+from datetime import time, timedelta
 
 import requests
 
@@ -101,7 +101,7 @@ class Device(object):
         self.configuration = get_optional_attribute(attributes, 'configuration', None)
 
     def get_device_attributes(self):
-        return {'_id': str(self.device_id), 'device_id': str(self.device_id), 'house_id': self.house_id,
+        return {'device_id': self.device_id, 'house_id': self.house_id,
                 'room_id': self.room_id, 'name': self.name, 'device_type': self.device_type,
                 'faulty': self.faulty, 'target': self.target, 'status': self.status,
                 'vendor': self.vendor, 'configuration': self.configuration}
@@ -112,7 +112,7 @@ class Device(object):
     def read_current_state(self):
         error = None
         data = None
-        timestamp = str(time.time())
+        timestamp = str(time())
         if self.vendor == "OWN":
             if "url" in self.configuration:
                 url = self.configuration['url']
@@ -153,6 +153,42 @@ class Device(object):
         if error is not None:
             return {"error": error, "timestamp": timestamp}
         return {"data": data, "timestamp": timestamp}
+
+    def get_energy_readings(self):
+        error = None
+        data = None
+        if self.vendor == "energenie":
+            if "username" in self.configuration and "password" in self.configuration and "device_id" in self.configuration:
+                try:
+                    username = self.configuration['username']
+                    password = self.configuration['password']
+                    dev_id = int(self.configuration['device_id'])
+                    logging.debug(
+                        "Obtaining energy usage for past day. Auth = {}, json = {}".format((username, password),
+                                                                                           {"id": dev_id}))
+                    r = requests.get(
+                        "https://mihome4u.co.uk/api/v1/subdevices/get_data",
+                        auth=(username, password),
+                        json={"id": dev_id,
+                              "data_type": "watts",
+                              "resolution": "daily",
+                              "start_time": time() - timedelta(days=7),
+                              "end_time": time(),
+                              "limit": 7}
+                    )
+                    data = r.json()
+                    logging.debug("Obtained energy usage for device {}".format(self.device_id))
+                    if data['status'] != "success":
+                        error = "External error: {}".format(data['status'])
+                except Exception as ex:
+                    error = "Cannot get energy reading: {}".format(ex)
+            else:
+                error = "Not all required information is set in the configuration"
+        else:
+            error = "get_energy_reading not implemented for vendor {}".format(self.vendor)
+        if error is not None:
+            return {"error": error}
+        return {"data": data}
 
     def is_faulty(self):
         if "error" in self.status['last_read'] and self.status['last_read']['error'] is not None:

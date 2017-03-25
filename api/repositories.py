@@ -36,7 +36,8 @@ class UserRepository(Repository):
         if existing_user is not None:
             raise Exception("There is already an account with this email.")
         user = self.collection.insert_one({'name': name, 'password_hash': password_hash,
-                                           'email_address': email_address, 'is_admin': is_admin})
+                                           'email_address': email_address, 'is_admin': is_admin,
+                                           'faulty': False})
         return user.inserted_id
 
     def remove_user(self, user_id):
@@ -64,11 +65,12 @@ class UserRepository(Repository):
             target_users.append(User(user))
         return target_users
 
-    def faulty_user_devices(self, user_id):
-        faulty_devs = DeviceRepository.get_faulty_devices()
-        attributes = User.get_user_attributes(user_id)
+    def get_faulty_devices_for_user(self, user_id):
+        faulty_devices = self.repositories.device_repository.get_faulty_devices()
+        user = self.collection.get_user_by_id(user_id)
+        attributes = user.get_user_attributes()
         fault_check = False
-        for device in faulty_devs:
+        for device in faulty_devices:
             if device.user_id == user_id:
                 fault_check = True
         attributes['faulty'] = fault_check
@@ -222,7 +224,6 @@ class DeviceRepository(Repository):
             self.collection.update_one({'_id': device_id}, {"$set": {'sensor_data': 0}})
 
     def remove_device(self, device_id):
-        #self.repositories.device_group_repository.remove_device_from_group(device_id)
         self.collection.delete_one({'_id': device_id})
 
     def get_device_by_id(self, device_id):
@@ -312,6 +313,9 @@ class DeviceRepository(Repository):
                                    upsert=False)
         self.collection.update_one({'_id': device_id}, {"$set": {'status': {'last_temperature': new_last_temperature}}},
                                    upsert=False)
+
+    def get_power_consumption(self, device_id):
+        pass
 
     def validate_token(self, device_id, token):
         device = self.get_device_by_id(device_id)

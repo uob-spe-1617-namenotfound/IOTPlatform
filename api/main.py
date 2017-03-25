@@ -135,6 +135,9 @@ def add_device(house_id):
     access = api.house_repository.validate_token(ObjectId(house_id), get_request_token())
     if not access:
         return jsonify({"house": None, "error": {"code": 401, "message": "Authentication failed"}})
+    house = api.house_repository.get_house_by_id(ObjectId(house_id))
+    if house is None:
+        return jsonify({"device": None, "error": {"code": 404, "message": "No such house found"}})
     data = request.get_json()
     logging.debug("Adding device: {}".format(data))
     device = api.device_repository.add_device(device_type=data['device_type'],
@@ -180,7 +183,10 @@ def link_device_to_room(room_id, device_id):
     access1 = api.room_repository.validate_token(ObjectId(room_id), get_request_token())
     access2 = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
     if access1 is False or access2 is False:
-        return jsonify({"room": None, "error": {"code": 401, "message": "Authentication failed"}})
+        return jsonify({"device": None, "error": {"code": 401, "message": "Authentication failed"}})
+    room = api.room_repository.get_room_by_id(ObjectId(room_id))
+    if room is None:
+        return jsonify({"device": None, "error": {"code": 404, "message": "No such room found"}})
     result = api.device_repository.link_device_to_room(ObjectId(room_id), ObjectId(device_id))
     if result is None:
         return jsonify({"device": None, "error": {"code": 404, "message": "No such device found."}})
@@ -191,7 +197,10 @@ def link_device_to_room(room_id, device_id):
 def add_trigger(device_id):
     access = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
     if not access:
-        return jsonify({"device": None, "error": {"code": 401, "message": "Authentication failed"}})
+        return jsonify({"trigger": None, "error": {"code": 401, "message": "Authentication failed"}})
+    device = api.device_repository.get_device_by_id(ObjectId(device_id))
+    if device is None:
+        return jsonify({"trigger": None, "error": {"code": 404, "message": "No such device found"}})
     data = request.get_json()
     trigger = data['trigger']
     actor_id = data['actor_id']
@@ -254,14 +263,67 @@ def location_attr(house_id):
     return attributes
 
 
-@api.route('/user/<string:user_id>', methods=['POST'])
+@api.route('/user/<string:user_id>/faults', methods=['POST'])
 def faulty_user_devices(user_id):
-    access = api.token_repository.authenticate_user(user_id, get_request_token())
-    if not access:
+    access = api.token_repository.authenticate_admin(get_request_token())
+    if access is False:
         return jsonify({"devices": None, "error": {"code": 401, "message": "Authentication failed"}})
-    faulty_devices = api.user_repository.faulty_user_devices(user_id)
-    return jsonify({"devices": [x.get_device_attributes for x in faulty_devices],
-                    "error": None})
+    faulty_devices = api.user_repository.get_faulty_devices_for_user(user_id)
+    devices = []
+    if faulty_devices is None:
+        return jsonify({"devices": None, "error": None})
+    else:
+        for device in faulty_devices:
+            attributes = device.get_device_attributes()
+            faulty_device = dict()
+            faulty_device['user_id'] = attributes['user_id']
+            faulty_device['device_id'] = attributes['device_id']
+            faulty_device['device_type'] = attributes['device_type']
+            faulty_device['vendor'] = attributes['vendor']
+            faulty_device['fault'] = attributes['fault']
+            devices.append(faulty_device)
+        return jsonify({"devices": devices, "error": None})
+
+
+@api.route('/admin/faults', methods=['POST'])
+def all_faulty_devices():
+    access = api.token_repository.authenticate_admin(get_request_token())
+    if access is False:
+        return jsonify({"devices": None, "error": {"code": 401, "message": "Authentication failed"}})
+    devices = []
+    faulty_devices = api.device_repository.get_faulty_devices()
+    if faulty_devices is None:
+        return jsonify({"devices": None, "error": None})
+    else:
+        for device in faulty_devices:
+            attributes = device.get_device_attributes()
+            faulty_device = dict()
+            faulty_device['user_id'] = attributes['user_id']
+            faulty_device['device_id'] = attributes['device_id']
+            faulty_device['device_type'] = attributes['device_type']
+            faulty_device['vendor'] = attributes['vendor']
+            faulty_device['fault'] = attributes['fault']
+            devices.append(faulty_device)
+        return jsonify({"devices": devices, "error": None})
+
+
+@api.route('/admin/graph')
+def get_weekly_consumption():
+    access = api.token_repository.authenticate_admin(get_request_token())
+    if access is False:
+        return jsonify({"consumption": None, "error": {"code": 401, "message": "Authentication failed"}})
+    devices = api.user_repository.get_all_devices()
+    overall_consumption = []
+    for device in devices:
+        dev = api.device_repository.get_device_by_id(device['_id'])
+        device_consumption = dev.get_energy_readings()
+        if len(overall_consumption) == 0:
+            overall_consumption = device_consumption
+        else:
+            for i in range(0, len(overall_consumption)):
+                overall_consumption[i][1] = overall_consumption[i][1] + device_consumption[i][1]
+    return jsonify({"consumption": overall_consumption, "error": None})
+
 
 
 bcrypt = Bcrypt(api)
