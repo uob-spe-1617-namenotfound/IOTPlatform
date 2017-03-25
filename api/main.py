@@ -303,6 +303,11 @@ def get_weekly_consumption():
     for device in devices:
         dev = api.device_repository.get_device_by_id(device['_id'])
         device_consumption = dev.get_energy_readings()
+        if len(overall_consumption) == 0:
+            overall_consumption = device_consumption
+        else:
+            for i in range(0, len(overall_consumption)):
+                overall_consumption[i][1] = overall_consumption[i][1] + device_consumption[i][1]
     return overall_consumption
 
 
