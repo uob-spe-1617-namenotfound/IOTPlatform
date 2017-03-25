@@ -350,8 +350,8 @@ class TokenRepository(Repository):
         new_token = self.collection.insert_one({'user_id': user_id, 'token': token})
         return new_token.inserted_id
 
-    def invalidate_token(self, token_id):
-        self.collection.delete_one({'_id': token_id})
+    def invalidate_token(self, token):
+        self.collection.delete_one({'token': token})
 
     def check_token_is_new(self, token):
         result = self.collection.find_one({'token': token})
