@@ -84,7 +84,7 @@ class HouseRepository(Repository):
     def add_house(self, user_id, name, location):
         user_houses = self.get_houses_for_user(user_id)
         for house in user_houses:
-            other_name = house.get_house_attributes()['name']
+            other_name = house.name
             if name == other_name:
                 raise Exception("There is already a house with this name.")
         house = self.collection.insert_one({'user_id': user_id, 'name': name})
@@ -118,7 +118,7 @@ class HouseRepository(Repository):
         if house is None:
             return False
         else:
-            user_id = house.get_house_attributes()['user_id']
+            user_id = house.user_id
             return self.repositories.token_repository.authenticate_user(user_id, token)
 
 
@@ -129,7 +129,7 @@ class RoomRepository(Repository):
     def add_room(self, house_id, name):
         house_rooms = self.get_rooms_for_house(house_id)
         for room in house_rooms:
-            other_name = room.get_room_attributes()['name']
+            other_name = room.name
             if name == other_name:
                 raise Exception("There is already a room with this name.")
         room = self.collection.insert_one({'house_id': house_id, 'name': name})
@@ -162,7 +162,7 @@ class RoomRepository(Repository):
         if room is None:
             return False
         else:
-            house_id = room.get_room_attributes()['house_id']
+            house_id = room.house_id
             return self.repositories.house_repository.validate_token(house_id, token)
 
 
@@ -194,7 +194,7 @@ class DeviceRepository(Repository):
     def add_device(self, house_id, room_id, name, device_type, power_state, configuration, vendor):
         house_devices = self.get_devices_for_house(house_id)
         for device in house_devices:
-            other_name = device.get_device_attributes()['name']
+            other_name = device.name
             if name == other_name:
                 raise Exception("There is already a device with this name.")
         device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
@@ -322,7 +322,7 @@ class DeviceRepository(Repository):
         if device is None:
             return False
         else:
-            house_id = device.get_device_attributes()['house_id']
+            house_id = device.house_id
             return self.repositories.house_repository.validate_token(house_id, token)
 
 

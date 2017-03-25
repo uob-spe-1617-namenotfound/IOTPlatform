@@ -336,4 +336,4 @@ class Token:
         self.token = attributes['token']
 
     def get_token_attributes(self):
-        return {'token_id': self.token_id, 'user_id': self.user_id, 'key': self.token}
+        return {'_id': self.token_id, 'user_id': self.user_id, 'key': self.token}
