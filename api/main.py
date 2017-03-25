@@ -308,7 +308,7 @@ def get_weekly_consumption():
         else:
             for i in range(0, len(overall_consumption)):
                 overall_consumption[i][1] = overall_consumption[i][1] + device_consumption[i][1]
-    return overall_consumption
+    return jsonify({"consumption": overall_consumption, "error": None})
 
 
 bcrypt = Bcrypt(api)
