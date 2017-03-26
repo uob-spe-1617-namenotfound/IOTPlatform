@@ -18,7 +18,7 @@ class TokenTests(unittest.TestCase):
         self.tokens.clear_db()
 
     def test_TokenAddedCorrectly(self):
-        token = self.tokens.find_one({'token': self.token1})
+        token = self.tokens.get_token_info(self.token1)
         self.assertEqual(token['user_id'], self.user1id, "Token user was not added correctly.")
 
     def test_TokenRemovedCorrectly(self):

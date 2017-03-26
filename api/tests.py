@@ -3,6 +3,7 @@ from test.model_user import UserTests
 from test.model_house import HouseTests
 from test.model_room import RoomTests
 from test.model_device import DeviceTests
+from test.model_trigger import TriggerTests
 from test.model_usr_mgmt import MgmtTests
 from test.model_token import TokenTests
 
@@ -26,6 +27,8 @@ def main():
     RoomTests.repositories = repository_collection
     DeviceTests.collection = db.device_test
     DeviceTests.repositories = repository_collection
+    TriggerTests.collection = db.trigger_test
+    TriggerTests.repositories = repository_collection
     MgmtTests.collection = db.user_test
     MgmtTests.repositories = repository_collection
     TokenTests.collection = db.token_test

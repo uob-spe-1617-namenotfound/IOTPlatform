@@ -135,6 +135,14 @@ def get_room_info(room_id):
         raise Exception("Error!")
     return data['room']
 
+def remove_room(room_id):
+    r = requests.post(get_api_url('/room/{}/remove'.format(room_id)),
+                      json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['trigger']
+
 
 def get_device_info(device_id):
     r = requests.post(get_api_url('/device/{}'.format(device_id)),
@@ -165,6 +173,80 @@ def set_switch_state(device_id, state):
     if data['error'] is not None:
         raise Exception("Error!")
     return data['device']
+
+
+def add_new_trigger(sensor_id, event, event_params, actor_id, action, action_params, user_id):
+    r = requests.post(get_api_url('/trigger/create'),
+                      json={"sensor_id": sensor_id,
+                            "event": event,
+                            "event_params": event_params,
+                            "actor_id": actor_id,
+                            "action": action,
+                            "action_params": action_params,
+                            "user_id": user_id,
+                            "token": utilities.session.get_active_user_token()})
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['trigger']
+
+
+def get_trigger_info(trigger_id):
+    r = requests.post(get_api_url('/trigger/{}'.format(trigger_id)),
+                      json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['trigger']
+
+
+def get_triggers_for_device(device_id):
+    r = requests.post(get_api_url('/device/{}/triggers'.format(device_id)),
+                      json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['triggers']
+
+
+def get_actions_for_device(device_id):
+    r = requests.post(get_api_url('/device/{}/actions'.format(device_id)),
+                      json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['triggers']
+
+
+def edit_trigger(trigger_id, event, event_params, action, action_params):
+    r = requests.post(get_api_url('/trigger/{}/edit').format(trigger_id),
+                      json={"event": event,
+                            "event_params": event_params,
+                            "action": action,
+                            "action_params": action_params,
+                            "token": utilities.session.get_active_user_token()})
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['trigger']
+
+
+def remove_trigger(trigger_id):
+    r = requests.post(get_api_url('/trigger/{}/delete').format(trigger_id),
+                      json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['trigger']
+
+
+def get_triggers_for_user(user_id):
+    r = requests.post(get_api_url('/user/{}/triggers').format(user_id),
+                      json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['triggers']
 
 
 def get_all_faulty_devices():
