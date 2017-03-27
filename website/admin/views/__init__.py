@@ -5,13 +5,6 @@ import utilities.session
 from admin import admin_site
 
 
-@admin_site.route('/user/<string:user_id>')
-def user(user_id):
-    rooms = data_interface.get_default_rooms_for_user(user_id)
-    user_info = data_interface.get_user_info(user_id)
-    return render_template("internal/home.html", admin=True, rooms=rooms, user_name=user_info["name"])
-
-
 @admin_site.route('/faulty_devices', methods=['GET'])
 def faulty_devices():
     faulty_devices = data_interface.get_faulty_devices()
@@ -44,3 +37,33 @@ def logout():
     utilities.session.logout()
     flash('Successfully logged out', 'success')
     return redirect(url_for('public.index'))
+
+
+@admin_site.route('/triggers')
+def triggers():
+    return render_template("admin/admin_triggers.html")
+
+
+@admin_site.route('/help')
+def help():
+    return "admin help to be implemented"
+
+
+
+@admin_site.route('/account/settings')
+def account_settings():
+    return "To be implemented"
+
+
+status = ['Enabled', 'Disabled']
+themeinfo = [{'id': '1', 'name': 'Weekend Away Theme', 'theme_status': status[0]},
+             {'id': '2', 'name': 'Night Party Theme', 'theme_status': status[1]}]
+
+
+@admin_site.route('/themes')
+def themes():
+    return render_template("admin/admin_themes.html", themeinfo=themeinfo, status=status)
+
+@admin_site.route("/graph")
+def graph():
+    return render_template("admin/admin_user_graph.html")
