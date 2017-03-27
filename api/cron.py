@@ -2,7 +2,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
 import logging
-scheduler = BackgroundScheduler(daemon=False)
+scheduler = BackgroundScheduler(daemon=True)
 scheduler.start()
 
 
