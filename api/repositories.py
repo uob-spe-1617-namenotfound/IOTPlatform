@@ -196,6 +196,10 @@ class DeviceRepository(Repository):
             other_name = device.get_device_attributes()['name']
             if name == other_name:
                 raise Exception("There is already a device with this name.")
+        if vendor == "OWN" and "url" not in configuration:
+                raise Exception("Not all required info is in the configuration.")
+        elif vendor == "energenie" and ("username" not in configuration or "password" not in configuration or "device_id" not in configuration):
+                raise Exception("Not all required info is in the configuration.")
         device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
                                              'name': name, 'device_type': device_type,
                                              'power_state': power_state,
