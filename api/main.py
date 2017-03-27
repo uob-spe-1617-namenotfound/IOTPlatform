@@ -55,13 +55,13 @@ def get_user_info(user_id):
     return jsonify({"user": user.get_user_attributes(), "error": None})
 
 @api.route('/graph/<user_id>')
-def get_user_date(user_id):
+def get_user_graph_data(user_id):
     access = api.token_repository.authenticate_user(ObjectId(user_id), get_request_token())
     if not access:
-        return jsonify({"user": None, "error": {"code": 401, "message": "Authentication failed"}})
+        return jsonify({"data": None, "error": {"code": 401, "message": "Authentication failed"}})
     user = api.user_repository.get_user_by_id(ObjectId(user_id))
     if user is None:
-            return jsonify({"user": None, "error": {"code": 404, "message": "No such user found"}})
+            return jsonify({"data": None, "error": {"code": 404, "message": "No such user found"}})
 
     base = datetime.datetime.today()
     base.strftime("%d-%B-%Y")
