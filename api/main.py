@@ -1,6 +1,6 @@
+import datetime
 import json
 import logging
-import datetime
 
 from bson.objectid import ObjectId
 from flask import Flask, jsonify, request
@@ -54,17 +54,17 @@ def get_user_info(user_id):
         return jsonify({"user": None, "error": {"code": 404, "message": "No such user found"}})
     return jsonify({"user": user.get_user_attributes(), "error": None})
 
-@api.route('/graph/<user_id>')
+
+@api.route('/graph/<user_id>', methods=['POST'])
 def get_user_graph_data(user_id):
     access = api.token_repository.authenticate_user(ObjectId(user_id), get_request_token())
     if not access:
         return jsonify({"data": None, "error": {"code": 401, "message": "Authentication failed"}})
     user = api.user_repository.get_user_by_id(ObjectId(user_id))
     if user is None:
-            return jsonify({"data": None, "error": {"code": 404, "message": "No such user found"}})
+        return jsonify({"data": None, "error": {"code": 404, "message": "No such user found"}})
 
     base = datetime.datetime.today()
-    base.strftime("%d-%B-%Y")
     numdays = 30
 
     dateList = []
@@ -72,12 +72,13 @@ def get_user_graph_data(user_id):
         dateList.append(base - datetime.timedelta(days=x))
 
     readingList = []
-    for y in range (0,numdays):
-        readingList.append(round(7.845, 2))# remain constant for now, 7.845 is a random value.
+    for y in range(0, numdays):
+        readingList.append(round(7.845, 2))  # remain constant for now, 7.845 is a random value.
 
-    data = dict(zip(dateList,readingList))
+    data = {date.strftime("%d-%B-%Y"): data for date, data in zip(dateList, readingList)}
 
     return jsonify({"data": data, "error": None})
+
 
 @api.route('/users', methods=['POST'])
 def get_all_users():
