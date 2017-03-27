@@ -31,7 +31,7 @@ def register():
         if error is None:
             flash('Successfully registered', 'success')
             return redirect(url_for('.login'))
-        flash(str(error), 'danger')
+        flash(str(error['message']), 'danger')
     return render_template('public/register.html', register_form=form)
 
 
@@ -49,6 +49,9 @@ def login():
             error = utilities.session.login(result['user_id'], result['token'], result['admin'])
         if error is None:
             flash('Successfully logged in', 'success')
-            return redirect(url_for('internal.index'))
+            if result['admin']:
+                return redirect(url_for('admin.index'))
+            else:
+                return redirect(url_for('internal.index'))
         flash(str(error), 'danger')
     return render_template('public/login.html', login_form=form)

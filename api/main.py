@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 
@@ -17,6 +18,8 @@ mongo = MongoClient(api.config['MONGO_HOST'], api.config['MONGO_PORT'])
 db = mongo.database
 authentication = api.config['AUTHENTICATION_ENABLED']
 
+bcrypt = Bcrypt(api)
+
 
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
@@ -29,13 +32,12 @@ api.json_encoder = JSONEncoder
 
 import repositories
 
-api.repository_collection = repositories.RepositoryCollection(db)
+api.repository_collection = repositories.RepositoryCollection(db, bcrypt)
 
 api.user_repository = api.repository_collection.user_repository
 api.house_repository = api.repository_collection.house_repository
 api.room_repository = api.repository_collection.room_repository
 api.device_repository = api.repository_collection.device_repository
-api.devicegroup_repository = api.repository_collection.devicegroup_repository
 api.trigger_repository = api.repository_collection.trigger_repository
 api.token_repository = api.repository_collection.token_repository
 
@@ -44,18 +46,10 @@ def get_request_token():
     return request.get_json()['token']
 
 
-@api.route('/user/default_user')
-def get_first_user_id():
-    users = api.user_repository.get_all_users()
-    first_user = users[0]
-    user_id = first_user.get_user_id()
-    return jsonify({"user_id": user_id})
-
-
-@api.route('/user/<string:user_id>')
+@api.route('/user/<string:user_id>', methods=['POST'])
 def get_user_info(user_id):
     access = api.token_repository.authenticate_user(ObjectId(user_id), get_request_token())
-    if access is False:
+    if not access:
         return jsonify({"user": None, "error": {"code": 401, "message": "Authentication failed"}})
     user = api.user_repository.get_user_by_id(ObjectId(user_id))
     if user is None:
@@ -63,10 +57,35 @@ def get_user_info(user_id):
     return jsonify({"user": user.get_user_attributes(), "error": None})
 
 
-@api.route('/users')
+@api.route('/graph/<user_id>', methods=['POST'])
+def get_user_graph_data(user_id):
+    access = api.token_repository.authenticate_user(ObjectId(user_id), get_request_token())
+    if not access:
+        return jsonify({"data": None, "error": {"code": 401, "message": "Authentication failed"}})
+    user = api.user_repository.get_user_by_id(ObjectId(user_id))
+    if user is None:
+        return jsonify({"data": None, "error": {"code": 404, "message": "No such user found"}})
+
+    base = datetime.datetime.today()
+    numdays = 30
+
+    dateList = []
+    for x in range(0, numdays):
+        dateList.append(base - datetime.timedelta(days=x))
+
+    readingList = []
+    for y in range(0, numdays):
+        readingList.append(round(7.845, 2))  # remain constant for now, 7.845 is a random value.
+
+    data = {date.strftime("%d-%B-%Y"): data for date, data in zip(dateList, readingList)}
+
+    return jsonify({"data": data, "error": None})
+
+
+@api.route('/users', methods=['POST'])
 def get_all_users():
     access = api.token_repository.authenticate_admin(get_request_token())
-    if access is False:
+    if not access:
         return jsonify({"users": None, "error": {"code": 401, "message": "Authentication failed"}})
     users = api.user_repository.get_all_users()
     return jsonify({"users": [user.get_user_attributes() for user in users], "error": None})
@@ -75,7 +94,7 @@ def get_all_users():
 @api.route('/user/<string:user_id>/house', methods=['POST'])
 def get_house_for_user(user_id):
     access = api.token_repository.authenticate_user(ObjectId(user_id), get_request_token())
-    if access is False:
+    if not access:
         return jsonify({"house": None, "error": {"code": 401, "message": "Authentication failed"}})
     logging.debug("Getting house for user {}".format(user_id))
     house = api.house_repository.get_houses_for_user(ObjectId(user_id))[0]
@@ -84,10 +103,10 @@ def get_house_for_user(user_id):
     return jsonify({"house": house.get_house_attributes(), "error": None})
 
 
-@api.route('/room/<string:room_id>')
+@api.route('/room/<string:room_id>', methods=['POST'])
 def get_room_info(room_id):
     access = api.room_repository.validate_token(ObjectId(room_id), get_request_token())
-    if access is False:
+    if not access:
         return jsonify({"room": None, "error": {"code": 401, "message": "Authentication failed"}})
     room = api.room_repository.get_room_by_id(ObjectId(room_id))
     if room is None:
@@ -98,7 +117,7 @@ def get_room_info(room_id):
 @api.route('/house/<string:house_id>/rooms', methods=['POST'])
 def get_rooms_for_house(house_id):
     access = api.house_repository.validate_token(ObjectId(house_id), get_request_token())
-    if access is False:
+    if not access:
         return jsonify({"house": None, "error": {"code": 401, "message": "Authentication failed"}})
     rooms = api.room_repository.get_rooms_for_house(ObjectId(house_id))
     if rooms is None:
@@ -106,10 +125,10 @@ def get_rooms_for_house(house_id):
     return jsonify({"rooms": [room.get_room_attributes() for room in rooms], "error": None})
 
 
-@api.route('/room/<string:room_id>/devices')
+@api.route('/room/<string:room_id>/devices', methods=['POST'])
 def get_devices_for_room(room_id):
     access = api.room_repository.validate_token(ObjectId(room_id), get_request_token())
-    if access is False:
+    if not access:
         return jsonify({"room": None, "error": {"code": 401, "message": "Authentication failed"}})
     devices = api.device_repository.get_devices_for_room(ObjectId(room_id))
     if devices is None:
@@ -117,10 +136,10 @@ def get_devices_for_room(room_id):
     return jsonify({"devices": [device.get_device_attributes() for device in devices], "error": None})
 
 
-@api.route('/house/<string:house_id>/devices')
+@api.route('/house/<string:house_id>/devices', methods=['POST'])
 def get_devices_for_house(house_id):
     access = api.house_repository.validate_token(ObjectId(house_id), get_request_token())
-    if access is False:
+    if not access:
         return jsonify({"house": None, "error": {"code": 401, "message": "Authentication failed"}})
     devices = api.device_repository.get_devices_for_house(ObjectId(house_id))
     if devices is None:
@@ -128,10 +147,10 @@ def get_devices_for_house(house_id):
     return jsonify({"devices": [device.get_device_attributes() for device in devices], "error": None})
 
 
-@api.route('/device/<string:device_id>')
+@api.route('/device/<string:device_id>', methods=['POST'])
 def get_device_info(device_id):
     access = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
-    if access is False:
+    if not access:
         return jsonify({"device": None, "error": {"code": 401, "message": "Authentication failed"}})
     device = api.device_repository.get_device_by_id(ObjectId(device_id))
     if device is None:
@@ -139,21 +158,10 @@ def get_device_info(device_id):
     return jsonify({"device": device.get_device_attributes(), "error": None})
 
 
-@api.route('/devicegroup/<string:device_group_id>')
-def get_devicegroup_info(device_group_id):
-    access = api.devicegroup_repository.validate_token(ObjectId(device_group_id), get_request_token())
-    if access is False:
-        return jsonify({"user": None, "error": {"code": 401, "message": "Authentication failed"}})
-    device_group = api.devicegroup_repository.get_device_group_by_id(ObjectId(device_group_id))
-    if device_group is None:
-        return jsonify({"device_group": None, "error": {"code": 404, "message": "No such device group found"}})
-    return jsonify({"device_group": device_group.get_devicegroup_attributes(), "errors": None})
-
-
 @api.route('/house/<string:house_id>/devices/add', methods=['POST'])
 def add_device(house_id):
     access = api.house_repository.validate_token(ObjectId(house_id), get_request_token())
-    if access is False:
+    if not access:
         return jsonify({"house": None, "error": {"code": 401, "message": "Authentication failed"}})
     data = request.get_json()
     logging.debug("Adding device: {}".format(data))
@@ -173,7 +181,7 @@ def add_device(house_id):
 @api.route('/device/<string:device_id>/remove', methods=['POST'])
 def remove_device(device_id):
     access = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
-    if access is False:
+    if not access:
         return jsonify({"device_id": None, "error": {"code": 401, "message": "Authentication failed"}})
     result = api.device_repository.remove_device(ObjectId(device_id))
     if result is None:
@@ -183,8 +191,10 @@ def remove_device(device_id):
 
 @api.route('/house/<string:house_id>/rooms/add', methods=['POST'])
 def add_room(house_id):
+    logging.debug("Add new room to house: {}".format(house_id))
+    logging.debug("JSON: {}".format(request.get_json()))
     access = api.house_repository.validate_token(ObjectId(house_id), get_request_token())
-    if access is False:
+    if not access:
         return jsonify({"house": None, "error": {"code": 401, "message": "Authentication failed"}})
     logging.debug("Authentication success")
     data = request.get_json()
@@ -193,7 +203,7 @@ def add_room(house_id):
     return jsonify({"room": room.get_room_attributes(), "error": None})
 
 
-@api.route('/room/<string:room_id>/device/<string:device_id>/link')
+@api.route('/room/<string:room_id>/device/<string:device_id>/link', methods=['POST'])
 def link_device_to_room(room_id, device_id):
     access1 = api.room_repository.validate_token(ObjectId(room_id), get_request_token())
     access2 = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
@@ -208,7 +218,7 @@ def link_device_to_room(room_id, device_id):
 @api.route('/device/<string:device_id>/triggers/add', methods=['POST'])
 def add_trigger(device_id):
     access = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
-    if access is False:
+    if not access:
         return jsonify({"device": None, "error": {"code": 401, "message": "Authentication failed"}})
     data = request.get_json()
     trigger = data['trigger']
@@ -223,7 +233,7 @@ def add_trigger(device_id):
 @api.route('/device/<string:device_id>/thermostat/configure', methods=['POST'])
 def configure_thermostat(device_id):
     access = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
-    if access is False:
+    if not access:
         return jsonify({"device": None, "error": {"code": 401, "message": "Authentication failed"}})
     data = request.get_json()
     target_temperature = data['target_temperature']
@@ -238,7 +248,7 @@ def configure_thermostat(device_id):
 @api.route('/device/<string:device_id>/switch/configure', methods=['POST'])
 def configure_switch(device_id):
     access = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
-    if access is False:
+    if not access:
         return jsonify({"device": None, "error": {"code": 401, "message": "Authentication failed"}})
     data = request.get_json()
     power_state = data['power_state']
@@ -250,10 +260,10 @@ def configure_switch(device_id):
     })
 
 
-@api.route('/devices/faulty')
+@api.route('/devices/faulty', methods=['POST'])
 def faulty_devices():
     access = api.token_repository.authenticate_admin(get_request_token())
-    if access is False:
+    if not access:
         return jsonify({"devices": None, "error": {"code": 401, "message": "Authentication failed"}})
     faulty_devices = api.device_repository.get_faulty_devices()
     return jsonify({
@@ -262,26 +272,24 @@ def faulty_devices():
     })
 
 
-@api.route('/house/<string:house_id>')
+@api.route('/house/<string:house_id>', methods=['POST'])
 def location_attr(house_id):
     access = api.house_repository.validate_token(ObjectId(house_id), get_request_token())
-    if access is False:
+    if not access:
         return jsonify({"devices": None, "error": {"code": 401, "message": "Authentication failed"}})
     attributes = api.house_repository.get_house_attributes(house_id)
     attributes['location'] = {'lat': 51.529249, 'lng': -0.117973, 'description': 'University of Bristol'}
     return attributes
 
 
-@api.route('/user/<string:user_id>')
+@api.route('/user/<string:user_id>', methods=['POST'])
 def faulty_user_devices(user_id):
     access = api.token_repository.authenticate_user(user_id, get_request_token())
-    if access is False:
+    if not access:
         return jsonify({"devices": None, "error": {"code": 401, "message": "Authentication failed"}})
     faulty_devices = api.user_repository.faulty_user_devices(user_id)
     return jsonify({"devices": [x.get_device_attributes for x in faulty_devices],
                     "error": None})
-
-bcrypt = Bcrypt(api)
 
 
 @api.route('/login', methods=['POST'])
@@ -290,22 +298,16 @@ def login():
     email_address, password = login_data['email_address'], login_data['password']
     data = dict()
     logging.debug("API login, received data: {} {}".format(email_address, password))
-    login_user = api.user_repository.get_user_by_email(email_address)
-    if login_user is not None:
-        logging.debug("Checking password hash")
-        if bcrypt.check_password_hash(login_user.password_hash, password):
-            logging.debug("Password hash matched")
-            token = api.token_repository.generate_token(login_user.user_id)
-            logging.debug("Token generated: {}".format(token))
-            data['result'] = {'success': True, 'admin': login_user.is_admin, 'user_id': login_user.user_id,
-                              'token': token}
-            data['error'] = None
-        else:
-            data['success'] = False
-            data['error'] = {'code': 406, 'message': 'Password is incorrect'}
-    else:
+    try:
+        login_user = api.user_repository.check_password(email_address=email_address,password=password)
+        token = api.token_repository.generate_token(login_user.user_id)
+        logging.debug("Token generated: {}".format(token))
+        data['result'] = {'success': True, 'admin': login_user.is_admin, 'user_id': login_user.user_id,
+                          'token': token}
+        data['error'] = None
+    except repositories.RepositoryException as ex:
         data['success'] = False
-        data['error'] = {'code': 404, 'message': 'Username not found'}
+        data['error'] = ex.error_data
     return jsonify(data)
 
 
@@ -314,29 +316,31 @@ def register():
     registration = request.get_json()
     data = dict()
     logging.debug("Data: {}".format(registration))
-    user = api.user_repository.get_user_by_email(registration['email_address'])
-    logging.debug("Found user: {}".format(user))
-    if user is not None:
-        data['success'] = False
-        data['error'] = {'code': 409, 'message': 'Email address is already registered'}
-    else:
-        if registration['password'] is not None:
-            logging.debug("Password!")
-            hashed_password = bcrypt.generate_password_hash(registration['password']).decode('utf-8')
-            logging.debug("Hashed: {}".format(hashed_password))
-            new_user = api.user_repository.add_user(registration['name'], hashed_password,
-                                                    registration['email_address'], False)
-            logging.debug("New user: {}".format(new_user))
-            house_id = api.house_repository.add_house(new_user, "{}'s house".format(registration['name']), None)
-            logging.debug("Add house: {}".format(house_id))
-            data['result'] = {'success': True, 'user_id': str(new_user), 'house_id': str(house_id)}
-            data['error'] = None
+    try:
+        new_user = api.user_repository.register_new_user(registration['email_address'], registration['password'],
+                                                     registration['name'], False)
+        logging.debug("New user: {}".format(new_user))
+        house_id = api.house_repository.add_house(new_user, "{}'s house".format(registration['name']), None)
+        logging.debug("Add house: {}".format(house_id))
+        data['result'] = {'success': True, 'user_id': str(new_user), 'house_id': str(house_id)}
+        data['error'] = None
+    except repositories.RepositoryException as ex:
+        data['result'] = {'success': False}
+        data['error'] = ex.error_data
     return jsonify(data)
 
 
-@api.route('/logout')
-def logout(token):
-    api.token_repository.invalidate_token(token)
+@api.route('/logout', methods=['POST'])
+def logout():
+    access = api.token_repository.check_token_validity(get_request_token())
+    if not access:
+        return jsonify({"devices": None, "error": {"code": 401, "message": "Authentication failed"}})
+    api.token_repository.invalidate_token(get_request_token())
+    valid = api.token_repository.check_token_validity(get_request_token())
+    if not valid:
+        return jsonify({"success": True, "error": None})
+    else:
+        return jsonify({"success": False, "error": {"code": 401, "message": "Logout failed"}})
 
 
 from admin import *

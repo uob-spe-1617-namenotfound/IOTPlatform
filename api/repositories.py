@@ -2,7 +2,13 @@ import logging
 import random
 import string
 
-from model import House, Room, User, Device, DeviceGroup, Thermostat, MotionSensor, LightSwitch, OpenSensor
+from model import House, Room, User, Device, Thermostat, MotionSensor, LightSwitch, OpenSensor, Token
+
+
+class RepositoryException(Exception):
+    def __init__(self, message, error_data):
+        Exception.__init__(self, message)
+        self.error_data = error_data
 
 
 class Repository(object):
@@ -15,20 +21,20 @@ class Repository(object):
 
 
 class RepositoryCollection(object):
-    def __init__(self, db):
+    def __init__(self, db, bcrypt):
         self.db = db
-        self.user_repository = UserRepository(db.users, self)
+        self.user_repository = UserRepository(db.users, self, bcrypt)
         self.house_repository = HouseRepository(db.houses, self)
         self.room_repository = RoomRepository(db.rooms, self)
         self.device_repository = DeviceRepository(db.devices, self)
-        self.devicegroup_repository = DeviceGroupRepository(db.devicegroups, self)
         self.trigger_repository = TriggerRepository(db.triggers, self)
         self.token_repository = TokenRepository(db.token, self)
 
 
 class UserRepository(Repository):
-    def __init__(self, mongo_collection, repository_collection):
+    def __init__(self, mongo_collection, repository_collection, bcrypt):
         Repository.__init__(self, mongo_collection, repository_collection)
+        self.bcrypt = bcrypt
 
     def add_user(self, name, password_hash, email_address, is_admin):
         logging.debug("adding user!")
@@ -39,6 +45,26 @@ class UserRepository(Repository):
         user = self.collection.insert_one({'name': name, 'password_hash': password_hash,
                                            'email_address': email_address, 'is_admin': is_admin})
         return user.inserted_id
+
+    def register_new_user(self, email_address, password, name, is_admin):
+        user = self.get_user_by_email(email_address)
+        if user is not None:
+            raise RepositoryException("Email address already registered",
+                                      {'code': 409, 'message': 'Email address is already registered'})
+        hashed_password = self.bcrypt.generate_password_hash(password).decode('utf-8')
+        return self.add_user(name, hashed_password, email_address, is_admin)
+
+    def check_password(self, email_address, password):
+        login_user = self.get_user_by_email(email_address)
+        if login_user is not None:
+            logging.debug("Checking password hash")
+            if self.bcrypt.check_password_hash(login_user.password_hash, password):
+                logging.debug("Passwords match!")
+                return login_user
+            else:
+                raise RepositoryException("Password is incorrect", {'code': 406, 'message': 'Password is incorrect'})
+        else:
+            raise RepositoryException("Username not found", {'code': 404, 'message': 'Username not found'})
 
     def remove_user(self, user_id):
         self.collection.delete_one({'_id': user_id})
@@ -51,7 +77,6 @@ class UserRepository(Repository):
         return target_user
 
     def get_user_by_email(self, email_address):
-        logging.debug("All users: {}".format([x.email_address for x in self.get_all_users()]))
         user = self.collection.find_one({'email_address': email_address})
         if user is None:
             return None
@@ -83,7 +108,7 @@ class HouseRepository(Repository):
     def add_house(self, user_id, name, location):
         user_houses = self.get_houses_for_user(user_id)
         for house in user_houses:
-            other_name = house.get_house_attributes()['name']
+            other_name = house.name
             if name == other_name:
                 raise Exception("There is already a house with this name.")
         house = self.collection.insert_one({'user_id': user_id, 'name': name})
@@ -117,7 +142,7 @@ class HouseRepository(Repository):
         if house is None:
             return False
         else:
-            user_id = house.get_house_attributes()['user_id']
+            user_id = house.user_id
             return self.repositories.token_repository.authenticate_user(user_id, token)
 
 
@@ -128,7 +153,7 @@ class RoomRepository(Repository):
     def add_room(self, house_id, name):
         house_rooms = self.get_rooms_for_house(house_id)
         for room in house_rooms:
-            other_name = room.get_room_attributes()['name']
+            other_name = room.name
             if name == other_name:
                 raise Exception("There is already a room with this name.")
         room = self.collection.insert_one({'house_id': house_id, 'name': name})
@@ -161,7 +186,7 @@ class RoomRepository(Repository):
         if room is None:
             return False
         else:
-            house_id = room.get_room_attributes()['house_id']
+            house_id = room.house_id
             return self.repositories.house_repository.validate_token(house_id, token)
 
 
@@ -193,7 +218,7 @@ class DeviceRepository(Repository):
     def add_device(self, house_id, room_id, name, device_type, power_state, configuration, vendor):
         house_devices = self.get_devices_for_house(house_id)
         for device in house_devices:
-            other_name = device.get_device_attributes()['name']
+            other_name = device.name
             if name == other_name:
                 raise Exception("There is already a device with this name.")
         if vendor == "OWN" and "url" not in configuration:
@@ -227,7 +252,7 @@ class DeviceRepository(Repository):
             self.collection.update_one({'_id': device_id}, {"$set": {'sensor_data': 0}})
 
     def remove_device(self, device_id):
-        #self.repositories.device_group_repository.remove_device_from_group(device_id)
+        # self.repositories.device_group_repository.remove_device_from_group(device_id)
         self.collection.delete_one({'_id': device_id})
 
     def get_device_by_id(self, device_id):
@@ -324,40 +349,8 @@ class DeviceRepository(Repository):
         if device is None:
             return False
         else:
-            house_id = device.get_device_attributes()['house_id']
+            house_id = device.house_id
             return self.repositories.house_repository.validate_token(house_id, token)
-
-
-class DeviceGroupRepository(Repository):
-    def __init__(self, mongo_collection, repository_collection):
-        Repository.__init__(self, mongo_collection, repository_collection)
-
-    def add_device_group(self, device_ids, name):
-        device_group = self.collection.insert_one({'device_ids': device_ids, 'name': name})
-        return device_group.inserted_id
-
-    def add_device_to_group(self, device_group_id, device_id):
-        self.collection.update_one({'_id': device_group_id}, {"$push": {'device_ids': device_id}}, upsert=False)
-
-    def remove_device_group(self, device_group_id):
-        self.collection.delete_one({'_id': device_group_id})
-
-    def remove_device_from_group(self, device_group_id, device_id):
-        self.collection.update_one({'_id': device_group_id}, {"$pull": {'device_ids': device_id}}, upsert=False)
-
-    def get_device_group_by_id(self, device_group_id):
-        device_group = self.collection.find_one({'_id': device_group_id})
-        target_device_group = DeviceGroup(device_group['device_group_id'], device_group['device_ids'],
-                                          device_group['name'])
-        return target_device_group
-
-    def validate_token(self, device_group_id, token):
-        device_group = self.get_device_group_by_id(device_group_id)
-        if device_group is None:
-            return False
-        else:
-            device_id = device_group['device_ids'][0]
-            return self.repositories.device_repository(device_id)
 
 
 class TriggerRepository(Repository):
@@ -388,8 +381,8 @@ class TokenRepository(Repository):
         new_token = self.collection.insert_one({'user_id': user_id, 'token': token})
         return new_token.inserted_id
 
-    def invalidate_token(self, token_id):
-        self.collection.delete_one({'_id': token_id})
+    def invalidate_token(self, token):
+        self.collection.delete_one({'token': token})
 
     def check_token_is_new(self, token):
         result = self.collection.find_one({'token': token})
@@ -421,6 +414,13 @@ class TokenRepository(Repository):
         valid = self.check_token_validity(token)
         if valid:
             token_user_id = self.collection.find_one({'token': token})['user_id']
-            user_is_admin = self.repositories.user_repository.find_one({'user_id': token_user_id})['is_admin']
+            user_is_admin = self.repositories.user_repository.get_user_by_id(token_user_id).is_admin
             return user_is_admin
         return False
+
+    def get_all_tokens(self):
+        tokens = self.collection.find()
+        target_tokens = []
+        for token in tokens:
+            target_tokens.append(Token(token))
+        return target_tokens

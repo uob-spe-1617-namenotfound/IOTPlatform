@@ -86,16 +86,21 @@ def add_new_room(name):
     r = requests.post(get_api_url('/house/{}/rooms/add'.format(get_default_house_id())),
                       json={"name": name,
                             "token": utilities.session.get_active_user_token()})
-    data = r.json()
-    logging.debug("Name of room: {}".format(data['name']))
+    logging.debug(r.content)
+    try:
+        data = r.json()
+    except:
+        logging.debug("Parsing response to JSON failed!")
+        raise Exception("JSON parse error")
+    logging.debug("Name of room: {}".format(data['room']['name']))
     if data['error'] is not None:
         raise Exception("Error!")
     return data['room']['room_id']
 
 
 def get_user_default_devices():
-    r = requests.get(get_api_url('/house/{}/devices'.format(get_default_house_id())),
-                     json=get_authentication_token())
+    r = requests.post(get_api_url('/house/{}/devices'.format(get_default_house_id())),
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
@@ -103,8 +108,8 @@ def get_user_default_devices():
 
 
 def get_room_devices(room_id):
-    r = requests.get(get_api_url('/room/{}/devices'.format(room_id)),
-                     json=get_authentication_token())
+    r = requests.post(get_api_url('/room/{}/devices'.format(room_id)),
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
@@ -112,8 +117,8 @@ def get_room_devices(room_id):
 
 
 def link_device_to_room(room_id, device_id):
-    r = requests.get(get_api_url('/room/{}/device/{}/link'.format(room_id, device_id)),
-                     json=get_authentication_token())
+    r = requests.post(get_api_url('/room/{}/device/{}/link'.format(room_id, device_id)),
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
@@ -121,8 +126,8 @@ def link_device_to_room(room_id, device_id):
 
 
 def get_house_info(house_id):
-    r = requests.get(get_api_url('/house/{}'.format(house_id)),
-                     json=get_authentication_token())
+    r = requests.post(get_api_url('/house/{}'.format(house_id)),
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
@@ -130,8 +135,8 @@ def get_house_info(house_id):
 
 
 def get_room_info(room_id):
-    r = requests.get(get_api_url('/room/{}'.format(room_id)),
-                     json=get_authentication_token())
+    r = requests.post(get_api_url('/room/{}'.format(room_id)),
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
@@ -139,8 +144,8 @@ def get_room_info(room_id):
 
 
 def get_device_info(device_id):
-    r = requests.get(get_api_url('/device/{}'.format(device_id)),
-                     json=get_authentication_token())
+    r = requests.post(get_api_url('/device/{}'.format(device_id)),
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
@@ -170,8 +175,8 @@ def set_switch_state(device_id, state):
 
 
 def get_faulty_devices():
-    r = requests.get(get_api_url('/devices/faulty'),
-                     json=get_authentication_token())
+    r = requests.post(get_api_url('/devices/faulty'),
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception('Error!')
@@ -179,8 +184,8 @@ def get_faulty_devices():
 
 
 def get_user_info(user_id):
-    r = requests.get(get_api_url("/user/{}".format(user_id)),
-                     json=get_authentication_token())
+    r = requests.post(get_api_url("/user/{}".format(user_id)),
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
@@ -188,9 +193,27 @@ def get_user_info(user_id):
 
 
 def get_all_users():
-    r = requests.get(get_api_url("/users"),
-                     json=get_authentication_token())
+    r = requests.post(get_api_url("/users"),
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
     return data['users']
+
+
+def logout():
+    r = requests.post(get_api_url("/logout"),
+                      json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['success']
+
+
+def get_user_graph_data(user_id):
+    r = requests.post(get_api_url('/graph/{}'.format(user_id)),
+                      json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['data']
