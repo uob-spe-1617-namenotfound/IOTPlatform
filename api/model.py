@@ -109,7 +109,7 @@ class Device(object):
     def get_device_id(self):
         return self.device_id
 
-    def read_current_state(self, include_usage_data):
+    def read_current_state(self, include_usage_data=0):
         error = None
         data = None
         timestamp = str(time.time())
