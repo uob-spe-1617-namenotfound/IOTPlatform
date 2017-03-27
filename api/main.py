@@ -296,7 +296,7 @@ def all_faulty_devices():
 
 
 @api.route('/admin/graph')
-def get_weekly_consumption():
+def get_overall_consumption():
     access = api.token_repository.authenticate_admin(get_request_token())
     if access is False:
         return jsonify({"consumption": None, "error": {"code": 401, "message": "Authentication failed"}})

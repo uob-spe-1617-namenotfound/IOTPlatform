@@ -203,7 +203,7 @@ def get_all_users():
     return data['users']
 
 
-def get_weekly_power_consumption():
+def get_overall_power_consumption():
     r = requests.get(get_api_url('/admin/graph'),
                      json=get_authentication_token())
     data = r.json()
