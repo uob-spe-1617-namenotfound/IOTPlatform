@@ -109,7 +109,7 @@ class Device(object):
     def get_device_id(self):
         return self.device_id
 
-    def read_current_state(self):
+    def read_current_state(self, include_usage_data):
         error = None
         data = None
         timestamp = str(time.time())
@@ -136,7 +136,7 @@ class Device(object):
                     logging.debug(
                         "Retrieving mihome4u data. Auth = {}, json = {}".format((username, password), {"id": dev_id}))
                     r = requests.get("https://mihome4u.co.uk/api/v1/subdevices/show", auth=(username, password),
-                                     json={"id": dev_id})
+                                     json={"id": dev_id, "include_usage_data": include_usage_data})
                     r_data = r.json()
                     logging.debug("Got: {}".format(r_data))
                     if r_data["status"] != "success":
@@ -159,7 +159,7 @@ class Device(object):
             self.faulty = True
         return self.faulty
 
-# TODO: Fix set_attribute method names.
+
 class Thermostat(Device):
     def __init__(self, attributes):
         Device.__init__(self, attributes)
@@ -247,30 +247,6 @@ class MotionSensor(Device):
         attributes.update({'sensor_data': self.sensor_data})
         return attributes
 
-    # TODO: verify if this + OpenSensor get_data method are needed or if to just call read_current_state
-    # |-> Could just add include_usage_data parameter to read_current_state method
-    def get_sensor_data(self):
-        error = None
-        data = None
-        timestamp = str(time.time())
-        if self.vendor == "OWN":
-            if "url" in self.configuration:
-                url = self.configuration['url'] + "/write"
-                try:
-                    r = requests.post(url, json={"data": data})
-                    r_data = r.json()
-                    if "error" in r_data and r_data["error"] is not None:
-                        error = r_data["error"]
-                except Exception as ex:
-                    error = "Cannot get sensor data from configuration URL: {}".format(ex)
-            else:
-                error = "Can't get sensor data as no url is set in configuration"
-        else:
-            error = "get_sensor_data not implemented for vendor {}".format(self.vendor)
-        if error is not None:
-            return {"error": error, "timestamp": timestamp}
-        return {"data": data, "timestamp": timestamp}
-
 
 class LightSwitch(Device):
     def __init__(self, attributes):
@@ -325,28 +301,6 @@ class OpenSensor(Device):
         attributes = Device.get_device_attributes(self)
         attributes.update({'sensor_data': self.sensor_data})
         return attributes
-
-    def get_sensor_data(self):
-        error = None
-        data = None
-        timestamp = str(time.time())
-        if self.vendor == "OWN":
-            if "url" in self.configuration:
-                url = self.configuration['url'] + "/write"
-                try:
-                    r = requests.post(url, json={"data": data})
-                    r_data = r.json()
-                    if "error" in r_data and r_data["error"] is not None:
-                        error = r_data["error"]
-                except Exception as ex:
-                    error = "Cannot get sensor data from configuration URL: {}".format(ex)
-            else:
-                error = "Can't get sensor data as no url is set in configuration"
-        else:
-            error = "get_sensor_data not implemented for vendor {}".format(self.vendor)
-        if error is not None:
-            return {"error": error, "timestamp": timestamp}
-        return {"data": data, "timestamp": timestamp}
 
 
 class DeviceGroup(object):
