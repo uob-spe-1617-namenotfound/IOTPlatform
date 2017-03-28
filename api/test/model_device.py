@@ -15,6 +15,10 @@ class DeviceTests(unittest.TestCase):
                                                  {'power_state': 1}, None, "example")
         self.device3id = self.devices.add_device(self.house1id, None, "Kitchen Light Switch", "light_switch",
                                                  {'power_state': 1}, None, "example")
+        self.socket_id = self.devices.add_device(self.house1id, None, "Benny's Adapter", "light_switch",
+                                                 {'status': {'power_state': 1}}, {'username': 'bc15050@mybristol.ac.uk',
+                                                                                  'password': 'test1234', 'device_id': '46865'},
+                                                 "energenie")
 
     def tearDown(self):
         self.devices.clear_db()
@@ -92,3 +96,12 @@ class DeviceTests(unittest.TestCase):
     def test_DevicesCannotHaveSameName(self):
         with self.assertRaisesRegex(Exception, "There is already a device with this name."):
             self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat", 1, None, "example")
+
+    def test_EnergenieDeviceAddedCorrectly(self):
+        device = self.devices.get_device_by_id(self.socket_id)
+        self.assertEqual(device['configuration']['device_id'], '46865', 'incorrect inserted device id')
+
+    def test_EnergenieDeviceReadState(self):
+        socket = self.devices.get_device_by_id(self.socket_id)
+        current_state = socket.read_current_state()
+        self.assertEquals(current_state['data']['data']['device_type'], 'control', 'state not read correctly')
