@@ -273,13 +273,16 @@ def faulty_devices():
 
 
 @api.route('/house/<string:house_id>', methods=['POST'])
-def location_attr(house_id):
+def get_house_info(house_id):
     access = api.house_repository.validate_token(ObjectId(house_id), get_request_token())
     if not access:
         return jsonify({"devices": None, "error": {"code": 401, "message": "Authentication failed"}})
-    attributes = api.house_repository.get_house_attributes(house_id)
-    attributes['location'] = {'lat': 51.529249, 'lng': -0.117973, 'description': 'University of Bristol'}
-    return attributes
+    location = {'lat': 51.529249, 'lng': -0.117973, 'description': 'University of Bristol'}
+    house = api.house_repository.get_house_by_location(location)
+    return jsonify({
+        "house": house,
+        "error": None
+    })
 
 
 @api.route('/user/<string:user_id>', methods=['POST'])

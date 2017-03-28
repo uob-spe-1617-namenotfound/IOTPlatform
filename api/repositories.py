@@ -111,7 +111,7 @@ class HouseRepository(Repository):
             other_name = house.name
             if name == other_name:
                 raise Exception("There is already a house with this name.")
-        house = self.collection.insert_one({'user_id': user_id, 'name': name})
+        house = self.collection.insert_one({'user_id': user_id, 'name': name, 'location': location})
         return house.inserted_id
 
     def remove_house(self, house_id):
@@ -121,6 +121,10 @@ class HouseRepository(Repository):
         house = self.collection.find_one({'_id': house_id})
         target_house = House(house)
         return target_house
+
+    def get_house_by_location(self, location):
+        house = self.collection.find_one({'location': location})
+        return house
 
     def get_houses_for_user(self, user_id):
         houses = self.collection.find({'user_id': user_id})
