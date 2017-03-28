@@ -2,31 +2,15 @@ from flask import render_template, flash, redirect, url_for
 
 import data_interface
 from admin import admin_site
-from admin.views.admin_user_forms import AddNewDeviceForm, SetThermostatTargetForm
+from website.forms import AddNewDeviceForm, SetThermostatTargetForm
 
 
 
-motion_triggers = [{'id': '00', 'name': 'When Motion is Detected'},
-                   {'id': '01', 'name': 'When No Motion is Detected'}]
-thermostat_triggers = [{'id': '000', 'name': 'When the temperature is above 22'},
-                       {'id': '1111', 'name': 'When temperature is below 15'}]
-light_triggers = [{'id': '0000', 'name': 'Lights are on for 4 hours'}]
-door_triggers = [{'id': 'opens', 'name': "Opens"}, {'id': 'closes', 'name': "Closes"}]
-
-
-groupactions = ['Turn On', 'Turn Off', 'Set Temperature']
-
-actions = {"door_sensor": ['Turn on', 'Turn Off', 'No Action'],
-           "light_switch": ['Turn Switch on', 'Turn Switch Off', 'No Action'],
-           "thermostat": ['Turn on', 'Turn Off', 'No Action', 'Modify Temperature'],
-           "motion_sensor": ['Turn on', 'Turn Off', 'No Action']}
-
-
-@admin_site.route('/devices')
-def show_devices():
+@admin_site.route('/user/<string:user_id>/devices')
+def show_devices(user_id):
     form = AddNewDeviceForm()
-    devices = data_interface.get_user_default_devices()
-    rooms = data_interface.get_user_default_rooms()
+    devices = data_interface.get_user_devices(user_id)
+    rooms = data_interface.get_rooms_for_user(user_id)
     rooms = sorted(rooms, key=lambda k: k['name'])
     any_linked = False
     any_unlinked = False
@@ -36,30 +20,29 @@ def show_devices():
                 any_linked = True
             elif device['room_id'] == None:
                 any_unlinked = True
-    #change from default to focal user
-    #test requires here to check if devices returns devices correctly
+    # TODO: change from default to focal user
+    # TODO: test requires here to check if devices returns devices correctly
     return render_template("admin/admin_devices.html", devices=devices, groupactions=groupactions, rooms=rooms, new_device_form=form, table1=any_unlinked, table2=any_linked)
 
 
-@admin_site.route('/devices/new', methods=['POST', 'GET'])
-def add_new_device():
+@admin_site.route('/user/<string:user_id>/devices/new', methods=['POST', 'GET'])
+def add_new_device(user_id):
     form = AddNewDeviceForm()
     if form.validate_on_submit():
-        data_interface.add_new_device(device_type=form.device_type.data, vendor="OWN",
+        data_interface.add_new_device(user_id=user_id, device_type=form.device_type.data, vendor="OWN",
                                       configuration={"url": form.url.data},
                                       name=form.name.data)
         flash("New device successfully added by Admin!", 'success')
-        return redirect(url_for('.show_devices'))
+        return redirect(url_for('.show_devices', user_id=user_id))
     return render_template("admin/admin_new_device.html", new_device_form=form)
 
 
 
 
-
-@admin_site.route('/device/<string:device_id>')
-def show_device(device_id, form=None):
+@admin_site.route('/user/<string:user_id>/device/<string:device_id>')
+def show_device(user_id, device_id, form=None):
     triggers = None
-    device = data_interface.get_device_info(device_id)
+    device = data_interface.get_device_info(user_id, device_id)
     if device['device_type'] == "thermostat":
         triggers = thermostat_triggers
         if form is None:
@@ -70,7 +53,7 @@ def show_device(device_id, form=None):
         triggers = light_triggers
     elif device['device_type'] == "door_sensor":
         triggers = door_triggers
-    all_user_devices = data_interface.get_user_default_devices()
+    all_user_devices = data_interface.get_user_devices(user_id)
     actors = [{"id": device['device_id'], "name": device['name'], "type": "device", "device": device,
                "action": actions[device['device_type']]} for device in
               all_user_devices] + [{"id": "webhook_url", "type": "webhook", "url": "#", "name": "Send email"}]
@@ -83,7 +66,7 @@ def show_device(device_id, form=None):
                            motion_sensors=motion_sensors, change_settings_form=form)
 
 
-@admin_site.route('/device/<string:device_id>/configure', methods=['POST'])
+@admin_site.route('/user/<string:user_id>/device/<string:device_id>/configure', methods=['POST'])
 def set_device_settings(device_id):
     form = SetThermostatTargetForm()
     if form.validate_on_submit():

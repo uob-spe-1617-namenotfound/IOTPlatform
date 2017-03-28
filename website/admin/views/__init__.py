@@ -39,11 +39,6 @@ def logout():
     return redirect(url_for('public.index'))
 
 
-@admin_site.route('/triggers')
-def triggers():
-    return render_template("admin/admin_triggers.html")
-
-
 @admin_site.route('/help')
 def help():
     return "admin help to be implemented"
@@ -54,16 +49,3 @@ def help():
 def account_settings():
     return "To be implemented"
 
-
-status = ['Enabled', 'Disabled']
-themeinfo = [{'id': '1', 'name': 'Weekend Away Theme', 'theme_status': status[0]},
-             {'id': '2', 'name': 'Night Party Theme', 'theme_status': status[1]}]
-
-
-@admin_site.route('/themes')
-def themes():
-    return render_template("admin/admin_themes.html", themeinfo=themeinfo, status=status)
-
-@admin_site.route("/graph")
-def graph():
-    return render_template("admin/admin_user_graph.html")
