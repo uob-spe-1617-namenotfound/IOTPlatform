@@ -9,6 +9,7 @@ class DeviceTests(unittest.TestCase):
     def setUp(self):
         self.devices = DeviceTests.repository_collection.device_repository
         self.house1id = ObjectId()
+        self.house2id = ObjectId()
         self.room1id = ObjectId()
         self.device1id = self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat",
                                                  {'power_state': 1}, None, "example")
@@ -16,7 +17,7 @@ class DeviceTests(unittest.TestCase):
                                                  {'power_state': 1}, None, "example")
         self.device3id = self.devices.add_device(self.house1id, None, "Kitchen Light Switch", "light_switch",
                                                  {'power_state': 1}, None, "example")
-        self.socket_id = self.devices.add_device(self.house1id, None, "Benny's Adapter", "light_switch",
+        self.socket_id = self.devices.add_device(self.house2id, None, "Benny's Adapter", "light_switch",
                                                  {'power_state': 1}, {'username': 'bc15050@mybristol.ac.uk',
                                                                                   'password': 'test1234', 'device_id': '46865'},
                                                  "energenie")
@@ -86,17 +87,17 @@ class DeviceTests(unittest.TestCase):
 
     def test_GetAllDevices(self):
         all_devices = self.devices.get_all_devices()
-        self.assertEqual(len(all_devices), 3, "Incorrect number of devices.")
+        self.assertEqual(len(all_devices), 4, "Incorrect number of devices.")
 
     def test_DeviceRemovedCorrectly(self):
         all_devices = self.devices.get_all_devices()
         self.devices.remove_device(self.device3id)
         all_remaining_devices = self.devices.get_all_devices()
-        self.assertEqual(len(all_remaining_devices), 2, "Incorrect number of remaining devices.")
+        self.assertEqual(len(all_remaining_devices), 3, "Incorrect number of remaining devices.")
 
     def test_DevicesCannotHaveSameName(self):
         with self.assertRaisesRegex(Exception, "There is already a device with this name."):
-            self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat", 1, None, "example")
+            self.devices.add_device(self.house2id, None, "Benny's Adapter", "light_switch", 1, None, "example")
 
     def test_EnergenieDeviceAddedCorrectly(self):
         device = self.devices.get_device_by_id(self.socket_id)
@@ -105,4 +106,4 @@ class DeviceTests(unittest.TestCase):
     def test_EnergenieDeviceReadState(self):
         socket = self.devices.get_device_by_id(self.socket_id)
         current_state = socket.read_current_state()
-        self.assertEquals(current_state['data']['data']['device_type'], 'socket', 'state not read correctly')
+        self.assertEquals(current_state['error'], None, 'state not read correctly')
