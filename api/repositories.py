@@ -2,6 +2,8 @@ import logging
 import random
 import string
 
+import bcrypt
+
 from model import House, Room, User, Device, Thermostat, MotionSensor, LightSwitch, OpenSensor, Token
 
 
@@ -21,9 +23,9 @@ class Repository(object):
 
 
 class RepositoryCollection(object):
-    def __init__(self, db, bcrypt):
+    def __init__(self, db):
         self.db = db
-        self.user_repository = UserRepository(db.users, self, bcrypt)
+        self.user_repository = UserRepository(db.users, self)
         self.house_repository = HouseRepository(db.houses, self)
         self.room_repository = RoomRepository(db.rooms, self)
         self.device_repository = DeviceRepository(db.devices, self)
@@ -32,9 +34,8 @@ class RepositoryCollection(object):
 
 
 class UserRepository(Repository):
-    def __init__(self, mongo_collection, repository_collection, bcrypt):
+    def __init__(self, mongo_collection, repository_collection):
         Repository.__init__(self, mongo_collection, repository_collection)
-        self.bcrypt = bcrypt
 
     def add_user(self, name, password_hash, email_address, is_admin):
         logging.debug("adding user!")
@@ -51,14 +52,14 @@ class UserRepository(Repository):
         if user is not None:
             raise RepositoryException("Email address already registered",
                                       {'code': 409, 'message': 'Email address is already registered'})
-        hashed_password = self.bcrypt.generate_password_hash(password).decode('utf-8')
+        hashed_password = bcrypt.hashpw(password, bcrypt.gensalt()).decode('utf-8')
         return self.add_user(name, hashed_password, email_address, is_admin)
 
     def check_password(self, email_address, password):
         login_user = self.get_user_by_email(email_address)
         if login_user is not None:
             logging.debug("Checking password hash")
-            if self.bcrypt.check_password_hash(login_user.password_hash, password):
+            if bcrypt.checkpw(password, login_user.password_hash):
                 logging.debug("Passwords match!")
                 return login_user
             else:
@@ -226,9 +227,10 @@ class DeviceRepository(Repository):
             if name == other_name:
                 raise Exception("There is already a device with this name.")
         if vendor == "OWN" and "url" not in configuration:
-                raise Exception("Not all required info is in the configuration.")
-        elif vendor == "energenie" and ("username" not in configuration or "password" not in configuration or "device_id" not in configuration):
-                raise Exception("Not all required info is in the configuration.")
+            raise Exception("Not all required info is in the configuration.")
+        elif vendor == "energenie" and (
+                            "username" not in configuration or "password" not in configuration or "device_id" not in configuration):
+            raise Exception("Not all required info is in the configuration.")
         device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
                                              'name': name, 'device_type': device_type,
                                              'status': status,
@@ -306,7 +308,7 @@ class DeviceRepository(Repository):
         device = self.get_device_by_id(device_id)
         if device.device_type != "light_switch":
             raise Exception("Device is not a switch.")
-        if power_state is not (1 or 0):
+        if power_state not in [0, 1]:
             raise Exception("Power_state is not of the correct format")
         device.configure_power_state(power_state)
         self.update_device_reading(device)
@@ -373,6 +375,9 @@ class TokenRepository(Repository):
     def __init__(self, mongo_collection, repository_collection):
         Repository.__init__(self, mongo_collection, repository_collection)
 
+    def find_by_token(self, token):
+        return self.collection.find_one({'token': token})
+
     def generate_token(self, user_id):
         unique = False
         token = ""
@@ -390,14 +395,14 @@ class TokenRepository(Repository):
         self.collection.delete_one({'token': token})
 
     def check_token_is_new(self, token):
-        result = self.collection.find_one({'token': token})
+        result = self.find_by_token(token)
         if result is not None:
             return False
         else:
             return True
 
     def check_token_validity(self, token):
-        token = self.collection.find({'token': token})
+        token = self.find_by_token(token)
         if token is not None:
             return True
         else:
@@ -406,7 +411,7 @@ class TokenRepository(Repository):
     def authenticate_user(self, owner_id, token):
         valid = self.check_token_validity(token)
         if valid:
-            token_user_id = self.collection.find_one({'token': token})['user_id']
+            token_user_id = self.find_by_token(token)['user_id']
             user_is_admin = self.repositories.user_repository.get_user_by_id(token_user_id).is_admin
             if token_user_id == owner_id:
                 return True
@@ -418,7 +423,7 @@ class TokenRepository(Repository):
     def authenticate_admin(self, token):
         valid = self.check_token_validity(token)
         if valid:
-            token_user_id = self.collection.find_one({'token': token})['user_id']
+            token_user_id = self.find_by_token(token)['user_id']
             user_is_admin = self.repositories.user_repository.get_user_by_id(token_user_id).is_admin
             return user_is_admin
         return False

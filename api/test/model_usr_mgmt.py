@@ -1,12 +1,13 @@
-import repositories
-import model
-import main
 import unittest
+
+import main
 
 
 class MgmtTests(unittest.TestCase):
+    repository_collection = None
+
     def setUp(self):
-        self.users = repositories.UserRepository(MgmtTests.collection, MgmtTests.repositories)
+        self.users = MgmtTests.repository_collection.user_repository
         self.user1id = self.users.add_user("Benny Clark", "password1", "benny@example.com", False)
 
     def tearDown(self):
@@ -21,7 +22,8 @@ class MgmtTests(unittest.TestCase):
     def test_UserRegisteredCorrectly(self):
         user = {'email_address': 'email@example.com', 'password': 'examplepw', 'name': 'Benny Clark', 'location':
             {'lat': 51.529249, 'lng': -0.117973, 'description': 'University of Bristol'}, 'is_admin': False}
-        registry_data = main.register(user['email_address'], user['password'], user['name'], user['location'], user['location'])
+        registry_data = main.register(user['email_address'], user['password'], user['name'], user['location'],
+                                      user['location'])
         user_data = self.users.get_user_by_id(registry_data['user_id'])
         self.assertTrue(registry_data['success'], "Registry was unsuccessful")
         self.assertEqual(registry_data['error'], None)

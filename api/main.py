@@ -4,7 +4,6 @@ import logging
 
 from bson.objectid import ObjectId
 from flask import Flask, jsonify, request
-from flask_bcrypt import Bcrypt
 from pymongo import MongoClient
 
 from cron import setup_cron
@@ -18,9 +17,6 @@ mongo = MongoClient(api.config['MONGO_HOST'], api.config['MONGO_PORT'])
 db = mongo.database
 authentication = api.config['AUTHENTICATION_ENABLED']
 
-bcrypt = Bcrypt(api)
-
-
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, ObjectId):
@@ -32,7 +28,7 @@ api.json_encoder = JSONEncoder
 
 import repositories
 
-api.repository_collection = repositories.RepositoryCollection(db, bcrypt)
+api.repository_collection = repositories.RepositoryCollection(db)
 
 api.user_repository = api.repository_collection.user_repository
 api.house_repository = api.repository_collection.house_repository
