@@ -1,15 +1,16 @@
 machine:
+    python:
+        version: 3.6
 
-  python:
-    version: pypy-3.4.3
+dependencies:
+    pre:
+        - pip install -r api/requirements.txt
 
-  dependencies:
-    post:
-      - python ./install-packages
-
-  test:
+test:
+    pre:
+        - service mongod status || service mongod start
     override:
-      - python ./api/tests.py
+        - python ./api/tests.py
 
 
 
