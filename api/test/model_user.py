@@ -1,11 +1,11 @@
-import repositories
-import model
 import unittest
 
 
 class UserTests(unittest.TestCase):
+    repository_collection = None
+
     def setUp(self):
-        self.users = repositories.UserRepository(UserTests.collection, UserTests.repositories)
+        self.users = UserTests.repository_collection.user_repository
         self.user1id = self.users.add_user("Benny Clark", "xxxxxxxx", "benny@example.com", False)
         self.user2id = self.users.add_user("Floris Kint", "xxxxxxxx", "floris@example.com", True)
         self.user3id = self.users.add_user("Ben Fossett", "xxxxxxxx", "ben@example.com", True)
@@ -16,10 +16,10 @@ class UserTests(unittest.TestCase):
     def test_UserAddedCorrectly(self):
         user3 = self.users.get_user_by_id(self.user3id)
         attributes = user3.get_user_attributes()
-        self.assertEqual(attributes['name'], "Ben Fossett", "User name not added correctly.")
-        self.assertEqual(attributes['password_hash'], "xxxxxxxx", "User password not added correctly.")
-        self.assertEqual(attributes['email_address'], "ben@example.com", "User email not added correctly.")
-        self.assertTrue(attributes['is_admin'], "User admin status not added correctly.")
+        self.assertEqual(user3.name, "Ben Fossett", "User name not added correctly.")
+        self.assertEqual(user3.password_hash, "xxxxxxxx", "User password not added correctly.")
+        self.assertEqual(user3.email_address, "ben@example.com", "User email not added correctly.")
+        self.assertTrue(user3.is_admin, "User admin status not added correctly.")
 
     def test_GetAllUsers(self):
         all_users = self.users.get_all_users()

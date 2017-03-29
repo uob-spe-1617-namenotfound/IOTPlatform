@@ -5,8 +5,9 @@ from bson import ObjectId
 
 
 class DeviceTests(unittest.TestCase):
+    repository_collection = None
     def setUp(self):
-        self.devices = repositories.DeviceRepository(DeviceTests.collection, DeviceTests.repositories)
+        self.devices = DeviceTests.repository_collection.device_repository
         self.house1id = ObjectId()
         self.room1id = ObjectId()
         self.device1id = self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat",
@@ -99,7 +100,7 @@ class DeviceTests(unittest.TestCase):
 
     def test_EnergenieDeviceAddedCorrectly(self):
         device = self.devices.get_device_by_id(self.socket_id)
-        self.assertEqual(device['configuration']['device_id'], '46865', 'incorrect inserted device id')
+        self.assertEqual(device.configuration['device_id'], '46865', 'incorrect inserted device id')
 
     def test_EnergenieDeviceReadState(self):
         socket = self.devices.get_device_by_id(self.socket_id)
