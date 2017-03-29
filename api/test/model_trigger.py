@@ -35,3 +35,29 @@ class TriggerTests(unittest.TestCase):
         self.assertEqual(attributes['action'], "set_target_temperature", "Trigger action type was not added correctly.")
         self.assertEqual(attributes['action_params'], 20, "Trigger action params were not added correctly.")
         self.assertEqual(attributes['user_id'], self.user1id, "Trigger user was not added correctly.")
+
+    def test_GetTriggersForDevice(self):
+        triggers = self.triggers.get_triggers_for_device(self.sensor1id)
+        self.assertEqual(len(triggers), 2, "Incorrect number of triggers.")
+        trigger1attr = triggers[0].get_trigger_attributes()
+        trigger2attr = triggers[1].get_trigger_attributes()
+        self.assertEqual(trigger1attr.trigger_id, self.trigger1id, "First trigger has incorrect id.")
+        self.assertEqual(trigger2attr.trigger_id, self.trigger3id, "Second trigger has incorrect id.")
+
+    def test_GetActionsForDevice(self):
+        triggers = self.triggers.get_actions_for_device(self.actor2id)
+        self.assertEqual(len(triggers), 2, "Incorrect number of triggers.")
+        trigger1attr = triggers[0].get_trigger_attributes()
+        trigger2attr = triggers[1].get_trigger_attributes()
+        self.assertEqual(trigger1attr.trigger_id, self.trigger2id, "First trigger has incorrect id.")
+        self.assertEqual(trigger2attr.trigger_id, self.trigger3id, "Second trigger has incorrect id.")
+
+    def test_GetAllTriggers(self):
+        all_triggers = self.triggers.get_all_triggers()
+        self.assertEqual(len(all_triggers), 3, "Incorrect number of triggers.")
+
+    def test_TriggerRemovedCorrectly(self):
+        self.triggers.remove_trigger(self.trigger3id)
+        all_remaining_triggers = self.triggers.get_all_triggers()
+        self.assertEqual(len(all_remaining_triggers), 2, "A trigger was not removed correctly.")
+
