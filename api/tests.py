@@ -5,6 +5,7 @@ from test.model_room import RoomTests
 from test.model_device import DeviceTests
 from test.model_usr_mgmt import MgmtTests
 from test.model_token import TokenTests
+from test.model_admin import AdminTests
 
 import repositories
 import unittest
@@ -30,6 +31,8 @@ def main():
     MgmtTests.repositories = repository_collection
     TokenTests.collection = db.token_test
     TokenTests.repositories = repository_collection
+    AdminTests.collection = db.device_test
+    AdminTests.repositories = repository_collection
     unittest.main()
 
 if __name__ == "__main__":

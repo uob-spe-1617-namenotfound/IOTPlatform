@@ -315,7 +315,7 @@ class DeviceRepository(Repository):
                                    upsert=False)
 
     def get_energy_consumption(self, device_id):
-        device = self.collection.get_device_by_id(device_id)
+        device = self.get_device_by_id(device_id)
         return device.get_energy_readings()
 
     def validate_token(self, device_id, token):
