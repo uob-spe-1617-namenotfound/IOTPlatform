@@ -34,3 +34,9 @@ class UserTests(unittest.TestCase):
     def test_UsersCannotHaveSameEmail(self):
         with self.assertRaisesRegex(Exception, "There is already an account with this email."):
             self.users.add_user("Benny Smith", "xxxxxxxx", "benny@example.com", False)
+
+    def test_GetAttributesIncludingPassword(self):
+        user3 = self.users.get_user_by_id(self.user3id)
+        attributes = user3.get_user_attributes(1)
+        password_hash = attributes['password_hash']
+        self.assertEqual(password_hash, "xxxxxxxx", "get attributes not correctly including pw hash")

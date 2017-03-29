@@ -26,9 +26,12 @@ class User(object):
         self.is_admin = attributes['is_admin']
         self.faulty = get_optional_attribute(attributes, 'faulty', False)
 
-    def get_user_attributes(self):
-        return {'user_id': self.user_id, 'name': self.name, 'faulty': self.faulty,
+    def get_user_attributes(self, include_password_hash=0):
+        data = {'user_id': self.user_id, 'name': self.name, 'faulty': self.faulty,
                 'email_address': self.email_address, 'is_admin': self.is_admin}
+        if include_password_hash:
+            data['password_hash'] = self.password_hash
+        return data
 
     def get_user_id(self):
         return self.user_id
