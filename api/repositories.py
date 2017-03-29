@@ -383,7 +383,7 @@ class TokenRepository(Repository):
         valid = self.check_token_validity(token)
         if valid:
             token_user_id = self.collection.find_one({'token': token})['user_id']
-            user_is_admin = self.repositories.user_repository.find_one({'user_id': token_user_id})['is_admin']
+            user_is_admin = self.repositories.user_repository.get_user_by_id(token_user_id).is_admin
             return user_is_admin
         return False
 
