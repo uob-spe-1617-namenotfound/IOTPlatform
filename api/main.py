@@ -161,11 +161,12 @@ def add_device(house_id):
         return jsonify({"house": None, "error": {"code": 401, "message": "Authentication failed"}})
     data = request.get_json()
     logging.debug("Adding device: {}".format(data))
-    device = api.device_repository.add_device(device_type=data['device_type'],
-                                              house_id=ObjectId(house_id),
+    device = api.device_repository.add_device(house_id=ObjectId(house_id),
                                               room_id=None,
                                               name=data['name'],
-                                              power_state=None,
+                                              device_type=data['device_type'],
+                                              target=data['target'],
+                                              status=data['status'],
                                               configuration=data['configuration'],
                                               vendor=data['vendor'])
     logging.debug("Device added: {}".format(device))

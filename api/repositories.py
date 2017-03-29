@@ -220,7 +220,7 @@ class DeviceRepository(Repository):
             device = self.get_device_by_id(device_id)
             self.update_device_reading(device)
 
-    def add_device(self, house_id, room_id, name, device_type, status, configuration, vendor):
+    def add_device(self, house_id, room_id, name, device_type, target, status, configuration, vendor):
         house_devices = self.get_devices_for_house(house_id)
         for device in house_devices:
             other_name = device.name
@@ -233,7 +233,7 @@ class DeviceRepository(Repository):
             raise Exception("Not all required info is in the configuration.")
         device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
                                              'name': name, 'device_type': device_type,
-                                             'status': status,
+                                             'target': target, 'status': status,
                                              'configuration': configuration,
                                              'vendor': vendor})
         device_id = device.inserted_id
@@ -253,12 +253,12 @@ class DeviceRepository(Repository):
             self.collection.update_one({'_id': device_id}, {"$set": {'status': {'last_temperature': 0}}})
         elif device['device_type'] == "motion_sensor":
             self.collection.update_one({'_id': device_id}, {"$set": {'sensor_data': 0}})
-        # elif device['device_type'] == "light_switch":
+        elif device['device_type'] == "light_switch":
+            self.collection.update_one({'_id': device_id}, {"$set": {'status': {'power_state': 0}}})
         elif device['device_type'] == "open_sensor":
             self.collection.update_one({'_id': device_id}, {"$set": {'sensor_data': 0}})
 
     def remove_device(self, device_id):
-        # self.repositories.device_group_repository.remove_device_from_group(device_id)
         self.collection.delete_one({'_id': device_id})
 
     def get_device_by_id(self, device_id):

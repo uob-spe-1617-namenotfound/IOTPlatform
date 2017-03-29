@@ -11,13 +11,13 @@ class DeviceTests(unittest.TestCase):
         self.house1id = ObjectId()
         self.house2id = ObjectId()
         self.room1id = ObjectId()
-        self.device1id = self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat",
+        self.device1id = self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat", {'target_temperature': 20},
                                                  {'power_state': 1}, None, "example")
-        self.device2id = self.devices.add_device(self.house1id, None, "Kitchen Motion Sensor", "motion_sensor",
+        self.device2id = self.devices.add_device(self.house1id, None, "Kitchen Motion Sensor", "motion_sensor", {},
                                                  {'power_state': 1}, None, "example")
-        self.device3id = self.devices.add_device(self.house1id, None, "Kitchen Light Switch", "light_switch",
+        self.device3id = self.devices.add_device(self.house1id, None, "Kitchen Light Switch", "light_switch", {},
                                                  {'power_state': 1}, None, "example")
-        self.socket_id = self.devices.add_device(self.house2id, None, "Benny's Adapter", "light_switch",
+        self.socket_id = self.devices.add_device(self.house2id, None, "Benny's Adapter", "light_switch", {},
                                                  {'power_state': 1}, {'username': 'bc15050@mybristol.ac.uk',
                                                                                   'password': 'test1234', 'device_id': '46865'},
                                                  "energenie")
@@ -106,4 +106,4 @@ class DeviceTests(unittest.TestCase):
     def test_EnergenieDeviceReadState(self):
         socket = self.devices.get_device_by_id(self.socket_id)
         current_state = socket.read_current_state()
-        self.assertEquals(current_state['error'], None, 'state not read correctly')
+        self.assertEquals(current_state['data']['device_id'], 46865, 'state not read correctly')
