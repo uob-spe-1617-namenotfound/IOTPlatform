@@ -4,7 +4,7 @@ from flask import redirect, url_for, flash, render_template
 
 import data_interface
 from internal import internal_site
-from website.forms import AddNewRoomForm
+from forms import AddNewRoomForm
 
 
 @internal_site.route('/room/add', methods=['POST', 'GET'])

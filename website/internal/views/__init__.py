@@ -4,7 +4,7 @@ import data_interface
 import utilities.session
 from internal import internal_site
 from internal.views import rooms, devices
-from website.forms import AddNewRoomForm
+from forms import AddNewRoomForm
 
 
 @internal_site.route('/triggers')

@@ -2,7 +2,7 @@ from flask import redirect, url_for, flash, render_template
 
 import data_interface
 from admin import admin_site
-from website.forms import AddNewRoomForm
+from forms import AddNewRoomForm
 
 
 @admin_site.route('/user/<string:user_id>')

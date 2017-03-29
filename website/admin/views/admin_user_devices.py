@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for
 
 import data_interface
 from admin import admin_site
-from website.forms import AddNewDeviceForm, SetThermostatTargetForm
+from forms import AddNewDeviceForm, SetThermostatTargetForm
 
 
 
