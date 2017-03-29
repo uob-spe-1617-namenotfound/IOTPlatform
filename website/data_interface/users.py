@@ -9,8 +9,6 @@ def register_user(email_address, password, name):
                             "password": password,
                             "name": name})
     data = r.json()
-    if data['error'] is not None:
-        raise Exception('Error!')
     return data['result'], data['error']
 
 
@@ -19,7 +17,7 @@ def login(email_address, password):
                       json={"email_address": email_address, "password": password})
     data = r.json()
     if data['error'] is not None:
-        raise Exception("Error!")
+        return None, data['error']
     error = None
     user_id = data['result']['user_id']
     admin = data['result']['admin']

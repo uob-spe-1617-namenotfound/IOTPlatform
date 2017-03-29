@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 
@@ -17,6 +18,8 @@ mongo = MongoClient(api.config['MONGO_HOST'], api.config['MONGO_PORT'])
 db = mongo.database
 authentication = api.config['AUTHENTICATION_ENABLED']
 
+bcrypt = Bcrypt(api)
+
 
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
@@ -29,7 +32,7 @@ api.json_encoder = JSONEncoder
 
 import repositories
 
-api.repository_collection = repositories.RepositoryCollection(db)
+api.repository_collection = repositories.RepositoryCollection(db, bcrypt)
 
 api.user_repository = api.repository_collection.user_repository
 api.house_repository = api.repository_collection.house_repository
@@ -52,6 +55,31 @@ def get_user_info(user_id):
     if user is None:
         return jsonify({"user": None, "error": {"code": 404, "message": "No such user found"}})
     return jsonify({"user": user.get_user_attributes(), "error": None})
+
+
+@api.route('/graph/<user_id>', methods=['POST'])
+def get_user_graph_data(user_id):
+    access = api.token_repository.authenticate_user(ObjectId(user_id), get_request_token())
+    if not access:
+        return jsonify({"data": None, "error": {"code": 401, "message": "Authentication failed"}})
+    user = api.user_repository.get_user_by_id(ObjectId(user_id))
+    if user is None:
+        return jsonify({"data": None, "error": {"code": 404, "message": "No such user found"}})
+
+    base = datetime.datetime.today()
+    numdays = 30
+
+    dateList = []
+    for x in range(0, numdays):
+        dateList.append(base - datetime.timedelta(days=x))
+
+    readingList = []
+    for y in range(0, numdays):
+        readingList.append(round(7.845, 2))  # remain constant for now, 7.845 is a random value.
+
+    data = {date.strftime("%d-%B-%Y"): data for date, data in zip(dateList, readingList)}
+
+    return jsonify({"data": data, "error": None})
 
 
 @api.route('/users', methods=['POST'])
@@ -264,31 +292,22 @@ def faulty_user_devices(user_id):
                     "error": None})
 
 
-bcrypt = Bcrypt(api)
-
-
 @api.route('/login', methods=['POST'])
 def login():
     login_data = request.get_json()
     email_address, password = login_data['email_address'], login_data['password']
     data = dict()
     logging.debug("API login, received data: {} {}".format(email_address, password))
-    login_user = api.user_repository.get_user_by_email(email_address)
-    if login_user is not None:
-        logging.debug("Checking password hash")
-        if bcrypt.check_password_hash(login_user.password_hash, password):
-            logging.debug("Password hash matched")
-            token = api.token_repository.generate_token(login_user.user_id)
-            logging.debug("Token generated: {}".format(token))
-            data['result'] = {'success': True, 'admin': login_user.is_admin, 'user_id': login_user.user_id,
-                              'token': token}
-            data['error'] = None
-        else:
-            data['success'] = False
-            data['error'] = {'code': 406, 'message': 'Password is incorrect'}
-    else:
+    try:
+        login_user = api.user_repository.check_password(email_address=email_address,password=password)
+        token = api.token_repository.generate_token(login_user.user_id)
+        logging.debug("Token generated: {}".format(token))
+        data['result'] = {'success': True, 'admin': login_user.is_admin, 'user_id': login_user.user_id,
+                          'token': token}
+        data['error'] = None
+    except repositories.RepositoryException as ex:
         data['success'] = False
-        data['error'] = {'code': 404, 'message': 'Username not found'}
+        data['error'] = ex.error_data
     return jsonify(data)
 
 
@@ -297,23 +316,17 @@ def register():
     registration = request.get_json()
     data = dict()
     logging.debug("Data: {}".format(registration))
-    user = api.user_repository.get_user_by_email(registration['email_address'])
-    logging.debug("Found user: {}".format(user))
-    if user is not None:
-        data['success'] = False
-        data['error'] = {'code': 409, 'message': 'Email address is already registered'}
-    else:
-        if registration['password'] is not None:
-            logging.debug("Password!")
-            hashed_password = bcrypt.generate_password_hash(registration['password']).decode('utf-8')
-            logging.debug("Hashed: {}".format(hashed_password))
-            new_user = api.user_repository.add_user(registration['name'], hashed_password,
-                                                    registration['email_address'], False)
-            logging.debug("New user: {}".format(new_user))
-            house_id = api.house_repository.add_house(new_user, "{}'s house".format(registration['name']), None)
-            logging.debug("Add house: {}".format(house_id))
-            data['result'] = {'success': True, 'user_id': str(new_user), 'house_id': str(house_id)}
-            data['error'] = None
+    try:
+        new_user = api.user_repository.register_new_user(registration['email_address'], registration['password'],
+                                                     registration['name'], False)
+        logging.debug("New user: {}".format(new_user))
+        house_id = api.house_repository.add_house(new_user, "{}'s house".format(registration['name']), None)
+        logging.debug("Add house: {}".format(house_id))
+        data['result'] = {'success': True, 'user_id': str(new_user), 'house_id': str(house_id)}
+        data['error'] = None
+    except repositories.RepositoryException as ex:
+        data['result'] = {'success': False}
+        data['error'] = ex.error_data
     return jsonify(data)
 
 
