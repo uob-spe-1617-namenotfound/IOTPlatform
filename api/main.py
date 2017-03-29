@@ -273,8 +273,7 @@ def get_house_info(house_id):
     access = api.house_repository.validate_token(ObjectId(house_id), get_request_token())
     if not access:
         return jsonify({"devices": None, "error": {"code": 401, "message": "Authentication failed"}})
-    location = {'lat': 51.529249, 'lng': -0.117973, 'description': 'University of Bristol'}
-    house = api.house_repository.get_house_by_location(location)
+    house = api.house_repository.get_house_by_id(house_id)
     return jsonify({
         "house": house,
         "error": None

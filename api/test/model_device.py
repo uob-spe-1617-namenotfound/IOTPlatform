@@ -17,7 +17,7 @@ class DeviceTests(unittest.TestCase):
         self.device3id = self.devices.add_device(self.house1id, None, "Kitchen Light Switch", "light_switch",
                                                  {'power_state': 1}, None, "example")
         self.socket_id = self.devices.add_device(self.house1id, None, "Benny's Adapter", "light_switch",
-                                                 {'status': {'power_state': 1}}, {'username': 'bc15050@mybristol.ac.uk',
+                                                 {'power_state': 1}, {'username': 'bc15050@mybristol.ac.uk',
                                                                                   'password': 'test1234', 'device_id': '46865'},
                                                  "energenie")
 
@@ -105,4 +105,4 @@ class DeviceTests(unittest.TestCase):
     def test_EnergenieDeviceReadState(self):
         socket = self.devices.get_device_by_id(self.socket_id)
         current_state = socket.read_current_state()
-        self.assertEquals(current_state['data']['data']['device_type'], 'control', 'state not read correctly')
+        self.assertEquals(current_state['data']['data']['device_type'], 'socket', 'state not read correctly')
