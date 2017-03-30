@@ -317,7 +317,7 @@ class DeviceRepository(Repository):
 
     def get_energy_consumption(self, device_id):
         device = self.get_device_by_id(device_id)
-        consumption =  device.get_energy_readings()
+        consumption = device.get_energy_readings()
         consumption.reverse()
         for i in range(0, len(consumption)):
             consumption[i][0] = datetime.datetime.fromtimestamp(consumption[i][0]).date()
