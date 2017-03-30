@@ -166,13 +166,6 @@ class Device(object):
 class Thermostat(Device):
     def __init__(self, attributes):
         Device.__init__(self, attributes)
-        self.temperature_scale = None
-        self.target['target_temperature'] = None
-        self.status['last_temperature'] = None
-        self.status['power_state'] = None
-        if self.vendor == 'netatmo':
-            self.target['locked_max_temp'] = None
-            self.target['locked_min_temp'] = None
 
     def set_attributes(self, attributes):
         attributes['device_type'] = "thermostat"
@@ -250,9 +243,8 @@ class MotionSensor(Device):
         return attributes
 
 
-class LightSwitch(Device):
+class LightSwitch(Device):  
     def __init__(self, attributes):
-        self.status['power_state'] = None
         Device.__init__(self, attributes)
 
     def set_attributes(self, attributes):
