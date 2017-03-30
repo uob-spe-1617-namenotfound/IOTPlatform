@@ -6,6 +6,12 @@ import datetime
 from model import House, Room, User, Device, Thermostat, MotionSensor, LightSwitch, OpenSensor, Token
 
 
+class RepositoryException(Exception):
+    def __init__(self, message, error_data):
+        Exception.__init__(self, message)
+        self.error_data = error_data
+
+
 class Repository(object):
     def __init__(self, mongo_collection, repository_collection):
         self.collection = mongo_collection
@@ -16,9 +22,9 @@ class Repository(object):
 
 
 class RepositoryCollection(object):
-    def __init__(self, db):
+    def __init__(self, db, bcrypt):
         self.db = db
-        self.user_repository = UserRepository(db.users, self)
+        self.user_repository = UserRepository(db.users, self, bcrypt)
         self.house_repository = HouseRepository(db.houses, self)
         self.room_repository = RoomRepository(db.rooms, self)
         self.device_repository = DeviceRepository(db.devices, self)
@@ -27,8 +33,9 @@ class RepositoryCollection(object):
 
 
 class UserRepository(Repository):
-    def __init__(self, mongo_collection, repository_collection):
+    def __init__(self, mongo_collection, repository_collection, bcrypt):
         Repository.__init__(self, mongo_collection, repository_collection)
+        self.bcrypt = bcrypt
 
     def add_user(self, name, password_hash, email_address, is_admin):
         logging.debug("adding user!")
@@ -41,6 +48,26 @@ class UserRepository(Repository):
                                            'faulty': False})
         return user.inserted_id
 
+    def register_new_user(self, email_address, password, name, is_admin):
+        user = self.get_user_by_email(email_address)
+        if user is not None:
+            raise RepositoryException("Email address already registered",
+                                      {'code': 409, 'message': 'Email address is already registered'})
+        hashed_password = self.bcrypt.generate_password_hash(password).decode('utf-8')
+        return self.add_user(name, hashed_password, email_address, is_admin)
+
+    def check_password(self, email_address, password):
+        login_user = self.get_user_by_email(email_address)
+        if login_user is not None:
+            logging.debug("Checking password hash")
+            if self.bcrypt.check_password_hash(login_user.password_hash, password):
+                logging.debug("Passwords match!")
+                return login_user
+            else:
+                raise RepositoryException("Password is incorrect", {'code': 406, 'message': 'Password is incorrect'})
+        else:
+            raise RepositoryException("Username not found", {'code': 404, 'message': 'Username not found'})
+
     def remove_user(self, user_id):
         self.collection.delete_one({'_id': user_id})
 
@@ -52,7 +79,6 @@ class UserRepository(Repository):
         return target_user
 
     def get_user_by_email(self, email_address):
-        logging.debug("All users: {}".format([x.email_address for x in self.get_all_users()]))
         user = self.collection.find_one({'email_address': email_address})
         if user is None:
             return None
@@ -413,7 +439,7 @@ class TokenRepository(Repository):
         valid = self.check_token_validity(token)
         if valid:
             token_user_id = self.collection.find_one({'token': token})['user_id']
-            user_is_admin = self.repositories.user_repository.find_one({'user_id': token_user_id})['is_admin']
+            user_is_admin = self.repositories.user_repository.get_user_by_id(token_user_id).is_admin
             return user_is_admin
         return False
 
