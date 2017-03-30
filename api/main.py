@@ -300,24 +300,9 @@ def get_overall_consumption():
     access = api.token_repository.authenticate_admin(get_request_token())
     if access is False:
         return jsonify({"consumption": None, "error": {"code": 401, "message": "Authentication failed"}})
-    devices = api.user_repository.get_all_devices()
-    overall_consumption = []
-    for device in devices:
-        dev = api.device_repository.get_device_by_id(device['_id'])
-        device_consumption = dev.get_energy_readings()
-        if device_consumption is not None:
-            if len(overall_consumption) == 0:
-                overall_consumption = device_consumption
-            else:
-                for i in range(0, len(overall_consumption)):
-                    j = 0
-                    while overall_consumption[i][0] != device_consumption[j][0]:
-                        if j < len(overall_consumption):
-                            j += 1
-                        else:
-                            break
-                    if j < len(overall_consumption):
-                        overall_consumption[i][1] = overall_consumption[j][1] + device_consumption[i][1]
+    overall_consumption = api.device_repository.get_overall_consumption()
+    if overall_consumption is None:
+        return jsonify({"consumption": None, "error": {"code": 404, "message": "Overall consumption could not be obtained"}})
     return jsonify({"consumption": overall_consumption, "error": None})
 
 

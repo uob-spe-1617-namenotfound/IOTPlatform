@@ -1,6 +1,7 @@
 import logging
 import random
 import string
+import datetime
 
 from model import House, Room, User, Device, Thermostat, MotionSensor, LightSwitch, OpenSensor, Token
 
@@ -316,7 +317,31 @@ class DeviceRepository(Repository):
 
     def get_energy_consumption(self, device_id):
         device = self.get_device_by_id(device_id)
-        return device.get_energy_readings()
+        consumption =  device.get_energy_readings()
+        consumption.reverse()
+        for i in range(0, len(consumption)):
+            consumption[i][0] = datetime.datetime.fromtimestamp(consumption[i][0]).date()
+        return consumption
+
+    def get_overall_consumption(self):
+        devices = self.get_all_devices()
+        overall_consumption = []
+        for device in devices:
+            device_consumption = self.get_energy_consumption(device.device_id)
+            if device_consumption is not None:
+                if len(overall_consumption) == 0:
+                    overall_consumption = device_consumption
+                else:
+                    for i in range(len(overall_consumption)):
+                        j = 0
+                        while overall_consumption[i][0] != device_consumption[j][0]:
+                            if j < len(device_consumption):
+                                j += 1
+                            else:
+                                break
+                        if j < len(device_consumption):
+                            overall_consumption[i][1] = overall_consumption[i][1] + device_consumption[j][1]
+        return overall_consumption
 
     def validate_token(self, device_id, token):
         device = self.get_device_by_id(device_id)
