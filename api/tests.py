@@ -1,3 +1,4 @@
+import logging
 import os
 import unittest
 
@@ -12,6 +13,8 @@ from test.model_trigger import TriggerTests
 from test.model_user import UserTests
 
 mongo = MongoClient(os.environ['MONGO_HOST'], int(os.environ['MONGO_PORT']))
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 def main():

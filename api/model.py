@@ -171,12 +171,6 @@ class Thermostat(Device):
         attributes['device_type'] = "thermostat"
         Device.set_attributes(self, attributes=attributes)
         self.temperature_scale = get_optional_attribute(attributes, 'temperature_scale')
-        self.target['target_temperature'] = get_optional_attribute(attributes, 'target_temperature')
-        self.status['last_temperature'] = get_optional_attribute(attributes, 'last_temperature')
-        self.status['power_state'] = get_optional_attribute(attributes, 'power_state')
-        if self.vendor == 'netatmo':
-            self.target['locked_max_temp'] = get_optional_attribute(attributes, 'locked_max_temperature')
-            self.target['locked_min_temp'] = get_optional_attribute(attributes, 'locked_min_temperature')
 
     def get_device_attributes(self):
         attributes = Device.get_device_attributes(self)
@@ -208,15 +202,18 @@ class Thermostat(Device):
                     password = self.configuration['password']
                     dev_id = int(self.configuration['device_id'])
                     logging.debug(
-                        "Configuring target temp for mihome4u data. Auth = {}, json = {}".format((username, password), {"id": dev_id}))
-                    r = requests.get("https://mihome4u.co.uk/api/v1/subdevices/set_target_temperature", auth=(username, password),
+                        "Configuring target temp for mihome4u data. Auth = {}, json = {}".format((username, password),
+                                                                                                 {"id": dev_id}))
+                    r = requests.get("https://mihome4u.co.uk/api/v1/subdevices/set_target_temperature",
+                                     auth=(username, password),
                                      json={"id": dev_id, "temperature": temperature})
                     r_data = r.json()
                     logging.debug("Got: {}".format(r_data))
                     if r_data["status"] != "success":
                         error = "External error: {}".format(r_data['status'])
                     else:
-                        data = {'target_temperature': r_data['data']['target_temperature'], 'voltage': r_data['data']['voltage']}
+                        data = {'target_temperature': r_data['data']['target_temperature'],
+                                'voltage': r_data['data']['voltage']}
                 except Exception as ex:
                     error = "Cannot read device data from URL: {}".format(ex)
             else:
@@ -243,16 +240,16 @@ class MotionSensor(Device):
         return attributes
 
 
-class LightSwitch(Device):  
+class LightSwitch(Device):
     def __init__(self, attributes):
         Device.__init__(self, attributes)
 
     def set_attributes(self, attributes):
         Device.set_attributes(self, attributes=attributes)
-        self.status['power_state'] = get_optional_attribute(attributes, 'power_state')
 
     def get_device_attributes(self):
-        return Device.get_device_attributes(self)
+        attributes = Device.get_device_attributes(self)
+        return attributes
 
     def configure_power_state(self, power_state):
         error = None
