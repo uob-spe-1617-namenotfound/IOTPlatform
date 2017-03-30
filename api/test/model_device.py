@@ -97,7 +97,7 @@ class DeviceTests(unittest.TestCase):
 
     def test_DevicesCannotHaveSameName(self):
         with self.assertRaisesRegex(Exception, "There is already a device with this name."):
-            self.devices.add_device(self.house2id, None, "Benny's Adapter", "light_switch", 1, None, "example")
+            self.devices.add_device(self.house2id, None, "Benny's Adapter", "light_switch", {}, 1, None, "example")
 
     def test_EnergenieDeviceAddedCorrectly(self):
         device = self.devices.get_device_by_id(self.socket_id)
