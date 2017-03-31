@@ -5,7 +5,7 @@ import datetime
 
 import bcrypt
 
-from model import House, Room, User, Device, Thermostat, MotionSensor, LightSwitch, OpenSensor, Token
+from model import House, Room, User, Device, Thermostat, MotionSensor, LightSwitch, OpenSensor, Token, Trigger
 
 
 class RepositoryException(Exception):
@@ -66,7 +66,9 @@ class UserRepository(Repository):
             raise RepositoryException("Username not found", {'code': 404, 'message': 'Username not found'})
 
     def remove_user(self, user_id):
+        user = self.get_user_by_id(user_id)
         self.collection.delete_one({'_id': user_id})
+        return user
 
     def get_user_by_id(self, user_id):
         user = self.collection.find_one({'_id': user_id})
@@ -115,7 +117,9 @@ class HouseRepository(Repository):
         return house.inserted_id
 
     def remove_house(self, house_id):
+        house = self.get_house_by_id(house_id)
         self.collection.delete_one({'_id': house_id})
+        return house
 
     def get_house_by_id(self, house_id):
         house = self.collection.find_one({'_id': house_id})
@@ -163,7 +167,12 @@ class RoomRepository(Repository):
         return room.inserted_id
 
     def remove_room(self, room_id):
+        room = self.get_room_by_id(room_id)
         self.collection.delete_one({'_id': room_id})
+        devices = self.repositories.device_repository.get_devices_for_room(room_id)
+        for device in devices:
+            self.repositories.device_repository.unlink_device_from_room(device.device_id)
+        return room
 
     def get_room_by_id(self, room_id):
         room = self.collection.find_one({'_id': room_id})
@@ -256,7 +265,12 @@ class DeviceRepository(Repository):
             self.collection.update_one({'_id': device_id}, {"$set": {'sensor_data': 0}})
 
     def remove_device(self, device_id):
+        device = self.get_device_by_id(device_id)
         self.collection.delete_one({'_id': device_id})
+        return device
+
+    def unlink_device_from_room(self, device_id):
+        self.collection.update_one({'device_id': device_id}, {"$set": {'room_id': None}}, upsert=False)
 
     def get_device_by_id(self, device_id):
         device = self.collection.find_one({'_id': device_id})
@@ -391,11 +405,82 @@ class TriggerRepository(Repository):
     def __init__(self, mongo_collection, repository_collection):
         Repository.__init__(self, mongo_collection, repository_collection)
 
-    def add_trigger(self, trigger_sensor_id, trigger, actor_id, action):
-        pass
+    def add_trigger(self, sensor_id, event, event_params, actor_id, action, action_params, user_id):
+        new_trigger = self.collection.insert_one({'sensor_id': sensor_id, 'event': event, 'event_params': event_params,
+                                                  'actor_id': actor_id, 'action': action, 'action_params': action_params,
+                                                  'user_id': user_id, 'reading': None})
+        return new_trigger.inserted_id
+
+    def remove_trigger(self, trigger_id):
+        trigger = self.get_trigger_by_id(trigger_id)
+        self.collection.delete_one({'_id': trigger_id})
+        return trigger
 
     def get_trigger_by_id(self, trigger_id):
-        pass
+        trigger = self.collection.find_one({'_id': trigger_id})
+        if trigger is None:
+            return None
+        target_trigger = Trigger(trigger)
+        return target_trigger
+
+    def get_triggers_for_device(self, device_id):
+        triggers = self.collection.find({'sensor_id': device_id})
+        target_triggers = []
+        for trigger in triggers:
+            target_triggers.append(Trigger(trigger))
+        return target_triggers
+
+    def get_actions_for_device(self, device_id):
+        triggers = self.collection.find({'actor_id': device_id})
+        target_triggers = []
+        for trigger in triggers:
+            target_triggers.append(Trigger(trigger))
+        return target_triggers
+
+    def edit_trigger(self, trigger_id, event, event_params, action, action_params):
+        self.collection.update_one({'_id': trigger_id},
+                                   {"$set": {"event": event, "event_params": event_params,
+                                             "action": action, "action_params": action_params}})
+        return self.get_trigger_by_id(trigger_id)
+
+    def get_triggers_for_user(self, user_id):
+        triggers = self.collection.find({'user_id': user_id})
+        target_triggers = []
+        for trigger in triggers:
+            target_triggers.append(Trigger(trigger))
+            return target_triggers
+
+    def get_all_triggers(self):
+        triggers = self.collection.find()
+        target_triggers = []
+        for trigger in triggers:
+            target_triggers.append(Trigger(trigger))
+            return target_triggers
+
+    def check_all_triggers(self):
+        triggers = self.get_all_triggers()
+        for trigger in triggers:
+            triggered = False
+            if trigger.event == "motion_detected_start" or trigger.event == "motion_detected_stop":
+                pass
+            elif trigger.event == "temperature_gets_higher_than" or trigger.event == "temperature_gets_lower_than":
+                pass
+            if triggered:
+                if trigger.action == "set_target_temperature":
+                    pass
+                elif trigger.action == "set_light_switch":
+                    pass
+
+    def update_trigger_reading(self, trigger_id, reading):
+        self.collection.update_one({'_id': trigger_id}, {"$set": {'reading': reading}})
+
+    def validate_token(self, trigger_id, token):
+        trigger = self.get_trigger_by_id(trigger_id)
+        if trigger is None:
+            return False
+        else:
+            user_id = trigger.user_id
+            return self.repositories.token_repository.authenticate_user(user_id, token)
 
 
 class TokenRepository(Repository):
@@ -420,6 +505,13 @@ class TokenRepository(Repository):
 
     def invalidate_token(self, token):
         self.collection.delete_one({'token': token})
+
+    def get_token_info(self, token):
+        token = self.collection.find_one({'token': token})
+        if token is None:
+            return None
+        target_token = Token(token)
+        return target_token
 
     def check_token_is_new(self, token):
         result = self.find_by_token(token)
