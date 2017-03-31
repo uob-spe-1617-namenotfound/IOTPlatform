@@ -93,7 +93,7 @@ def add_new_room(name):
 
 def get_user_default_devices():
     r = requests.post(get_api_url('/house/{}/devices'.format(get_default_house_id())),
-                     json=get_authentication_token())
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
@@ -102,7 +102,7 @@ def get_user_default_devices():
 
 def get_room_devices(room_id):
     r = requests.post(get_api_url('/room/{}/devices'.format(room_id)),
-                     json=get_authentication_token())
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
@@ -111,7 +111,7 @@ def get_room_devices(room_id):
 
 def link_device_to_room(room_id, device_id):
     r = requests.post(get_api_url('/room/{}/device/{}/link'.format(room_id, device_id)),
-                     json=get_authentication_token())
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
@@ -285,7 +285,7 @@ def get_all_users():
     return data['users']
 
 
-def get_weekly_power_consumption():
+def get_overall_power_consumption():
     r = requests.get(get_api_url('/admin/graph'),
                      json=get_authentication_token())
     data = r.json()
@@ -301,3 +301,12 @@ def logout():
     if data['error'] is not None:
         raise Exception("Error!")
     return data['success']
+
+
+def get_user_graph_data(user_id):
+    r = requests.post(get_api_url('/graph/{}'.format(user_id)),
+                      json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['data']

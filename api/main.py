@@ -1,9 +1,9 @@
+import datetime
 import json
 import logging
 
 from bson.objectid import ObjectId
 from flask import Flask, jsonify, request
-from flask_bcrypt import Bcrypt
 from pymongo import MongoClient
 
 from cron import setup_cron
@@ -16,7 +16,6 @@ logging.basicConfig(level=logging.DEBUG)
 mongo = MongoClient(api.config['MONGO_HOST'], api.config['MONGO_PORT'])
 db = mongo.database
 authentication = api.config['AUTHENTICATION_ENABLED']
-
 
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
@@ -52,6 +51,31 @@ def get_user_info(user_id):
     if user is None:
         return jsonify({"user": None, "error": {"code": 404, "message": "No such user found"}})
     return jsonify({"user": user.get_user_attributes(), "error": None})
+
+
+@api.route('/graph/<user_id>', methods=['POST'])
+def get_user_graph_data(user_id):
+    access = api.token_repository.authenticate_user(ObjectId(user_id), get_request_token())
+    if not access:
+        return jsonify({"data": None, "error": {"code": 401, "message": "Authentication failed"}})
+    user = api.user_repository.get_user_by_id(ObjectId(user_id))
+    if user is None:
+        return jsonify({"data": None, "error": {"code": 404, "message": "No such user found"}})
+
+    base = datetime.datetime.today()
+    numdays = 30
+
+    dateList = []
+    for x in range(0, numdays):
+        dateList.append(base - datetime.timedelta(days=x))
+
+    readingList = []
+    for y in range(0, numdays):
+        readingList.append(round(7.845, 2))  # remain constant for now, 7.845 is a random value.
+
+    data = {date.strftime("%d-%B-%Y"): data for date, data in zip(dateList, readingList)}
+
+    return jsonify({"data": data, "error": None})
 
 
 @api.route('/users', methods=['POST'])
@@ -140,11 +164,12 @@ def add_device(house_id):
         return jsonify({"device": None, "error": {"code": 404, "message": "No such house found"}})
     data = request.get_json()
     logging.debug("Adding device: {}".format(data))
-    device_id = api.device_repository.add_device(device_type=data['device_type'],
-                                              house_id=ObjectId(house_id),
+    device = api.device_repository.add_device(house_id=ObjectId(house_id),
                                               room_id=None,
                                               name=data['name'],
-                                              power_state=None,
+                                              device_type=data['device_type'],
+                                              target=data['target'],
+                                              status=data['status'],
                                               configuration=data['configuration'],
                                               vendor=data['vendor'])
     device = api.device_repository.get_device_by_id(device_id)
@@ -235,13 +260,15 @@ def configure_switch(device_id):
 
 
 @api.route('/house/<string:house_id>', methods=['POST'])
-def location_attr(house_id):
+def get_house_info(house_id):
     access = api.house_repository.validate_token(ObjectId(house_id), get_request_token())
     if not access:
         return jsonify({"devices": None, "error": {"code": 401, "message": "Authentication failed"}})
-    attributes = api.house_repository.get_house_attributes(house_id)
-    attributes['location'] = {'lat': 51.529249, 'lng': -0.117973, 'description': 'University of Bristol'}
-    return attributes
+    house = api.house_repository.get_house_by_id(house_id)
+    return jsonify({
+        "house": house,
+        "error": None
+    })
 
 
 @api.route('/trigger/<string:trigger_id>', methods=['POST'])
@@ -382,25 +409,15 @@ def all_faulty_devices():
 
 
 @api.route('/admin/graph')
-def get_weekly_consumption():
+def get_overall_consumption():
     access = api.token_repository.authenticate_admin(get_request_token())
     if not access:
         return jsonify({"consumption": None, "error": {"code": 401, "message": "Authentication failed"}})
-    devices = api.user_repository.get_all_devices()
-    overall_consumption = []
-    for device in devices:
-        dev = api.device_repository.get_device_by_id(ObjectId(device['_id']))
-        device_consumption = dev.get_energy_readings()
-        if len(overall_consumption) == 0:
-            overall_consumption = device_consumption
-        else:
-            for i in range(0, len(overall_consumption)):
-                overall_consumption[i][1] = overall_consumption[i][1] + device_consumption[i][1]
+    overall_consumption = api.device_repository.get_overall_consumption()
+    if overall_consumption is None:
+        return jsonify({"consumption": None, "error": {"code": 404, "message": "Overall consumption could not be obtained"}})
     return jsonify({"consumption": overall_consumption, "error": None})
 
-
-
-bcrypt = Bcrypt(api)
 
 
 @api.route('/login', methods=['POST'])
@@ -409,22 +426,16 @@ def login():
     email_address, password = login_data['email_address'], login_data['password']
     data = dict()
     logging.debug("API login, received data: {} {}".format(email_address, password))
-    login_user = api.user_repository.get_user_by_email(email_address)
-    if login_user is not None:
-        logging.debug("Checking password hash")
-        if bcrypt.check_password_hash(login_user.password_hash, password):
-            logging.debug("Password hash matched")
-            token = api.token_repository.generate_token(login_user.user_id)
-            logging.debug("Token generated: {}".format(token))
-            data['result'] = {'success': True, 'admin': login_user.is_admin, 'user_id': login_user.user_id,
-                              'token': token}
-            data['error'] = None
-        else:
-            data['success'] = False
-            data['error'] = {'code': 406, 'message': 'Password is incorrect'}
-    else:
+    try:
+        login_user = api.user_repository.check_password(email_address=email_address,password=password)
+        token = api.token_repository.generate_token(login_user.user_id)
+        logging.debug("Token generated: {}".format(token))
+        data['result'] = {'success': True, 'admin': login_user.is_admin, 'user_id': login_user.user_id,
+                          'token': token}
+        data['error'] = None
+    except repositories.RepositoryException as ex:
         data['success'] = False
-        data['error'] = {'code': 404, 'message': 'Username not found'}
+        data['error'] = ex.error_data
     return jsonify(data)
 
 
@@ -433,23 +444,17 @@ def register():
     registration = request.get_json()
     data = dict()
     logging.debug("Data: {}".format(registration))
-    user = api.user_repository.get_user_by_email(registration['email_address'])
-    logging.debug("Found user: {}".format(user))
-    if user is not None:
-        data['success'] = False
-        data['error'] = {'code': 409, 'message': 'Email address is already registered'}
-    else:
-        if registration['password'] is not None:
-            logging.debug("Password!")
-            hashed_password = bcrypt.generate_password_hash(registration['password']).decode('utf-8')
-            logging.debug("Hashed: {}".format(hashed_password))
-            new_user = api.user_repository.add_user(registration['name'], hashed_password,
-                                                    registration['email_address'], False)
-            logging.debug("New user: {}".format(new_user))
-            house_id = api.house_repository.add_house(new_user, "{}'s house".format(registration['name']), None)
-            logging.debug("Add house: {}".format(house_id))
-            data['result'] = {'success': True, 'user_id': str(new_user), 'house_id': str(house_id)}
-            data['error'] = None
+    try:
+        new_user = api.user_repository.register_new_user(registration['email_address'], registration['password'],
+                                                     registration['name'], False)
+        logging.debug("New user: {}".format(new_user))
+        house_id = api.house_repository.add_house(new_user, "{}'s house".format(registration['name']), None)
+        logging.debug("Add house: {}".format(house_id))
+        data['result'] = {'success': True, 'user_id': str(new_user), 'house_id': str(house_id)}
+        data['error'] = None
+    except repositories.RepositoryException as ex:
+        data['result'] = {'success': False}
+        data['error'] = ex.error_data
     return jsonify(data)
 
 

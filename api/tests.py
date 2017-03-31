@@ -1,23 +1,28 @@
+import logging
+import os
+import unittest
+
 from pymongo import MongoClient
-from test.model_user import UserTests
+
+import repositories
+from test.model_admin import AdminTests
+from test.model_device import DeviceTests
 from test.model_house import HouseTests
 from test.model_room import RoomTests
 from test.model_device import DeviceTests
 from test.model_trigger import TriggerTests
 from test.model_usr_mgmt import MgmtTests
 from test.model_token import TokenTests
+from test.model_user import UserTests
 
-import repositories
-import unittest
-
-import os
-print(os.environ)
 mongo = MongoClient(os.environ['MONGO_HOST'], int(os.environ['MONGO_PORT']))
-db = mongo.testdb
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 def main():
     mongo.drop_database('testdb')
+    db = mongo.testdb
     repository_collection = repositories.RepositoryCollection(db)
     UserTests.collection = db.user_test
     UserTests.repositories = repository_collection
@@ -34,6 +39,7 @@ def main():
     TokenTests.collection = db.token_test
     TokenTests.repositories = repository_collection
     unittest.main()
+
 
 if __name__ == "__main__":
     main()

@@ -10,6 +10,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 targets = dict()
 motion_data = dict()
+sensor_data = dict()
 
 
 @app.route('/thermostat')
@@ -60,6 +61,20 @@ def read_motion_sensor(device_id=None):
         "error": None
     })
 
+
+@app.route('/open_sensor')
+@app.route('/open_sensor/<int:device_id>')
+def read_open_sensor(device_id=None):
+    open_state = False
+    if device_id is not None and device_id in sensor_data:
+        open_state = sensor_data[device_id]
+    return jsonify({
+        "data": {
+            "state": open_state,
+            "timestamp": datetime.now()
+        },
+        "error": None
+    })
 
 def main():
     app.run(host=app.config['HOSTNAME'], port=int(app.config['PORT']))

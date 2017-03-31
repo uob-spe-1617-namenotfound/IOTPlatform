@@ -60,4 +60,3 @@ class TriggerTests(unittest.TestCase):
         self.triggers.remove_trigger(self.trigger3id)
         all_remaining_triggers = self.triggers.get_all_triggers()
         self.assertEqual(len(all_remaining_triggers), 2, "A trigger was not removed correctly.")
-
