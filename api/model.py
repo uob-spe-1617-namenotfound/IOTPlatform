@@ -221,8 +221,7 @@ class Thermostat(Device):
             logging.debug("Read current data for the device: {}".format(data))
         else:
             error = "configure_target_temperature not implemented for vendor {}".format(self.vendor)
-        if error is not None:
-            return {"error": error, "timestamp": timestamp}
+        return {"error": error, "data": data, "timestamp": timestamp}
 
 
 class MotionSensor(Device):
