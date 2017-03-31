@@ -448,14 +448,14 @@ class TriggerRepository(Repository):
         target_triggers = []
         for trigger in triggers:
             target_triggers.append(Trigger(trigger))
-            return target_triggers
+        return target_triggers
 
     def get_all_triggers(self):
         triggers = self.collection.find()
         target_triggers = []
         for trigger in triggers:
             target_triggers.append(Trigger(trigger))
-            return target_triggers
+        return target_triggers
 
     def check_all_triggers(self):
         triggers = self.get_all_triggers()

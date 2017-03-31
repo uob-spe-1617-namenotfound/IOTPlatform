@@ -38,6 +38,8 @@ def main():
     MgmtTests.repositories = repository_collection
     TokenTests.collection = db.token_test
     TokenTests.repositories = repository_collection
+    AdminTests.collection = db.admin_test
+    AdminTests.repositories = repository_collection
     unittest.main()
 
 
