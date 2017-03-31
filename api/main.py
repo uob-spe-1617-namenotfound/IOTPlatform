@@ -4,7 +4,6 @@ import logging
 
 from bson.objectid import ObjectId
 from flask import Flask, jsonify, request
-from flask_bcrypt import Bcrypt
 from pymongo import MongoClient
 
 from cron import setup_cron
@@ -18,9 +17,6 @@ mongo = MongoClient(api.config['MONGO_HOST'], api.config['MONGO_PORT'])
 db = mongo.database
 authentication = api.config['AUTHENTICATION_ENABLED']
 
-bcrypt = Bcrypt(api)
-
-
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, ObjectId):
@@ -32,7 +28,7 @@ api.json_encoder = JSONEncoder
 
 import repositories
 
-api.repository_collection = repositories.RepositoryCollection(db, bcrypt)
+api.repository_collection = repositories.RepositoryCollection(db)
 
 api.user_repository = api.repository_collection.user_repository
 api.house_repository = api.repository_collection.house_repository
@@ -168,11 +164,12 @@ def add_device(house_id):
         return jsonify({"device": None, "error": {"code": 404, "message": "No such house found"}})
     data = request.get_json()
     logging.debug("Adding device: {}".format(data))
-    device = api.device_repository.add_device(device_type=data['device_type'],
-                                              house_id=ObjectId(house_id),
+    device = api.device_repository.add_device(house_id=ObjectId(house_id),
                                               room_id=None,
                                               name=data['name'],
-                                              power_state=None,
+                                              device_type=data['device_type'],
+                                              target=data['target'],
+                                              status=data['status'],
                                               configuration=data['configuration'],
                                               vendor=data['vendor'])
     logging.debug("Device added: {}".format(device))
@@ -270,13 +267,15 @@ def configure_switch(device_id):
 
 
 @api.route('/house/<string:house_id>', methods=['POST'])
-def location_attr(house_id):
+def get_house_info(house_id):
     access = api.house_repository.validate_token(ObjectId(house_id), get_request_token())
     if not access:
         return jsonify({"devices": None, "error": {"code": 401, "message": "Authentication failed"}})
-    attributes = api.house_repository.get_house_attributes(house_id)
-    attributes['location'] = {'lat': 51.529249, 'lng': -0.117973, 'description': 'University of Bristol'}
-    return attributes
+    house = api.house_repository.get_house_by_id(house_id)
+    return jsonify({
+        "house": house,
+        "error": None
+    })
 
 
 @api.route('/user/<string:user_id>/faults', methods=['POST'])

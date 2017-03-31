@@ -1,3 +1,6 @@
+[![CircleCI](https://circleci.com/gh/uob-spe-1617-namenotfound/IOTPlatform.svg?style=shield&circle-token=8d0cd3c5f3884fdfdbb784bf354559038c2744ff)](https://github.com/uob-spe-1617-namenotfound/IOTPlatform)
+
+
 # 404.-NAMENOTFOUND
 Project Repository for Software Product Engineering
 
