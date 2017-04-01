@@ -52,13 +52,15 @@ class UserRepository(Repository):
         if user is not None:
             raise RepositoryException("Email address already registered",
                                       {'code': 409, 'message': 'Email address is already registered'})
-        hashed_password = bcrypt.hashpw(password, bcrypt.gensalt()).decode('utf-8')
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         return self.add_user(name, hashed_password, email_address, is_admin)
 
     def check_password(self, email_address, password):
         login_user = self.get_user_by_email(email_address)
         if login_user is not None:
-            if bcrypt.checkpw(password, login_user.password_hash):
+            logging.debug('password: {}'.format(password.encode('utf-8')))
+            logging.debug('hash:     {}'.format(login_user.password_hash))
+            if bcrypt.checkpw(password.encode('utf-8'), login_user.password_hash.encode('utf-8')):
                 return login_user
             else:
                 raise RepositoryException("Password is incorrect", {'code': 406, 'message': 'Password is incorrect'})

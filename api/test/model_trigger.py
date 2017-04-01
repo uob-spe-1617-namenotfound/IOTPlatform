@@ -1,12 +1,13 @@
-import repositories
-import model
 import unittest
+
 from bson import ObjectId
 
 
 class TriggerTests(unittest.TestCase):
+    repository_collection = None
+
     def setUp(self):
-        self.triggers = repositories.TriggerRepository(TriggerTests.collection, TriggerTests.repositories)
+        self.triggers = TriggerTests.repository_collection.trigger_repository
         self.user1id = ObjectId()
         self.sensor1id = ObjectId()
         self.sensor2id = ObjectId()
@@ -39,16 +40,16 @@ class TriggerTests(unittest.TestCase):
     def test_GetTriggersForDevice(self):
         triggers = self.triggers.get_triggers_for_device(self.sensor1id)
         self.assertEqual(len(triggers), 2, "Incorrect number of triggers.")
-        trigger1attr = triggers[0].get_trigger_attributes()
-        trigger2attr = triggers[1].get_trigger_attributes()
+        trigger1attr = triggers[0]
+        trigger2attr = triggers[1]
         self.assertEqual(trigger1attr.trigger_id, self.trigger1id, "First trigger has incorrect id.")
         self.assertEqual(trigger2attr.trigger_id, self.trigger3id, "Second trigger has incorrect id.")
 
     def test_GetActionsForDevice(self):
         triggers = self.triggers.get_actions_for_device(self.actor2id)
         self.assertEqual(len(triggers), 2, "Incorrect number of triggers.")
-        trigger1attr = triggers[0].get_trigger_attributes()
-        trigger2attr = triggers[1].get_trigger_attributes()
+        trigger1attr = triggers[0]
+        trigger2attr = triggers[1]
         self.assertEqual(trigger1attr.trigger_id, self.trigger2id, "First trigger has incorrect id.")
         self.assertEqual(trigger2attr.trigger_id, self.trigger3id, "Second trigger has incorrect id.")
 

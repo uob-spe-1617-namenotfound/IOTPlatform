@@ -24,22 +24,14 @@ def main():
     mongo.drop_database('testdb')
     db = mongo.testdb
     repository_collection = repositories.RepositoryCollection(db)
-    UserTests.collection = db.user_test
-    UserTests.repositories = repository_collection
-    HouseTests.collection = db.house_test
-    HouseTests.repositories = repository_collection
-    RoomTests.collection = db.room_test
-    RoomTests.repositories = repository_collection
-    DeviceTests.collection = db.device_test
-    DeviceTests.repositories = repository_collection
-    TriggerTests.collection = db.trigger_test
-    TriggerTests.repositories = repository_collection
-    MgmtTests.collection = db.user_test
-    MgmtTests.repositories = repository_collection
-    TokenTests.collection = db.token_test
-    TokenTests.repositories = repository_collection
-    AdminTests.collection = db.admin_test
-    AdminTests.repositories = repository_collection
+    UserTests.repository_collection = repository_collection
+    HouseTests.repository_collection = repository_collection
+    RoomTests.repository_collection = repository_collection
+    DeviceTests.repository_collection = repository_collection
+    TriggerTests.repository_collection = repository_collection
+    TokenTests.repository_collection = repository_collection
+    AdminTests.repository_collection = repository_collection
+    MgmtTests.repository_collection = repository_collection
     unittest.main()
 
 

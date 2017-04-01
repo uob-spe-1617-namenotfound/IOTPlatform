@@ -17,6 +17,7 @@ mongo = MongoClient(api.config['MONGO_HOST'], api.config['MONGO_PORT'])
 db = mongo.database
 authentication = api.config['AUTHENTICATION_ENABLED']
 
+
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, ObjectId):
@@ -415,9 +416,9 @@ def get_overall_consumption():
         return jsonify({"consumption": None, "error": {"code": 401, "message": "Authentication failed"}})
     overall_consumption = api.device_repository.get_overall_consumption()
     if overall_consumption is None:
-        return jsonify({"consumption": None, "error": {"code": 404, "message": "Overall consumption could not be obtained"}})
+        return jsonify(
+            {"consumption": None, "error": {"code": 404, "message": "Overall consumption could not be obtained"}})
     return jsonify({"consumption": overall_consumption, "error": None})
-
 
 
 @api.route('/login', methods=['POST'])
@@ -427,7 +428,7 @@ def login():
     data = dict()
     logging.debug("API login, received data: {} {}".format(email_address, password))
     try:
-        login_user = api.user_repository.check_password(email_address=email_address,password=password)
+        login_user = api.user_repository.check_password(email_address=email_address, password=password)
         token = api.token_repository.generate_token(login_user.user_id)
         logging.debug("Token generated: {}".format(token))
         data['result'] = {'success': True, 'admin': login_user.is_admin, 'user_id': login_user.user_id,
@@ -446,7 +447,7 @@ def register():
     logging.debug("Data: {}".format(registration))
     try:
         new_user = api.user_repository.register_new_user(registration['email_address'], registration['password'],
-                                                     registration['name'], False)
+                                                         registration['name'], False)
         logging.debug("New user: {}".format(new_user))
         house_id = api.house_repository.add_house(new_user, "{}'s house".format(registration['name']), None)
         logging.debug("Add house: {}".format(house_id))
