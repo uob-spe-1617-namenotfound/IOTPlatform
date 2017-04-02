@@ -5,9 +5,8 @@
     <ul class="nav nav-pills">
         <li role="presentation" class="active"><a href="#">List of Users</a></li>
         <li role="presentation"><a href="{{ url_for('.map') }}">Map</a></li>
-        <li role="presentation"><a href="{{ url_for('.faulty_devices') }}">Faulty devices</a></li>
+        <li role="presentation"><a href="{{ url_for('.fault_status') }}">Faulty devices</a></li>
     </ul>
-
 
     {% if users %}
         <h3>Users</h3>
@@ -30,7 +29,7 @@
                         {{ user["email_address"] }}
                     </td>
                     <td>
-                        <!-- {{user["user_device_status"]}} --> All devices OK
+                        {{user['faulty']}}
                     </td>
                 </tr>
             {% endfor %}

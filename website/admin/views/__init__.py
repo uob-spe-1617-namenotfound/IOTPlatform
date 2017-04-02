@@ -3,7 +3,7 @@ from flask import flash, redirect, url_for, render_template
 import data_interface
 import utilities.session
 from admin import admin_site
-
+import itertools
 
 @admin_site.route('/user/<string:user_id>')
 def user(user_id):
@@ -12,20 +12,24 @@ def user(user_id):
     return render_template("internal/home.html", admin=True, rooms=rooms, user_name=user_info["name"])
 
 
-@admin_site.route('/faulty_devices', methods=['GET'])
-def faulty_devices():
-    faulty_devices = data_interface.get_faulty_devices()
-    devices = []
-    for d in faulty_devices:
-        house = data_interface.get_house_info(d['house_id'])
-        user = data_interface.get_user_info(house['user_id'])
-        devices.append({"device": d, "user": user})
-    return render_template("admin/faulty_devices.html", devices=devices)
+@admin_site.route('/fault_status', methods=['GET'])
+def fault_status():
+    fault_status = data_interface.get_admin_fault_status()
+    faults_list = []
+    for one_device in fault_status:
+        faults_list.append(one_device['fault'])
+    [(k, len(list(v))) for k, v in itertools.groupby(sorted(faults_list))]
+    return render_template("admin/fault_status.html", faults_list=faults_list)
 
 
 @admin_site.route('/')
 def index():
     users = data_interface.get_all_users()
+    for user in users:
+        if user['faulty'] == False:
+            user['faulty'] = str('OK')
+        else:
+            user['faulty'] = str('Faulty')
     print(users)
     return render_template("admin/home.html", users=users)
 
