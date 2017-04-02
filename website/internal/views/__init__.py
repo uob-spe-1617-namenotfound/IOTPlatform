@@ -49,4 +49,4 @@ def themes():
 @internal_site.route("/graph")
 def graph():
     data = data_interface.get_user_graph_data(utilities.session.get_active_user()['user_id'])
-    return render_template("internal/graph.html", data=data)
+    return render_template("internal/graph.html")
