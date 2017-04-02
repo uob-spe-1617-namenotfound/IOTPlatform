@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>
+    IoT Homepage
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description"
+          content="IoT platform (Software Engineering Project at University of Bristol)">
+    <meta name="author" content="Team 404. NAMENOTFOUND">
+
+
+    <!-- Bootstrap -->
+    <link href="http://192.168.99.100:12000/static/bootstrap/css/bootstrap.min.css?bootstrap=3.3.7.0" rel="stylesheet">
+
+  </head>
+  <body>
+
+    <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <button aria-controls="navbar" aria-expanded="false" class="navbar-toggle collapsed" data-target="#c631ba67b2f8cf695a886b718421438228c7f214" data-toggle="collapse" type="button">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <span class="navbar-brand">IoT</span>
+    </div>
+    <div class="navbar-collapse collapse" id="c631ba67b2f8cf695a886b718421438228c7f214">
+      <ul class="nav navbar-nav">
+        <li>
+          <a href="/internal/" title="Home">Home</a>
+        </li>
+        <li class="active">
+          <a aria-expanded="false" aria-haspopup="true" class="dropdown-toggle" data-toggle="dropdown" href="#" role="button">Devices
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="/internal/devices" title="All Devices">All Devices</a>
+            </li>
+            <li>
+              <a href="/internal/themes" title="Themes">Themes</a>
+            </li>
+            <li class="active">
+              <a href="/internal/graph" title="Graph">Graph</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+          <a href="/internal/help" title="Help">Help</a>
+        </li>
+        <li class="dropdown">
+          <a aria-expanded="false" aria-haspopup="true" class="dropdown-toggle" data-toggle="dropdown" href="#" role="button">Account
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="/internal/account/settings" title="Settings">Settings</a>
+            </li>
+            <li>
+              <a href="/internal/logout" title="Log out">Log out</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+    <div class="container">
+
+
+
+
+<svg width="960" height="500"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+
+var svg = d3.select("svg"),
+    margin = {top: 20, right: 20, bottom: 30, left: 50},
+    width = +svg.attr("width") - margin.left - margin.right,
+    height = +svg.attr("height") - margin.top - margin.bottom,
+    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var parseTime = d3.timeParse("%d-%b-%y");
+
+var x = d3.scaleTime()
+    .rangeRound([0, width]);
+
+var y = d3.scaleLinear()
+    .rangeRound([height, 0]);
+
+var line = d3.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.close); });
+
+d3.tsv("data.tsv", function(d) {
+  d.date = parseTime(d.date);
+  d.close = +d.close;
+  return d;
+}, function(error, data) {
+  if (error) throw error;
+
+  x.domain(d3.extent(data, function(d) { return d.date; }));
+  y.domain(d3.extent(data, function(d) { return d.close; }));
+
+  g.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x))
+    .select(".domain")
+      .remove();
+
+  g.append("g")
+      .call(d3.axisLeft(y))
+    .append("text")
+      .attr("fill", "#000")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", "0.71em")
+      .attr("text-anchor", "end")
+      .text("Price ($)");
+
+  g.append("path")
+      .datum(data)
+      .attr("fill", "none")
+      .attr("stroke", "steelblue")
+      .attr("stroke-linejoin", "round")
+      .attr("stroke-linecap", "round")
+      .attr("stroke-width", 1.5)
+      .attr("d", line);
+});
+
+</script>
+
+
+    </div>
+
+
+
+
+    <script src="http://192.168.99.100:12000/static/bootstrap/jquery.min.js?bootstrap=3.3.7.0"></script>
+    <script src="http://192.168.99.100:12000/static/bootstrap/js/bootstrap.min.js?bootstrap=3.3.7.0"></script>
+
+  </body>
+</html>
