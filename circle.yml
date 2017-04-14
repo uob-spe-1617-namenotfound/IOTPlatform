@@ -1,15 +1,17 @@
 machine:
+    python:
+        version: 3.6.0
+    environment:
+        MONGO_HOST: "localhost"
+        MONGO_PORT: 27017
 
-  python:
-    version: pypy-3.4.3
+dependencies:
+    pre:
+        - pip install -r api/requirements.txt
 
-  dependencies:
-    post:
-      - python ./install-packages
-
-  test:
+test:
     override:
-      - python ./api/tests.py
+        - python ./api/tests.py
 
 
 

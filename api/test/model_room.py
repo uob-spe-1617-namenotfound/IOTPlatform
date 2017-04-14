@@ -1,12 +1,13 @@
-import repositories
-import model
 import unittest
+
 from bson import ObjectId
 
 
 class RoomTests(unittest.TestCase):
+    repository_collection = None
+
     def setUp(self):
-        self.rooms = repositories.RoomRepository(RoomTests.collection, RoomTests.repositories)
+        self.rooms = RoomTests.repository_collection.room_repository
         self.house1id = ObjectId()
         self.room1id = self.rooms.add_room(self.house1id, "Living Room")
         self.room2id = self.rooms.add_room(self.house1id, "Kitchen")
