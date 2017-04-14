@@ -138,8 +138,8 @@ def get_house_info(house_id):
     return data['house']
 
 
-def get_room_info(user_id, room_id):
-    r = requests.post(get_api_url('/user/{}/room'.format(user_id,room_id)),
+def get_room_info(room_id):
+    r = requests.post(get_api_url('/room/{}'.format(room_id)),
                       json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
@@ -147,8 +147,8 @@ def get_room_info(user_id, room_id):
     return data['room']
 
 
-def get_device_info(user_id, device_id):
-    r = requests.post(get_api_url('/user/{}/device'.format(user_id,device_id)),
+def get_device_info(device_id):
+    r = requests.post(get_api_url('/device/{}'.format(device_id)),
                       json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
