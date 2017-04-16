@@ -15,11 +15,11 @@ def user(user_id):
 @admin_site.route('/fault_status', methods=['GET'])
 def fault_status():
     fault_status = data_interface.get_admin_fault_status()
-    faults_list = []
+    int_list = []
     for one_device in fault_status:
-        faults_list.append(one_device['fault'])
-    [(k, len(list(v))) for k, v in itertools.groupby(sorted(faults_list))]
-    return render_template("admin/fault_status.html", faults_list=faults_list)
+        int_list.append(one_device['faulty'])
+    faults_list = [(k, len(list(v))) for k, v in itertools.groupby(sorted(int_list))]
+    return render_template("admin/fault_status.html", faults_list = faults_list)
 
 
 @admin_site.route('/')

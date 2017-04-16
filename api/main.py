@@ -400,11 +400,11 @@ def all_faulty_devices():
         for device in faulty_devices:
             attributes = device.get_device_attributes()
             faulty_device = dict()
-            faulty_device['user_id'] = attributes['user_id']
+            #faulty_device['user_id'] = attributes['user_id']
             faulty_device['device_id'] = attributes['device_id']
             faulty_device['device_type'] = attributes['device_type']
             faulty_device['vendor'] = attributes['vendor']
-            faulty_device['fault'] = attributes['fault']
+            faulty_device['faulty'] = attributes['faulty']
             devices.append(faulty_device)
         return jsonify({"devices": devices, "error": None})
 

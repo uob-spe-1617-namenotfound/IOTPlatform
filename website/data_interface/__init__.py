@@ -251,7 +251,7 @@ def get_triggers_for_user(user_id):
 
 def get_admin_fault_status():
     r = requests.post(get_api_url('/admin/faults'),
-                     json=get_authentication_token())
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception('Error!')
