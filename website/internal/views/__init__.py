@@ -1,3 +1,7 @@
+import csv
+import logging
+from io import StringIO
+
 from flask import render_template, redirect, flash, url_for, make_response
 
 import data_interface
@@ -5,8 +9,7 @@ import utilities.session
 from internal import internal_site
 from internal.views import rooms, devices
 from internal.views.forms import AddNewRoomForm
-import csv
-from io import StringIO
+
 
 @internal_site.route('/triggers')
 def triggers():
@@ -51,22 +54,21 @@ def themes():
 def graph():
     return render_template("internal/graph.html")
 
+
 @internal_site.route('/graph/data')
 def graph_data():
     si = StringIO()
     cw = csv.writer(si)
-    #data = data_interface.get_user_graph_data(utilities.session.get_active_user()['user_id'])
+    data = data_interface.get_user_graph_data(utilities.session.get_active_user()['user_id'])
     cw.writerow(["date", "close"])
-    cw.writerow(["2017-04-01", 100])
-    cw.writerow(["2017-04-02", 103])
-    cw.writerow(["2017-04-03", 104])
-    cw.writerow(["2017-04-04", 105])
-    cw.writerow(["2017-04-05", 110])
-    cw.writerow(["2017-04-06", 120])
+    keys = sorted(data.keys())
+    for k in keys:
+        cw.writerow([k, data[k]])
     output = make_response(si.getvalue())
     output.headers["Content-Disposition"] = "attachment; filename=export.csv"
     output.headers["Content-type"] = "text/csv"
     return output
+
 
 @internal_site.route('/graph_test')
 def graph_test():

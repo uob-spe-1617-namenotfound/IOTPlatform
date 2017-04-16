@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+import random
 
 from bson.objectid import ObjectId
 from flask import Flask, jsonify, request
@@ -71,10 +72,13 @@ def get_user_graph_data(user_id):
         dateList.append(base - datetime.timedelta(days=x))
 
     readingList = []
+    total = numdays * 10
     for y in range(0, numdays):
-        readingList.append(round(7.845, 2))  # remain constant for now, 7.845 is a random value.
+        # TODO: read actual data
+        total -= random.randint(0, 100) / 10.
+        readingList.append(total)
 
-    data = {date.strftime("%d-%B-%Y"): data for date, data in zip(dateList, readingList)}
+    data = {date.strftime("%Y-%m-%d"): data for date, data in zip(dateList, readingList)}
 
     return jsonify({"data": data, "error": None})
 
@@ -400,7 +404,7 @@ def all_faulty_devices():
         for device in faulty_devices:
             attributes = device.get_device_attributes()
             faulty_device = dict()
-            #faulty_device['user_id'] = attributes['user_id']
+            # faulty_device['user_id'] = attributes['user_id']
             faulty_device['device_id'] = attributes['device_id']
             faulty_device['device_type'] = attributes['device_type']
             faulty_device['vendor'] = attributes['vendor']
@@ -470,9 +474,6 @@ def logout():
         return jsonify({"success": True, "error": None})
     else:
         return jsonify({"success": False, "error": {"code": 401, "message": "Logout failed"}})
-
-
-from admin import *
 
 
 def main():
