@@ -48,3 +48,15 @@ def logout():
     utilities.session.logout()
     flash('Successfully logged out', 'success')
     return redirect(url_for('public.index'))
+
+@admin_site.route('/maptest')
+def maptest():
+    house1 = {'lat': 51.529249, 'lng': -0.117973}
+    house2 = {'lat': 53.472605, 'lng': -2.227532}
+    house3 = {'lat': 10.000, 'lng': 120.000}
+    house_location = [house1, house2, house3]
+    return render_template("admin/maptest.html", house_location=house_location)
+
+@admin_site.route('/test')
+def test(r):
+    return None
