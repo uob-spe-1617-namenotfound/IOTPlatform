@@ -420,7 +420,7 @@ def edit_theme(theme_id):
     return jsonify({"theme": theme.get_theme_attributes(), "error": None})
 
 
-@api.route('theme/<string:theme_id>/device/<string:device_id>/update')
+@api.route('/theme/<string:theme_id>/device/<string:device_id>/update')
 def update_theme(theme_id, device_id, setting):
     access = api.theme_repository.validate_token(ObjectId(theme_id), get_request_token())
     if not access:
