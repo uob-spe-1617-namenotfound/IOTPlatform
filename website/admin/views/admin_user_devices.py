@@ -77,8 +77,8 @@ def set_device_settings(user_id, device_id):
     return show_device(device_id, form)
 
 
-@admin_site.route('/device/<string:device_id>/switch/configure/<int:state>')
-def set_switch_settings(device_id, state):
+@admin_site.route('/user/<string:user_id>/device/<string:device_id>/switch/configure/<int:state>')
+def set_switch_settings(user_id, device_id, state):
     error = data_interface.set_switch_state(device_id, state)
     if error is not None:
         flash("State successfully set by Admin", "success")
