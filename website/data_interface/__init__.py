@@ -113,8 +113,8 @@ def get_room_devices(room_id):
     return data['devices']
 
 
-def link_device_to_room(user_id, room_id, device_id):
-    r = requests.post(get_api_url('/room/{}/device/{}/link'.format(user_id, room_id, device_id)),
+def link_device_to_room(room_id, device_id):
+    r = requests.post(get_api_url('/room/{}/device/{}/link'.format(room_id, device_id)),
                       json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:

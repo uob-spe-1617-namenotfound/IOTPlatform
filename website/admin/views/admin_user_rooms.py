@@ -48,6 +48,6 @@ def view_room(user_id, room_id):
 
 @admin_site.route('/user/<string:user_id>/room/<string:room_id>/device/<string:device_id>/link')
 def link_device_to_room(user_id, room_id, device_id):
-    data_interface.link_device_to_room(user_id, room_id, device_id)
+    data_interface.link_device_to_room(room_id, device_id)
     flash("Device was successfully linked by Admin!", "success")
     return redirect(url_for('.view_room', user_id=user_id, room_id=room_id))
