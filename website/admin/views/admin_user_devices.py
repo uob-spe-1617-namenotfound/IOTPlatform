@@ -1,10 +1,10 @@
 from flask import render_template, flash, redirect, url_for
 
 import data_interface
+import shared.actions
+import shared.triggers
 from admin import admin_site
 from shared.forms import AddNewDeviceForm, SetThermostatTargetForm
-import shared.triggers
-import shared.actions
 
 
 @admin_site.route('/user/<string:user_id>/devices')
@@ -73,7 +73,7 @@ def set_device_settings(user_id, device_id):
     if form.validate_on_submit():
         data_interface.set_thermostat_target(device_id, float(form.target_temperature.data))
         flash('Target temperature successfully set by Admin!', 'success')
-        return redirect(url_for('.show_device', device_id=device_id))
+        return redirect(url_for('.show_device', user_id=user_id, device_id=device_id))
     return show_device(device_id, form)
 
 
@@ -82,4 +82,4 @@ def set_switch_settings(device_id, state):
     error = data_interface.set_switch_state(device_id, state)
     if error is not None:
         flash("State successfully set by Admin", "success")
-    return redirect(url_for('.show_device', device_id=device_id))
+    return redirect(url_for('.show_device', user_id=user_id, device_id=device_id))
