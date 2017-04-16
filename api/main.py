@@ -392,12 +392,9 @@ def get_theme_info(theme_id):
 def add_new_theme():
     data = request.get_json()
     for dev_id in data['settings']:
-        access = api.device_repository.validate_token(ObjectId(dev_id)), get_request_token()
+        access = api.device_repository.validate_token(ObjectId(dev_id), get_request_token())
         if not access:
             return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
-        device = api.device_repository.get_device_by_id(ObjectId(dev_id))
-        if device is None:
-            return jsonify({"theme": None, "error": {"code": 404, "message": "No such device found"}})
     theme_id = api.theme_repository.add_theme(ObjectId(data['user_id']), data['name'], data['settings'],
                                               ObjectId(data['active']))
     theme = api.theme_repository.get_theme_by_id(theme_id)
@@ -410,7 +407,7 @@ def add_new_theme():
 def edit_theme(theme_id):
     data = request.get_json()
     for dev_id in data['settings']:
-        access = api.device_repository.validate_token(ObjectId(dev_id)), get_request_token()
+        access = api.device_repository.validate_token(ObjectId(dev_id), get_request_token())
         if not access:
             return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
     theme = api.theme_repository.get_theme_by_id(theme_id)
@@ -460,7 +457,7 @@ def activate_theme(theme_id):
         return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
     theme = api.theme_repository.get_theme_by_id(theme_id)
     for dev_id in theme.settings:
-        access = api.device_repository.validate_token(ObjectId(dev_id)), get_request_token()
+        access = api.device_repository.validate_token(ObjectId(dev_id), get_request_token())
         if not access:
             return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
     result = api.theme_repository.change_theme_state(theme_id, True)
@@ -474,7 +471,7 @@ def deactivate_theme(theme_id):
         return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
     theme = api.theme_repository.get_theme_by_id(theme_id)
     for dev_id in theme.settings:
-        access = api.device_repository.validate_token(ObjectId(dev_id)), get_request_token()
+        access = api.device_repository.validate_token(ObjectId(dev_id), get_request_token())
         if not access:
             return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
     result = api.theme_repository.change_theme_state(theme_id, False)
