@@ -20,6 +20,7 @@ def triggers():
 def index():
     form = AddNewRoomForm()
     rooms = data_interface.get_user_default_rooms()
+    rooms = []
     return render_template("internal/home.html", rooms=rooms, new_room_form=form)
 
 

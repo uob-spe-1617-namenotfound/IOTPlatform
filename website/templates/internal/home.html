@@ -6,9 +6,35 @@
 {% block page_content %}
     <h1> {% if admin %} User: {{ user_name }} {% else %}Welcome!{% endif %}</h1>
     <br>
-    <a href="#" data-toggle="modal" data-target="#myModal2" class="btn btn-primary" >
-        <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add New Room
-    </a>
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+<script>
+    $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+    })
+</script>
+<script>
+    $(function () {
+    $('[data-toggle="tooltip"]').tooltip("show");
+    $('[data-toggle="tooltip"]').find(".tooltip.fade.top").removeClass("in");
+ });
+</script>
+
+
+
+    <span data-toggle="modal" data-target="#myModal2">
+        {% if rooms %}
+            <a class="btn btn-primary">
+                <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add New Room
+            </a>
+        {% else %}
+            <a data-toggle="tooltip" data-placement="right" title="Start here by adding a room" class="btn btn-primary">
+                <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add New Room
+            </a>
+        {% endif %}
+    </span>
+
     <div id="myModal2" class="modal fade" role="dialog">
         <div class="modal-dialog modal-ms">
             <!-- Modal content-->
@@ -21,9 +47,7 @@
         </div>
     </div>
     <br>
-
     {% if rooms %}
-
         <table class="table">
             <thead>
             <tr>
@@ -37,7 +61,7 @@
             <!-- TODO: fix sort, look at devices -->
                 <tr>
                     <td><a href="{{ url_for('.view_room', room_id=room.room_id) }}">{{ room.name }}</a></td>
-                    <td><a title="Delete room" href="#" data-toggle="modal" data-target="#myModal">x</a></td>
+                    <td><a title="Delete room" href="#" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>
                     <div id="myModal" class="modal fade" role="dialog">
                         <div class="modal-dialog modal-sm">
                             <!-- Modal content-->
@@ -55,10 +79,7 @@
             </tbody>
         </table>
 
-    {% else %}
-        <h1>No data to show!</h1>
     {% endif %}
-
 
 
 {% endblock %}
