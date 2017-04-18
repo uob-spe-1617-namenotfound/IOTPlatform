@@ -1,17 +1,20 @@
-import repositories
-import model
 import unittest
+
 from bson import ObjectId
+
+import repositories
 
 
 class HouseTests(unittest.TestCase):
+    repository_collection = None
+
     def setUp(self):
-        self.houses = repositories.HouseRepository(HouseTests.collection, HouseTests.repositories)
+        self.houses = HouseTests.repository_collection.house_repository
         self.user1id = ObjectId()
         self.user2id = ObjectId()
-        self.house1id = self.houses.add_house(self.user1id, "Benny's House")
-        self.house2id = self.houses.add_house(self.user2id, "Floris' House")
-        self.house3id = self.houses.add_house(self.user2id, "Floris' Other House")
+        self.house1id = self.houses.add_house(self.user1id, "Benny's House", None)
+        self.house2id = self.houses.add_house(self.user2id, "Floris' House", None)
+        self.house3id = self.houses.add_house(self.user2id, "Floris' Other House", None)
 
     def tearDown(self):
         self.houses.clear_db()
@@ -42,4 +45,4 @@ class HouseTests(unittest.TestCase):
 
     def test_HousesCannotHaveSameName(self):
         with self.assertRaisesRegex(Exception, "There is already a house with this name."):
-            self.houses.add_house(self.user1id, "Benny's House")
+            self.houses.add_house(self.user1id, "Benny's House", None)

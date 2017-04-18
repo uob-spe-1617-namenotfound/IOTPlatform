@@ -18,13 +18,6 @@ def get_user_id():
     return user['user_id']
 
 
-def get_default_user_id():
-    # TODO: remove once login functionality has been made
-    r = requests.get(get_api_url('/user/default_user'))
-    data = r.json()
-    return data['user_id']
-
-
 def get_default_house_id():
     return get_current_user_house()['house_id']
 
@@ -104,7 +97,7 @@ def add_new_room(user_id, name):
 
 def get_user_devices(user_id):
     r = requests.post(get_api_url('/house/{}/devices'.format(get_house_id_for_user(user_id))),
-                     json=get_authentication_token())
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
@@ -113,16 +106,16 @@ def get_user_devices(user_id):
 
 def get_room_devices(room_id):
     r = requests.post(get_api_url('/room/{}/devices'.format(room_id)),
-                     json=get_authentication_token())
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
     return data['devices']
 
 
-def link_device_to_room(user_id, room_id, device_id):
-    r = requests.post(get_api_url('/room/{}/device/{}/link'.format(user_id,room_id, device_id)),
-                     json=get_authentication_token())
+def link_device_to_room(room_id, device_id):
+    r = requests.post(get_api_url('/room/{}/device/{}/link'.format(room_id, device_id)),
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
@@ -138,8 +131,8 @@ def get_house_info(house_id):
     return data['house']
 
 
-def get_room_info(user_id, room_id):
-    r = requests.post(get_api_url('/user/{}/room'.format(user_id,room_id)),
+def get_room_info(room_id):
+    r = requests.post(get_api_url('/room/{}'.format(room_id)),
                       json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
@@ -147,8 +140,17 @@ def get_room_info(user_id, room_id):
     return data['room']
 
 
-def get_device_info(user_id, device_id):
-    r = requests.post(get_api_url('/user/{}/device'.format(user_id,device_id)),
+def remove_room(room_id):
+    r = requests.post(get_api_url('/room/{}/remove'.format(room_id)),
+                      json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['trigger']
+
+
+def get_device_info(device_id):
+    r = requests.post(get_api_url('/device/{}'.format(device_id)),
                       json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
@@ -178,9 +180,92 @@ def set_switch_state(device_id, state):
     return data['device']
 
 
-def get_faulty_devices(user_id):
-    r = requests.post(get_api_url('/devices/faulty'),
+def add_new_trigger(sensor_id, event, event_params, actor_id, action, action_params, user_id):
+    r = requests.post(get_api_url('/trigger/create'),
+                      json={"sensor_id": sensor_id,
+                            "event": event,
+                            "event_params": event_params,
+                            "actor_id": actor_id,
+                            "action": action,
+                            "action_params": action_params,
+                            "user_id": user_id,
+                            "token": utilities.session.get_active_user_token()})
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['trigger']
+
+
+def get_trigger_info(trigger_id):
+    r = requests.post(get_api_url('/trigger/{}'.format(trigger_id)),
                       json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['trigger']
+
+
+def get_triggers_for_device(device_id):
+    r = requests.post(get_api_url('/device/{}/triggers'.format(device_id)),
+                      json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['triggers']
+
+
+def get_actions_for_device(device_id):
+    r = requests.post(get_api_url('/device/{}/actions'.format(device_id)),
+                      json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['triggers']
+
+
+def edit_trigger(trigger_id, event, event_params, action, action_params):
+    r = requests.post(get_api_url('/trigger/{}/edit').format(trigger_id),
+                      json={"event": event,
+                            "event_params": event_params,
+                            "action": action,
+                            "action_params": action_params,
+                            "token": utilities.session.get_active_user_token()})
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['trigger']
+
+
+def remove_trigger(trigger_id):
+    r = requests.post(get_api_url('/trigger/{}/delete').format(trigger_id),
+                      json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['trigger']
+
+
+def get_triggers_for_user(user_id):
+    r = requests.post(get_api_url('/user/{}/triggers').format(user_id),
+                      json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['triggers']
+
+
+def get_all_faulty_devices():
+    r = requests.get(get_api_url('/admin/faulty'),
+                     json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception('Error!')
+    return data['devices']
+
+
+def get_user_faulty_devices(user_id):
+    r = requests.get(get_api_url('user/{}/faulty').format(user_id),
+                     json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception('Error!')
@@ -203,6 +288,15 @@ def get_all_users():
     if data['error'] is not None:
         raise Exception("Error!")
     return data['users']
+
+
+def get_overall_power_consumption():
+    r = requests.get(get_api_url('/admin/graph'),
+                     json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception('Error!')
+    return data['devices']
 
 
 def logout():

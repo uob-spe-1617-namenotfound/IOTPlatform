@@ -3,6 +3,9 @@ from flask import flash, redirect, url_for, render_template
 import data_interface
 import utilities.session
 from admin import admin_site
+import admin.views.admin_user_rooms
+import admin.views.admin_user_devices
+import admin.views.admin_user_triggers
 
 
 @admin_site.route('/faulty_devices', methods=['GET'])

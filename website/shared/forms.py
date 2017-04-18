@@ -1,13 +1,12 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, validators, SelectField, StringField, DecimalField
+from wtforms import SubmitField, validators, SelectField, StringField, DecimalField
 from wtforms.validators import URL
-
-
 
 
 class AddNewRoomForm(FlaskForm):
     name = StringField("Room name", [validators.Length(min=1)])
     submit = SubmitField()
+
 
 class AddNewDeviceForm(FlaskForm):
     name = StringField("Device name", [validators.Length(min=1)])
@@ -16,7 +15,6 @@ class AddNewDeviceForm(FlaskForm):
                                                       ('door_sensor', "Door/Window Sensor")])
     url = StringField("API URL", validators=[URL(require_tld=False)])
     submit = SubmitField()
-
 
 
 class SetThermostatTargetForm(FlaskForm):

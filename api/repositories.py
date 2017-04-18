@@ -1,8 +1,11 @@
 import logging
 import random
 import string
+import datetime
 
-from model import House, Room, User, Device, Thermostat, MotionSensor, LightSwitch, OpenSensor, Token
+import bcrypt
+
+from model import House, Room, User, Device, Thermostat, MotionSensor, LightSwitch, OpenSensor, Token, Trigger
 
 
 class RepositoryException(Exception):
@@ -21,9 +24,9 @@ class Repository(object):
 
 
 class RepositoryCollection(object):
-    def __init__(self, db, bcrypt):
+    def __init__(self, db):
         self.db = db
-        self.user_repository = UserRepository(db.users, self, bcrypt)
+        self.user_repository = UserRepository(db.users, self)
         self.house_repository = HouseRepository(db.houses, self)
         self.room_repository = RoomRepository(db.rooms, self)
         self.device_repository = DeviceRepository(db.devices, self)
@@ -32,18 +35,16 @@ class RepositoryCollection(object):
 
 
 class UserRepository(Repository):
-    def __init__(self, mongo_collection, repository_collection, bcrypt):
+    def __init__(self, mongo_collection, repository_collection):
         Repository.__init__(self, mongo_collection, repository_collection)
-        self.bcrypt = bcrypt
 
     def add_user(self, name, password_hash, email_address, is_admin):
-        logging.debug("adding user!")
         existing_user = self.get_user_by_email(email_address)
-        logging.debug("existing user: {}".format(existing_user))
         if existing_user is not None:
             raise Exception("There is already an account with this email.")
         user = self.collection.insert_one({'name': name, 'password_hash': password_hash,
-                                           'email_address': email_address, 'is_admin': is_admin})
+                                           'email_address': email_address, 'is_admin': is_admin,
+                                           'faulty': False})
         return user.inserted_id
 
     def register_new_user(self, email_address, password, name, is_admin):
@@ -51,15 +52,15 @@ class UserRepository(Repository):
         if user is not None:
             raise RepositoryException("Email address already registered",
                                       {'code': 409, 'message': 'Email address is already registered'})
-        hashed_password = self.bcrypt.generate_password_hash(password).decode('utf-8')
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         return self.add_user(name, hashed_password, email_address, is_admin)
 
     def check_password(self, email_address, password):
         login_user = self.get_user_by_email(email_address)
         if login_user is not None:
-            logging.debug("Checking password hash")
-            if self.bcrypt.check_password_hash(login_user.password_hash, password):
-                logging.debug("Passwords match!")
+            logging.debug('password: {}'.format(password.encode('utf-8')))
+            logging.debug('hash:     {}'.format(login_user.password_hash))
+            if bcrypt.checkpw(password.encode('utf-8'), login_user.password_hash.encode('utf-8')):
                 return login_user
             else:
                 raise RepositoryException("Password is incorrect", {'code': 406, 'message': 'Password is incorrect'})
@@ -67,7 +68,9 @@ class UserRepository(Repository):
             raise RepositoryException("Username not found", {'code': 404, 'message': 'Username not found'})
 
     def remove_user(self, user_id):
+        user = self.get_user_by_id(user_id)
         self.collection.delete_one({'_id': user_id})
+        return user
 
     def get_user_by_id(self, user_id):
         user = self.collection.find_one({'_id': user_id})
@@ -90,11 +93,12 @@ class UserRepository(Repository):
             target_users.append(User(user))
         return target_users
 
-    def faulty_user_devices(self, user_id):
-        faulty_devs = DeviceRepository.get_faulty_devices()
-        attributes = User.get_user_attributes(user_id)
+    def get_faulty_devices_for_user(self, user_id):
+        faulty_devices = self.repositories.device_repository.get_faulty_devices()
+        user = self.collection.get_user_by_id(user_id)
+        attributes = user.get_user_attributes()
         fault_check = False
-        for device in faulty_devs:
+        for device in faulty_devices:
             if device.user_id == user_id:
                 fault_check = True
         attributes['faulty'] = fault_check
@@ -111,21 +115,26 @@ class HouseRepository(Repository):
             other_name = house.name
             if name == other_name:
                 raise Exception("There is already a house with this name.")
-        house = self.collection.insert_one({'user_id': user_id, 'name': name})
+        house = self.collection.insert_one({'user_id': user_id, 'name': name, 'location': location})
         return house.inserted_id
 
     def remove_house(self, house_id):
+        house = self.get_house_by_id(house_id)
         self.collection.delete_one({'_id': house_id})
+        return house
 
     def get_house_by_id(self, house_id):
         house = self.collection.find_one({'_id': house_id})
         target_house = House(house)
         return target_house
 
+    def get_house_by_location(self, location):
+        house = self.collection.find_one({'location': location})
+        return house
+
     def get_houses_for_user(self, user_id):
         houses = self.collection.find({'user_id': user_id})
         target_houses = []
-        logging.debug("Found {} houses".format(houses.count()))
         for house in houses:
             target_houses.append(House(house))
         return target_houses
@@ -160,7 +169,12 @@ class RoomRepository(Repository):
         return room.inserted_id
 
     def remove_room(self, room_id):
+        room = self.get_room_by_id(room_id)
         self.collection.delete_one({'_id': room_id})
+        devices = self.repositories.device_repository.get_devices_for_room(room_id)
+        for device in devices:
+            self.repositories.device_repository.unlink_device_from_room(device.device_id)
+        return room
 
     def get_room_by_id(self, room_id):
         room = self.collection.find_one({'_id': room_id})
@@ -205,9 +219,8 @@ class DeviceRepository(Repository):
 
     def update_device_reading(self, device):
         reading = device.read_current_state()
-        logging.debug("Read current state of device {}: {}".format(device.get_device_id(), reading))
         self.collection.update_one({'_id': device.get_device_id()},
-                                   {"$set": {'status': {"last_read": reading}}})
+                                   {"$set": {'status.last_read': reading}})
 
     def update_all_device_readings(self):
         all_device_ids = [x['_id'] for x in self.collection.find({}, {})]
@@ -215,19 +228,24 @@ class DeviceRepository(Repository):
             device = self.get_device_by_id(device_id)
             self.update_device_reading(device)
 
-    def add_device(self, house_id, room_id, name, device_type, power_state, configuration, vendor):
+    def add_device(self, house_id, room_id, name, device_type, target, status, configuration, vendor):
         house_devices = self.get_devices_for_house(house_id)
         for device in house_devices:
             other_name = device.name
             if name == other_name:
                 raise Exception("There is already a device with this name.")
+        if vendor == "OWN" and "url" not in configuration:
+            raise Exception("Not all required info is in the configuration.")
+        elif vendor == "energenie" and (
+                            "username" not in configuration or "password" not in configuration or "device_id" not in configuration):
+            raise Exception("Not all required info is in the configuration.")
         device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
                                              'name': name, 'device_type': device_type,
-                                             'power_state': power_state,
+                                             'target': target, 'status': status,
                                              'configuration': configuration,
                                              'vendor': vendor})
         device_id = device.inserted_id
-        self.collection.update_one({'_id': device_id}, {"$set": {'status': {'last_read': 0}}})
+        self.collection.update_one({'_id': device_id}, {"$set": {'status.last_read': 0}})
         self.set_device_type(device_id)
         device = self.get_device_by_id(device_id=device_id)
         self.update_device_reading(device)
@@ -236,20 +254,25 @@ class DeviceRepository(Repository):
     def set_device_type(self, device_id):
         device = self.collection.find_one({'_id': device_id})
         if device['device_type'] == "thermostat":
-            self.collection.update_one({'_id': device_id}, {"$set": {'target': {'locked_max_temperature': 50}}})
-            self.collection.update_one({'_id': device_id}, {"$set": {'target': {'locked_min_temperature': 0}}})
+            self.collection.update_one({'_id': device_id}, {"$set": {'target.locked_max_temperature': 50}})
+            self.collection.update_one({'_id': device_id}, {"$set": {'target.locked_min_temperature': 0}})
             self.collection.update_one({'_id': device_id}, {"$set": {'temperature_scale': "C"}})
-            self.collection.update_one({'_id': device_id}, {"$set": {'target': {'target_temperature': 25}}})
-            self.collection.update_one({'_id': device_id}, {"$set": {'status': {'last_temperature': 0}}})
+            self.collection.update_one({'_id': device_id}, {"$set": {'target.target_temperature': 25}})
+            self.collection.update_one({'_id': device_id}, {"$set": {'status.last_temperature': 0}})
         elif device['device_type'] == "motion_sensor":
             self.collection.update_one({'_id': device_id}, {"$set": {'sensor_data': 0}})
-        # elif device['device_type'] == "light_switch":
+        elif device['device_type'] == "light_switch":
+            self.collection.update_one({'_id': device_id}, {"$set": {'status.power_state': 0}})
         elif device['device_type'] == "open_sensor":
             self.collection.update_one({'_id': device_id}, {"$set": {'sensor_data': 0}})
 
     def remove_device(self, device_id):
-        # self.repositories.device_group_repository.remove_device_from_group(device_id)
+        device = self.get_device_by_id(device_id)
         self.collection.delete_one({'_id': device_id})
+        return device
+
+    def unlink_device_from_room(self, device_id):
+        self.collection.update_one({'device_id': device_id}, {"$set": {'room_id': None}}, upsert=False)
 
     def get_device_by_id(self, device_id):
         device = self.collection.find_one({'_id': device_id})
@@ -298,9 +321,11 @@ class DeviceRepository(Repository):
         device = self.get_device_by_id(device_id)
         if device.device_type != "light_switch":
             raise Exception("Device is not a switch.")
+        if power_state not in [0, 1]:
+            raise Exception("Power_state is not of the correct format")
         device.configure_power_state(power_state)
         self.update_device_reading(device)
-        self.collection.update_one({'_id': device_id}, {"$set": {'power_state': power_state}}, upsert=False)
+        self.collection.update_one({'_id': device_id}, {"$set": {'status.power_state': power_state}}, upsert=False)
 
     def set_target_temperature(self, device_id, temp):
         device = self.collection.find_one({'_id': device_id})
@@ -309,7 +334,7 @@ class DeviceRepository(Repository):
             'locked_min_temperature'] <= temp), "Chosen temperature is too low."
         assert ('locked_max_temperature' not in device['target'] or device['target'][
             'locked_max_temperature'] >= temp), "Chosen temperature is too high."
-        self.collection.update_one({'_id': device_id}, {"$set": {'target': {'target_temperature': temp}}}, upsert=False)
+        self.collection.update_one({'_id': device_id}, {"$set": {'target.target_temperature': temp}}, upsert=False)
         device = self.get_device_by_id(device_id)
         device.configure_target_temperature(temp)
         self.update_device_reading(device)
@@ -331,13 +356,43 @@ class DeviceRepository(Repository):
             new_min_temperature = (device['target']['locked_min_temp'] - 32) * 5 / 9
             new_last_temperature = (device['target']['last_temperature'] - 32) * 5 / 9
         self.collection.update_one({'_id': device_id},
-                                   {"$set": {'target': {'target_temperature': new_target_temperature}}}, upsert=False)
-        self.collection.update_one({'_id': device_id}, {"$set": {'target': {'locked_max_temp': new_max_temperature}}},
+                                   {"$set": {'target.target_temperature': new_target_temperature}}, upsert=False)
+        self.collection.update_one({'_id': device_id}, {"$set": {'target.locked_max_temp': new_max_temperature}},
                                    upsert=False)
-        self.collection.update_one({'_id': device_id}, {"$set": {'target': {'locked_min_temp': new_min_temperature}}},
+        self.collection.update_one({'_id': device_id}, {"$set": {'target.locked_min_temp': new_min_temperature}},
                                    upsert=False)
-        self.collection.update_one({'_id': device_id}, {"$set": {'status': {'last_temperature': new_last_temperature}}},
+        self.collection.update_one({'_id': device_id}, {"$set": {'status.last_temperature': new_last_temperature}},
                                    upsert=False)
+
+    def get_energy_consumption(self, device_id):
+        device = self.get_device_by_id(device_id)
+        consumption = device.get_energy_readings()
+        logging.debug("Got energy consumption: {}".format(consumption))
+        consumption_array = consumption["data"]["data"]
+        consumption_array = list(reversed(consumption_array))
+        for i in range(0, len(consumption_array)):
+            consumption_array[i][0] = datetime.datetime.fromtimestamp(consumption_array[i][0]).date()
+        return consumption_array
+
+    def get_overall_consumption(self):
+        devices = self.get_all_devices()
+        overall_consumption = []
+        for device in devices:
+            device_consumption = self.get_energy_consumption(device.device_id)
+            if device_consumption is not None:
+                if len(overall_consumption) == 0:
+                    overall_consumption = device_consumption
+                else:
+                    for i in range(len(overall_consumption)):
+                        j = 0
+                        while overall_consumption[i][0] != device_consumption[j][0]:
+                            if j < len(device_consumption):
+                                j += 1
+                            else:
+                                break
+                        if j < len(device_consumption):
+                            overall_consumption[i][1] = overall_consumption[i][1] + device_consumption[j][1]
+        return overall_consumption
 
     def validate_token(self, device_id, token):
         device = self.get_device_by_id(device_id)
@@ -352,16 +407,90 @@ class TriggerRepository(Repository):
     def __init__(self, mongo_collection, repository_collection):
         Repository.__init__(self, mongo_collection, repository_collection)
 
-    def add_trigger(self, trigger_sensor_id, trigger, actor_id, action):
-        pass
+    def add_trigger(self, sensor_id, event, event_params, actor_id, action, action_params, user_id):
+        new_trigger = self.collection.insert_one({'sensor_id': sensor_id, 'event': event, 'event_params': event_params,
+                                                  'actor_id': actor_id, 'action': action, 'action_params': action_params,
+                                                  'user_id': user_id, 'reading': None})
+        return new_trigger.inserted_id
+
+    def remove_trigger(self, trigger_id):
+        trigger = self.get_trigger_by_id(trigger_id)
+        self.collection.delete_one({'_id': trigger_id})
+        return trigger
 
     def get_trigger_by_id(self, trigger_id):
-        pass
+        trigger = self.collection.find_one({'_id': trigger_id})
+        if trigger is None:
+            return None
+        target_trigger = Trigger(trigger)
+        return target_trigger
+
+    def get_triggers_for_device(self, device_id):
+        triggers = self.collection.find({'sensor_id': device_id})
+        target_triggers = []
+        for trigger in triggers:
+            target_triggers.append(Trigger(trigger))
+        return target_triggers
+
+    def get_actions_for_device(self, device_id):
+        triggers = self.collection.find({'actor_id': device_id})
+        target_triggers = []
+        for trigger in triggers:
+            target_triggers.append(Trigger(trigger))
+        return target_triggers
+
+    def edit_trigger(self, trigger_id, event, event_params, action, action_params):
+        self.collection.update_one({'_id': trigger_id},
+                                   {"$set": {"event": event, "event_params": event_params,
+                                             "action": action, "action_params": action_params}})
+        return self.get_trigger_by_id(trigger_id)
+
+    def get_triggers_for_user(self, user_id):
+        triggers = self.collection.find({'user_id': user_id})
+        target_triggers = []
+        for trigger in triggers:
+            target_triggers.append(Trigger(trigger))
+        return target_triggers
+
+    def get_all_triggers(self):
+        triggers = self.collection.find()
+        target_triggers = []
+        for trigger in triggers:
+            target_triggers.append(Trigger(trigger))
+        return target_triggers
+
+    def check_all_triggers(self):
+        triggers = self.get_all_triggers()
+        for trigger in triggers:
+            triggered = False
+            if trigger.event == "motion_detected_start" or trigger.event == "motion_detected_stop":
+                pass
+            elif trigger.event == "temperature_gets_higher_than" or trigger.event == "temperature_gets_lower_than":
+                pass
+            if triggered:
+                if trigger.action == "set_target_temperature":
+                    pass
+                elif trigger.action == "set_light_switch":
+                    pass
+
+    def update_trigger_reading(self, trigger_id, reading):
+        self.collection.update_one({'_id': trigger_id}, {"$set": {'reading': reading}})
+
+    def validate_token(self, trigger_id, token):
+        trigger = self.get_trigger_by_id(trigger_id)
+        if trigger is None:
+            return False
+        else:
+            user_id = trigger.user_id
+            return self.repositories.token_repository.authenticate_user(user_id, token)
 
 
 class TokenRepository(Repository):
     def __init__(self, mongo_collection, repository_collection):
         Repository.__init__(self, mongo_collection, repository_collection)
+
+    def find_by_token(self, token):
+        return self.collection.find_one({'token': token})
 
     def generate_token(self, user_id):
         unique = False
@@ -379,15 +508,22 @@ class TokenRepository(Repository):
     def invalidate_token(self, token):
         self.collection.delete_one({'token': token})
 
+    def get_token_info(self, token):
+        token = self.collection.find_one({'token': token})
+        if token is None:
+            return None
+        target_token = Token(token)
+        return target_token
+
     def check_token_is_new(self, token):
-        result = self.collection.find_one({'token': token})
+        result = self.find_by_token(token)
         if result is not None:
             return False
         else:
             return True
 
     def check_token_validity(self, token):
-        token = self.collection.find({'token': token})
+        token = self.find_by_token(token)
         if token is not None:
             return True
         else:
@@ -396,7 +532,7 @@ class TokenRepository(Repository):
     def authenticate_user(self, owner_id, token):
         valid = self.check_token_validity(token)
         if valid:
-            token_user_id = self.collection.find_one({'token': token})['user_id']
+            token_user_id = self.find_by_token(token)['user_id']
             user_is_admin = self.repositories.user_repository.get_user_by_id(token_user_id).is_admin
             if token_user_id == owner_id:
                 return True
@@ -408,7 +544,7 @@ class TokenRepository(Repository):
     def authenticate_admin(self, token):
         valid = self.check_token_validity(token)
         if valid:
-            token_user_id = self.collection.find_one({'token': token})['user_id']
+            token_user_id = self.find_by_token(token)['user_id']
             user_is_admin = self.repositories.user_repository.get_user_by_id(token_user_id).is_admin
             return user_is_admin
         return False
