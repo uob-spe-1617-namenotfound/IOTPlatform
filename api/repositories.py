@@ -229,7 +229,7 @@ class DeviceRepository(Repository):
             device = self.get_device_by_id(device_id)
             self.update_device_reading(device)
 
-    def add_device(self, house_id, room_id, name, device_type, target, status, configuration, vendor):
+    def add_device(self, house_id, room_id, name, device_type, target, configuration, vendor):
         house_devices = self.get_devices_for_house(house_id)
         for device in house_devices:
             other_name = device.name
@@ -242,8 +242,7 @@ class DeviceRepository(Repository):
             raise Exception("Not all required info is in the configuration.")
         device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
                                              'name': name, 'device_type': device_type, 'locking_theme_id': None,
-                                             'target': target, 'status': status,
-                                             'configuration': configuration,
+                                             'target': target, 'configuration': configuration,
                                              'vendor': vendor})
         device_id = device.inserted_id
         self.collection.update_one({'_id': device_id}, {"$set": {'status.last_read': 0}})
