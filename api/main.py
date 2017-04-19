@@ -36,6 +36,7 @@ api.house_repository = api.repository_collection.house_repository
 api.room_repository = api.repository_collection.room_repository
 api.device_repository = api.repository_collection.device_repository
 api.trigger_repository = api.repository_collection.trigger_repository
+api.theme_repository = api.repository_collection.theme_repository
 api.token_repository = api.repository_collection.token_repository
 
 
@@ -363,6 +364,118 @@ def get_triggers_for_user(user_id):
     if triggers is None:
         return jsonify({"triggers": None, "error": {"code": 404, "message": "No triggers found for this user"}})
     return jsonify({"triggers": triggers, "error": None})
+
+
+@api.route('/user/<string:user_id>/themes', methods=['POST'])
+def get_themes_for_user(user_id):
+    access = api.token_repository.validate_token(ObjectId(user_id), get_request_token())
+    if not access:
+        return jsonify({"themes": None, "error": {"code": 401, "message": "Authentication failed"}})
+    themes = api.theme_repository.get_themes_for_user(ObjectId(user_id))
+    if themes is None:
+        return jsonify({"themes": None, "error": {"code": 404, "message": "No themes found for this user"}})
+    return jsonify({"themes": themes, "error": None})
+
+
+@api.route('/theme/<string:theme_id>', methods=['POST'])
+def get_theme_info(theme_id):
+    access = api.theme_repository.validate_token(ObjectId(theme_id), get_request_token())
+    if not access:
+        return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    theme = api.theme_repository.get_theme_by_id(ObjectId(theme_id))
+    if theme is None:
+        return jsonify({"theme": None, "error": {"code": 404, "message": "No such theme found"}})
+    return jsonify({"theme": theme.get_theme_attributes(), "error": None})
+
+
+@api.route('/theme/create', methods=['POST'])
+def add_new_theme():
+    data = request.get_json()
+    for dev_id in data['settings']:
+        access = api.device_repository.validate_token(ObjectId(dev_id), get_request_token())
+        if not access:
+            return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    theme_id = api.theme_repository.add_theme(ObjectId(data['user_id']), data['name'], data['settings'],
+                                              ObjectId(data['active']))
+    theme = api.theme_repository.get_theme_by_id(theme_id)
+    if theme is None:
+        return jsonify({"theme": None, "error": {"code": 400, "message": "Theme could not be added"}})
+    return jsonify({"theme": theme.get_theme_attributes(), "error": None})
+
+
+@api.route('/theme/<string:theme_id>/edit', methods=['POST'])
+def edit_theme(theme_id):
+    data = request.get_json()
+    for dev_id in data['settings']:
+        access = api.device_repository.validate_token(ObjectId(dev_id), get_request_token())
+        if not access:
+            return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    theme = api.theme_repository.get_theme_by_id(theme_id)
+    if theme is None:
+        return jsonify({"theme": None, "error": {"code": 404, "message": "No such theme found"}})
+    theme = api.theme_repository.edit_theme(theme_id, data['settings'], data['active'])
+    return jsonify({"theme": theme.get_theme_attributes(), "error": None})
+
+
+@api.route('/theme/<string:theme_id>/device/<string:device_id>/update')
+def update_theme(theme_id, device_id, setting):
+    access = api.theme_repository.validate_token(ObjectId(theme_id), get_request_token())
+    if not access:
+        return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    theme = api.theme_repository.get_theme_by_id(theme_id)
+    if device_id not in theme.settings:
+        updated_theme = theme.add_device_to_theme(theme_id, device_id, setting)
+    else:
+        updated_theme = theme.edit_device_settings(theme_id, device_id, setting)
+    return jsonify({"theme": updated_theme.get_theme_attributes(), "error": None})
+
+
+@api.route('/theme/<string:theme_id>/device/<string:device_id>/remove', methods=['POST'])
+def remove_device_from_theme(theme_id, device_id):
+    access = api.theme_repository.validate_token(ObjectId(theme_id), get_request_token())
+    if not access:
+        return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    theme = api.theme_repository.remove_device_from_theme(theme_id, device_id)
+    return jsonify({"theme": theme, "error": None})
+
+
+@api.route('/theme/<string:theme_id>/delete', methods=['POST'])
+def remove_theme(theme_id):
+    access = api.theme_repository.validate_token(ObjectId(theme_id), get_request_token())
+    if not access:
+        return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    result = api.theme_repository.remove_theme(ObjectId(theme_id))
+    if result is None:
+        return jsonify({"theme": None, "error": {"code": 404, "message": "No such theme found"}})
+    return jsonify({"theme": result.theme_id, "error": None})
+
+
+@api.route('/theme/<string:theme_id>/activate', methods=['POST'])
+def activate_theme(theme_id):
+    access = api.theme_repository.validate_token(ObjectId(theme_id), get_request_token())
+    if not access:
+        return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    theme = api.theme_repository.get_theme_by_id(theme_id)
+    for dev_id in theme.settings:
+        access = api.device_repository.validate_token(ObjectId(dev_id), get_request_token())
+        if not access:
+            return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    result = api.theme_repository.change_theme_state(theme_id, True)
+    return jsonify({"theme": result, "error": None})
+
+
+@api.route('/theme/<string:theme_id>/deactivate', methods=['POST'])
+def deactivate_theme(theme_id):
+    access = api.theme_repository.validate_token(ObjectId(theme_id), get_request_token())
+    if not access:
+        return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    theme = api.theme_repository.get_theme_by_id(theme_id)
+    for dev_id in theme.settings:
+        access = api.device_repository.validate_token(ObjectId(dev_id), get_request_token())
+        if not access:
+            return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    result = api.theme_repository.change_theme_state(theme_id, False)
+    return jsonify({"theme": result, "error": None})
 
 
 @api.route('/user/<string:user_id>/faults', methods=['POST'])
