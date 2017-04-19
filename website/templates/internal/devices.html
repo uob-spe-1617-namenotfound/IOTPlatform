@@ -4,7 +4,52 @@
     <br>
     <a  href="#" data-toggle="modal" data-target="#myModal" class="btn btn-primary" >
         <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add New Device
+
+
+
+
+        <script>
+            function myfunction(device2move){
+                {% if moveinfo.append(device2move) %}{% endif %};
+                window.alert({{moveinfo[0]}});
+            }
+        </script>
     </a>
+    <span data-toggle="modal" data-target="#myModal2">
+        <button class="btn btn-default" type="submit">Move device to different room</button>
+    </span>
+    <div id="myModal2" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-ms">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-body">
+                    <table class="table table-condensed table-striped">
+                        <h3>Choose a device</h3>
+                        {% if devices %}
+                            <tr>
+                                <th>Devices</th>
+                                <th>Location</th>
+                                <th>Vendor</th>
+                            </tr>
+                            {% for room in rooms %}
+                                {% for device in devices %}
+                                    {% if room.room_id == device['room_id'] %}
+                                            <tr onclick="myfunction({{device.device_id | safe}})">
+                                                <td>{{device.name}}</td>
+                                                <td>{{room.name}}</td>
+                                                <td>{{device.vendor}}</td>
+                                            </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                        {% else %}
+                            No devices
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
     <div id="myModal" class="modal fade" role="dialog">
         <div class="modal-dialog modal-ms">
             <!-- Modal content-->

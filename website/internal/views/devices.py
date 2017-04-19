@@ -30,6 +30,7 @@ def show_devices():
     rooms = sorted(rooms, key=lambda k: k['name'])
     any_linked = False
     any_unlinked = False
+    moveinfo = []
     if devices:
         for device in devices:
             if device['room_id'] != None:
@@ -38,7 +39,7 @@ def show_devices():
                 any_unlinked = True
     #change from default to focal user
     #test requires here to check if devices returns devices correctly
-    return render_template("internal/devices.html", devices=devices, groupactions=groupactions, rooms=rooms, new_device_form=form, table1=any_unlinked, table2=any_linked)
+    return render_template("internal/devices.html", moveinfo=moveinfo, devices=devices, groupactions=groupactions, rooms=rooms, new_device_form=form, table1=any_unlinked, table2=any_linked)
 
 
 @internal_site.route('/devices/new', methods=['POST', 'GET'])
