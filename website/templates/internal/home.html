@@ -3,33 +3,56 @@
     IoT Homepage
 {% endblock %}
 
+
+{% block styles %}
+    {{ super() }}
+    <style>
+      td { border-top-style: none !important; text-align: center; }
+      th { text-align: center; }
+      thead { background-color: none; color:white; }
+      #borderdiv
+        {
+        width:85%;
+        border-bottom:2px solid black;
+        margin: auto;
+        text-align: center;
+        }
+        .tooltip-inner {
+            white-space:pre;
+            max-width:none;
+        }
+    </style>
+{% endblock %}
+
+
 {% block page_content %}
     <h1> {% if admin %} User: {{ user_name }} {% else %}Welcome!{% endif %}</h1>
     <br>
 
 <!-- jQuery library -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
-<script>
-    $(function () {
-    $('[data-toggle="tooltip"]').tooltip()
-    })
-</script>
-<script>
-    $(function () {
-    $('[data-toggle="tooltip"]').tooltip("show");
-    $('[data-toggle="tooltip"]').find(".tooltip.fade.top").removeClass("in");
- });
-</script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+    <script>
+        $(function () {
+            $('#ttstart').tooltip("show");
+            $('#ttstart').find(".tooltip.fade.top").removeClass("in");
+         });
+    </script>
+
 
 
 
     <span data-toggle="modal" data-target="#myModal2">
         {% if rooms %}
-            <a class="btn btn-primary">
+            <a style="margin: 10px;" data-toggle="tooltip" data-placement="right" title="Add new room" class="btn btn-primary">
                 <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add New Room
             </a>
         {% else %}
-            <a data-toggle="tooltip" data-placement="right" title="Start here by adding a room" class="btn btn-primary">
+            <a style="margin: 10px;" id='ttstart' data-toggle="tooltip" data-placement="right" title="Start here by adding a room" class="btn btn-primary">
                 <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add New Room
             </a>
         {% endif %}
@@ -46,40 +69,163 @@
             </div>
         </div>
     </div>
-    <br>
-    {% if rooms %}
-        <table class="table">
-            <thead>
-            <tr>
-                <th>Rooms</th>
-                <th></th>
+    <div id="myModal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-sm">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this room?</p>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Back</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<br>
 
-            </tr>
-            </thead>
-            <tbody>
-            {% for room in rooms %}
-            <!-- TODO: fix sort, look at devices -->
-                <tr>
-                    <td><a href="{{ url_for('.view_room', room_id=room.room_id) }}">{{ room.name }}</a></td>
-                    <td><a title="Delete room" href="#" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>
-                    <div id="myModal" class="modal fade" role="dialog">
-                        <div class="modal-dialog modal-sm">
-                            <!-- Modal content-->
-                            <div class="modal-content">
-                                <div class="modal-body">
-                                    <p>Are you sure you want to delete this room?</p>
-                                    <button type="button" class="btn btn-default" data-dismiss="modal">Back</button>
-                                    <button type="button" class="btn btn-danger" data-dismiss="modal">Delete</button>
-                                </div>
+
+
+{% for x in range(room_no[0],len_rooms[0]) if room_no[0] < len_rooms[0] %}
+<div style="margin-top: 20px;" class="row">
+    <div class="col-md-6">
+        <div class="row">
+            <div class=" col-sm-6">
+                {% if room_no[0] < len_rooms[0] %}
+                    {% set room = rooms[room_no[0]] %}
+                        <div style="border-bottom:3px solid black; margin: auto; text-align: center; margin-bottom: 30px;">
+                            <a style='color: black; font-size: 200%;' href="{{ url_for('.view_room', room_id=room.room_id) }}">{{ room.name }}</a>
+
+                            <div style='display: inline; float: right;>' data-toggle="modal" data-target="#myModal">
+                                <a data-toggle="tooltip" data-placement="top" title="Delete room"><span  class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
                             </div>
                         </div>
-                    </div>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+                        {% for device in devices[room_no[0]] %}
+                            {% if device['device_type'] == 'thermostat' %}
+                                <div id="borderdiv" style="margin-top: 10px; font-size: 120%;">{{ device['name'] }}</div>
+                                <div style="color: {{ temp_color }}; font-weight: bold; text-align: center; margin: 10px; font-size: 110%; ">{{ devices[0][0]['status']['last_temperature'] }}</div>
+                            {% elif device['device_type'] == "light_switch" %}
+                                <div id="borderdiv" style="margin-top: 10px; font-size: 120%;">{{ device['name'] }}</div>
+                                <div style="text-align: center; margin: 10px; font-size: 110%;">
+                                    {% if device['status']['last_read']['data']['power_state']  == 0 %}
+                                        <div style='color: #23dd55; font-weight: bold;'>False</div>
+                                    {% else %}
+                                        <div style='color: #23dd55; font-weight: bold;'>True</div>
+                                    {% endif %}
+                                </div>
+                            {% elif device['device_type'] == "door_sensor" %}
+                                I'm a door sensor
+                            {% elif device['device_type'] == "motion_sensor" %}
+                                I'm a motion sensor
+                            {% endif %}
+                        {% endfor %}
+                        {% if room_no.append(room_no.pop() + 1) %} {% endif %}
+                {% endif %}
+            </div>
+            <div class=" col-sm-6">
+                {% if room_no[0] < len_rooms[0] %}
+                    {% set room = rooms[room_no[0]] %}
+                        <div style="border-bottom:3px solid black; margin: auto; text-align: center; margin-bottom: 30px;">
+                            <a style='color: black; font-size: 200%;' href="{{ url_for('.view_room', room_id=room.room_id) }}">{{ room.name }}</a>
 
-    {% endif %}
+                            <div style='display: inline; float: right;>' data-toggle="modal" data-target="#myModal">
+                                <a data-toggle="tooltip" data-placement="top" title="Delete room"><span  class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+                            </div>
+                        </div>
+                        {% for device in devices[room_no[0]] %}
+                            {% if device['device_type'] == 'thermostat' %}
+                                <div id="borderdiv" style="margin-top: 10px; font-size: 120%;">{{ device['name'] }}</div>
+                                <div style="color: {{ temp_color }}; font-weight: bold; text-align: center; margin: 10px; font-size: 110%; ">{{ devices[0][0]['status']['last_temperature'] }}</div>
+                            {% elif device['device_type'] == "light_switch" %}
+                                <div id="borderdiv" style="margin-top: 10px; font-size: 120%;">{{ device['name'] }}</div>
+                                <div style="text-align: center; margin: 10px; font-size: 110%;">
+                                    {% if device['status']['last_read']['data']['power_state']  == 0 %}
+                                        <div style='color: #23dd55; font-weight: bold;'>False</div>
+                                    {% else %}
+                                        <div style='color: #23dd55; font-weight: bold;'>True</div>
+                                    {% endif %}
+                                </div>
+                            {% elif device['device_type'] == "door_sensor" %}
+                                I'm a door sensor
+                            {% elif device['device_type'] == "motion_sensor" %}
+                                I'm a motion sensor
+                            {% endif %}
+                        {% endfor %}
+                        {% if room_no.append(room_no.pop() + 1) %} {% endif %}
+                {% endif %}
+            </div>
 
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="row">
+            <div class=" col-sm-6">
+                {% if room_no[0] < len_rooms[0] %}
+                    {% set room = rooms[room_no[0]] %}
+                        <div style="border-bottom:3px solid black; margin: auto; text-align: center; margin-bottom: 30px;">
+                            <a style='color: black; font-size: 200%;' href="{{ url_for('.view_room', room_id=room.room_id) }}">{{ room.name }}</a>
+
+                            <div style='display: inline; float: right;>' data-toggle="modal" data-target="#myModal">
+                                <a data-toggle="tooltip" data-placement="top" title="Delete room"><span  class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+                            </div>
+                        </div>
+                        {% for device in devices[room_no[0]] %}
+                            {% if device['device_type'] == 'thermostat' %}
+                                <div id="borderdiv" style="margin-top: 10px; font-size: 120%;">{{ device['name'] }}</div>
+                                <div style="color: {{ temp_color }}; font-weight: bold; text-align: center; margin: 10px; font-size: 110%; ">{{ devices[0][0]['status']['last_temperature'] }}</div>
+                            {% elif device['device_type'] == "light_switch" %}
+                                <div id="borderdiv" style="margin-top: 10px; font-size: 120%;">{{ device['name'] }}</div>
+                                <div style="text-align: center; margin: 10px; font-size: 110%;">
+                                    {% if device['status']['last_read']['data']['power_state']  == 0 %}
+                                        <div style='color: #23dd55; font-weight: bold;'>False</div>
+                                    {% else %}
+                                        <div style='color: #23dd55; font-weight: bold;'>True</div>
+                                    {% endif %}
+                                </div>
+                            {% elif device['device_type'] == "door_sensor" %}
+                                I'm a door sensor
+                            {% elif device['device_type'] == "motion_sensor" %}
+                                I'm a motion sensor
+                            {% endif %}
+                        {% endfor %}
+                        {% if room_no.append(room_no.pop() + 1) %} {% endif %}
+                {% endif %}
+            </div>
+            <div class=" col-sm-6">
+                {% if room_no[0] < len_rooms[0] %}
+                    {% set room = rooms[room_no[0]] %}
+                        <div style="border-bottom:3px solid black; margin: auto; text-align: center; margin-bottom: 30px;">
+                            <a style='color: black; font-size: 200%;' href="{{ url_for('.view_room', room_id=room.room_id) }}">{{ room.name }}</a>
+
+                            <div style='display: inline; float: right;>' data-toggle="modal" data-target="#myModal">
+                                <a data-toggle="tooltip" data-placement="top" title="Delete room"><span  class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+                            </div>
+                        </div>
+                        {% for device in devices[room_no[0]] %}
+                            {% if device['device_type'] == 'thermostat' %}
+                                <div id="borderdiv" style="margin-top: 10px; font-size: 120%;">{{ device['name'] }}</div>
+                                <div style="color: {{ temp_color }}; font-weight: bold; text-align: center; margin: 10px; font-size: 110%; ">{{ devices[0][0]['status']['last_temperature'] }}</div>
+                            {% elif device['device_type'] == "light_switch" %}
+                                <div id="borderdiv" style="margin-top: 10px; font-size: 120%;">{{ device['name'] }}</div>
+                                <div style="text-align: center; margin: 10px; font-size: 110%;">
+                                    {% if device['status']['last_read']['data']['power_state']  == 0 %}
+                                        <div style='color: #23dd55; font-weight: bold;'>False</div>
+                                    {% else %}
+                                        <div style='color: #23dd55; font-weight: bold;'>True</div>
+                                    {% endif %}
+                                </div>
+                            {% elif device['device_type'] == "door_sensor" %}
+                                I'm a door sensor
+                            {% elif device['device_type'] == "motion_sensor" %}
+                                I'm a motion sensor
+                            {% endif %}
+                        {% endfor %}
+                        {% if room_no.append(room_no.pop() + 1) %} {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 
 {% endblock %}
+
