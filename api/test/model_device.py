@@ -12,13 +12,13 @@ class DeviceTests(unittest.TestCase):
         self.house1id = ObjectId()
         self.house2id = ObjectId()
         self.room1id = ObjectId()
-        self.device1id = self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat",
+        self.device1id = self.devices.add_device(self.house1id, None, None, "Kitchen Thermostat", "thermostat",
                                                  {'target_temperature': 20}, None, "example")
-        self.device2id = self.devices.add_device(self.house1id, None, "Kitchen Motion Sensor", "motion_sensor", {}, None,
+        self.device2id = self.devices.add_device(self.house1id, None, None, "Kitchen Motion Sensor", "motion_sensor", {}, None,
                                                  "example")
-        self.device3id = self.devices.add_device(self.house1id, None, "Kitchen Light Switch", "light_switch", {}, None,
+        self.device3id = self.devices.add_device(self.house1id, None, None, "Kitchen Light Switch", "light_switch", {}, None,
                                                  "example")
-        self.socket_id = self.devices.add_device(self.house2id, None, "Benny's Adapter", "light_switch", {},
+        self.socket_id = self.devices.add_device(self.house2id, None, None, "Benny's Adapter", "light_switch", {},
                                                  {'username': 'bc15050@mybristol.ac.uk', 'password': 'test1234',
                                                   'device_id': '46865'}, "energenie")
 
@@ -97,7 +97,7 @@ class DeviceTests(unittest.TestCase):
 
     def test_DevicesCannotHaveSameName(self):
         with self.assertRaisesRegex(Exception, "There is already a device with this name."):
-            self.devices.add_device(self.house2id, None, "Benny's Adapter", "light_switch", {}, None, "example")
+            self.devices.add_device(self.house2id, None, None, "Benny's Adapter", "light_switch", {}, None, "example")
 
     def test_EnergenieDeviceAddedCorrectly(self):
         device = self.devices.get_device_by_id(self.socket_id)

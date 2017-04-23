@@ -94,16 +94,16 @@ class UserRepository(Repository):
             target_users.append(User(user))
         return target_users
 
-    def get_faulty_devices_for_user(self, user_id):
-        faulty_devices = self.repositories.device_repository.get_faulty_devices()
-        user = self.collection.get_user_by_id(user_id)
-        attributes = user.get_user_attributes()
-        fault_check = False
-        for device in faulty_devices:
-            if device.user_id == user_id:
-                fault_check = True
-        attributes['faulty'] = fault_check
-        return attributes
+    # def get_faulty_devices_for_user(self, user_id):
+    #     faulty_devices = self.repositories.device_repository.get_faulty_devices()
+    #     user = self.collection.get_user_by_id(user_id)
+    #     attributes = user.get_user_attributes()
+    #     fault_check = False
+    #     for device in faulty_devices:
+    #         if device.user_id == user_id:
+    #             fault_check = True
+    #     attributes['faulty'] = fault_check
+    #     return attributes
 
 
 class HouseRepository(Repository):
@@ -218,6 +218,14 @@ class DeviceRepository(Repository):
                 devices.append(device)
         return devices
 
+    def get_faulty_devices_for_user(self, user_id):
+        faulty_devices = self.get_faulty_devices()
+        user_faulty_devices = []
+        for device in faulty_devices:
+            if device.user_id == user_id:
+                user_faulty_devices.append(device)
+        return user_faulty_devices
+
     def update_device_reading(self, device):
         reading = device.read_current_state()
         self.collection.update_one({'_id': device.get_device_id()},
@@ -229,7 +237,7 @@ class DeviceRepository(Repository):
             device = self.get_device_by_id(device_id)
             self.update_device_reading(device)
 
-    def add_device(self, house_id, room_id, name, device_type, target, configuration, vendor):
+    def add_device(self, house_id, room_id, user_id, name, device_type, target, configuration, vendor):
         house_devices = self.get_devices_for_house(house_id)
         for device in house_devices:
             other_name = device.name
@@ -240,7 +248,7 @@ class DeviceRepository(Repository):
         elif vendor == "energenie" and (
                             "username" not in configuration or "password" not in configuration or "device_id" not in configuration):
             raise Exception("Not all required info is in the configuration.")
-        device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
+        device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id, 'user_id': user_id,
                                              'name': name, 'device_type': device_type, 'locking_theme_id': None,
                                              'target': target, 'configuration': configuration,
                                              'vendor': vendor})

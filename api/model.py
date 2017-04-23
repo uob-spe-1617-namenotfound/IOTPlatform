@@ -83,6 +83,7 @@ class Device(object):
         self.device_id = None
         self.house_id = None
         self.room_id = None
+        self.user_id = None
         self.name = None
         self.device_type = None
         self.vendor = None
@@ -96,6 +97,7 @@ class Device(object):
     def set_attributes(self, attributes):
         self.device_id = attributes['_id']
         self.house_id = attributes['house_id']
+        self.user_id = attributes['user_id']
         self.room_id = attributes['room_id']
         self.name = attributes['name']
         self.device_type = attributes['device_type']
@@ -107,8 +109,8 @@ class Device(object):
         self.configuration = get_optional_attribute(attributes, 'configuration', None)
 
     def get_device_attributes(self):
-        return {'device_id': self.device_id, 'house_id': self.house_id,
-                'room_id': self.room_id, 'name': self.name, 'device_type': self.device_type,
+        return {'device_id': self.device_id, 'house_id': self.house_id, 'room_id': self.room_id,
+                'user_id': self.user_id, 'name': self.name, 'device_type': self.device_type,
                 'locking_theme_id': self.locking_theme_id, 'faulty': self.faulty, 'target': self.target,
                 'status': self.status, 'vendor': self.vendor, 'configuration': self.configuration}
 

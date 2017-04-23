@@ -11,10 +11,10 @@ class ThemeTests(unittest.TestCase):
         self.devices = ThemeTests.repository_collection.device_repository
         self.user1id = ObjectId()
         self.house1id = ObjectId()
-        self.device1id = self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat",
+        self.device1id = self.devices.add_device(self.house1id, None, self.user1id, "Kitchen Thermostat", "thermostat",
                                                  {'target_temperature': 20}, None, "example")
-        self.device2id = self.devices.add_device(self.house1id, None, "Kitchen Light Switch", "light_switch", {}, None, "example")
-        self.device3id = self.devices.add_device(self.house1id, None, "Lounge Light Switch", "light_switch", {}, None, "example")
+        self.device2id = self.devices.add_device(self.house1id, None, self.user1id, "Kitchen Light Switch", "light_switch", {}, None, "example")
+        self.device3id = self.devices.add_device(self.house1id, None, self.user1id, "Lounge Light Switch", "light_switch", {}, None, "example")
         self.theme1id = self.themes.add_theme(self.user1id, "Test Thermostat",
                                               [{'device_id': self.device1id, 'setting': {'target_temperature': 30}}],
                                               False)
