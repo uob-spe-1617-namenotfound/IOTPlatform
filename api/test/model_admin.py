@@ -10,7 +10,7 @@ class AdminTests(unittest.TestCase):
         self.devices = AdminTests.repository_collection.device_repository
         self.house1id = ObjectId()
         self.adapter1id = self.devices.add_device(house_id=self.house1id, room_id=None, name="Test Adapter",
-                                                  device_type="light_switch", target={}, status={},
+                                                  device_type="light_switch", target={},
                                                   configuration={"username": 'bc15050@mybristol.ac.uk',
                                                                  "password": 'test1234',
                                                                  "device_id": '46865'},
