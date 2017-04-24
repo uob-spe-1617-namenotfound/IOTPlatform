@@ -168,6 +168,7 @@ def add_device(house_id):
     logging.debug("Adding device: {}".format(data))
     device_id = api.device_repository.add_device(house_id=ObjectId(house_id),
                                                  room_id=None,
+                                                 user_id=None,
                                                  name=data['name'],
                                                  device_type=data['device_type'],
                                                  target=data['target'],
