@@ -1,7 +1,7 @@
+import datetime
 import logging
 import random
 import string
-import datetime
 
 import bcrypt
 
@@ -236,8 +236,10 @@ class DeviceRepository(Repository):
                 raise Exception("There is already a device with this name.")
         if vendor == "OWN" and "url" not in configuration:
             raise Exception("Not all required info is in the configuration.")
-        elif vendor == "energenie" and (
-                            "username" not in configuration or "password" not in configuration or "device_id" not in configuration):
+        elif vendor == "energenie" and \
+                ("username" not in configuration
+                 or "password" not in configuration
+                 or "device_id" not in configuration):
             raise Exception("Not all required info is in the configuration.")
         device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
                                              'name': name, 'device_type': device_type,
@@ -409,7 +411,8 @@ class TriggerRepository(Repository):
 
     def add_trigger(self, sensor_id, event, event_params, actor_id, action, action_params, user_id):
         new_trigger = self.collection.insert_one({'sensor_id': sensor_id, 'event': event, 'event_params': event_params,
-                                                  'actor_id': actor_id, 'action': action, 'action_params': action_params,
+                                                  'actor_id': actor_id, 'action': action,
+                                                  'action_params': action_params,
                                                   'user_id': user_id, 'reading': None})
         return new_trigger.inserted_id
 

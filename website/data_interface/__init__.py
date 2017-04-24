@@ -62,12 +62,13 @@ def get_rooms_for_user(user_id):
 
 
 def add_new_device(user_id, name, device_type, vendor, configuration):
+    sending_data = {"name": name,
+                    "configuration": configuration,
+                    "device_type": device_type,
+                    "vendor": vendor,
+                    "token": utilities.session.get_active_user_token()}
     r = requests.post(get_api_url('/house/{}/devices/add'.format(get_house_id_for_user(user_id))),
-                      json={"name": name,
-                            "configuration": configuration,
-                            "device_type": device_type,
-                            "vendor": vendor,
-                            "token": utilities.session.get_active_user_token()})
+                      json=sending_data)
     logging.debug("Received from add new device: {}".format(r.content))
     try:
         data = r.json()
@@ -76,7 +77,7 @@ def add_new_device(user_id, name, device_type, vendor, configuration):
         raise Exception("JSON parse error")
     if data['error'] is not None:
         raise Exception("Error!")
-    return data['device']['_id']
+    return data['device']['device_id']
 
 
 def add_new_room(user_id, name):
