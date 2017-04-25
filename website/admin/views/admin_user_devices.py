@@ -9,6 +9,7 @@ from shared.forms import AddNewDeviceForm, SetThermostatTargetForm
 
 @admin_site.route('/user/<string:user_id>/devices')
 def show_devices(user_id):
+    user_info = data_interface.get_user_info(user_id)
     form = AddNewDeviceForm()
     devices = data_interface.get_user_devices(user_id)
     rooms = data_interface.get_rooms_for_user(user_id)
@@ -23,8 +24,9 @@ def show_devices(user_id):
                 any_unlinked = True
     # TODO: change from default to focal user
     # TODO: test requires here to check if devices returns devices correctly
-    return render_template("admin/admin_devices.html", devices=devices, groupactions=groupactions, rooms=rooms,
-                           new_device_form=form, table1=any_unlinked, table2=any_linked)
+    return render_template("admin/admin_devices.html", user=user_info, devices=devices,
+                           groupactions=shared.actions.groupactions,
+                           rooms=rooms, new_device_form=form, table1=any_unlinked, table2=any_linked)
 
 
 @admin_site.route('/user/<string:user_id>/devices/new', methods=['POST', 'GET'])
