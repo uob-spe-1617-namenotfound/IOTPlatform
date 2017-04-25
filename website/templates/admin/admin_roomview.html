@@ -2,7 +2,8 @@
 {% block page_content %}
     <h1> {{ room.name }} </h1>
     <br>
-
+    <a href="{{ url_for('.user', user_id=user.user_id) }}" class="btn btn-primary">Back to home of {{ user.name }}</a>
+    <br><br>
     <ul class="nav nav-pills">
         <li role="presentation" class="dropdown active">
             <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="True"
