@@ -3,6 +3,9 @@ from flask import flash, redirect, url_for, render_template
 import data_interface
 import utilities.session
 from admin import admin_site
+import admin.views.admin_user_rooms
+import admin.views.admin_user_devices
+import admin.views.admin_user_triggers
 import itertools
 
 @admin_site.route('/user/<string:user_id>')
@@ -49,6 +52,7 @@ def logout():
     flash('Successfully logged out', 'success')
     return redirect(url_for('public.index'))
 
+
 @admin_site.route('/maptest')
 def maptest():
     house1 = {'lat': 51.529249, 'lng': -0.117973}
@@ -60,3 +64,16 @@ def maptest():
 @admin_site.route('/test')
 def test(r):
     return None
+
+
+@admin_site.route('/help')
+def help():
+    return "admin help to be implemented"
+
+
+
+@admin_site.route('/account/settings')
+def account_settings():
+    return "To be implemented"
+
+

@@ -1,0 +1,55 @@
+{% extends "internal/devices/device_base.html" %}
+{% block device_type %}light switch{% endblock %}
+
+{% block device_status %}
+    <ul>
+        <li>
+            <b>Last reading: </b>
+            {% if device.status.last_read and device.status.last_read.timestamp %}
+                {{ device.status.last_read.timestamp|timestamp_to_str }}
+            {% else %}
+                <i>Not available</i>
+            {% endif %}
+        </li>
+        <li>
+            <b>State: </b>
+            {% if device.status.last_read and device.status.last_read.data %}
+                {% if device.status.last_read.data.power_state %}
+                    On
+                {% else %}
+                    Off
+                {% endif %}
+            {% else %}
+                <i>Not available</i>
+            {% endif %}
+        </li>
+        <li>
+            <b>Voltage: </b>
+            {% if device.status.last_read and device.status.last_read.data and device.status.last_read.data.voltage %}
+                {{ device.status.last_read.data.voltage }}V
+            {% else %}
+                <i>Not available</i>
+            {% endif %}
+        </li>
+    </ul>
+{% endblock %}
+
+{% block device_settings %}
+    {% if device.status.last_read %}
+        {% if device.status.last_read.data.power_state == 1 %}
+            Switch is on.
+            <a class="btn btn-default btn-primary"
+               href="{{ url_for('.set_switch_settings', device_id=device.device_id, state=0) }}">
+                Turn it off
+            </a>
+        {% else %}
+            Switch is off.
+            <a class="btn btn-default btn-primary"
+               href="{{ url_for('.set_switch_settings', device_id=device.device_id, state=1) }}">Turn it
+                on
+            </a>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-danger">No data available</div>
+    {% endif %}
+{% endblock %}

@@ -4,7 +4,8 @@ from flask import redirect, url_for, flash, render_template
 
 import data_interface
 from internal import internal_site
-from internal.views.forms import AddNewRoomForm
+from shared.forms import AddNewRoomForm
+from utilities.session import get_active_user
 
 
 @internal_site.route('/room/add', methods=['POST', 'GET'])
@@ -12,7 +13,7 @@ def add_new_room():
     form = AddNewRoomForm()
     if form.validate_on_submit():
         try:
-            data_interface.add_new_room(name=form.name.data)
+            data_interface.add_new_room(user_id=get_active_user()['user_id'], name=form.name.data)
         except Exception as ex:
             logging.error("Adding new room failed: {}".format(ex))
             flash("Error", "danger")
@@ -25,7 +26,8 @@ def add_new_room():
 @internal_site.route('/room/<string:room_id>')
 def view_room(room_id):
     room = data_interface.get_room_info(room_id)
-    all_devices = data_interface.get_user_default_devices()
+    all_devices = data_interface.get_user_devices(get_active_user()['user_id'])
+    print(all_devices)
     linked_devices = [d for d in all_devices if d['room_id'] is not None]
     unlinked_devices = [d for d in all_devices if d['room_id'] is None]
     room_devices = [d for d in all_devices if d['room_id'] == room_id]

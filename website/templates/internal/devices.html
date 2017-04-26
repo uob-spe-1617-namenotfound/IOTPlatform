@@ -72,9 +72,37 @@
                 <div class="modal-body">
                     <h1>Add a new device to your account!</h1>
                     {{ wtf.quick_form(new_device_form, action=url_for('.add_new_device')) }}
+<!--
+    {% for vendor in all_vendors %}
+        <div class="modal" id="modal-add-device-vendor-{{ vendor.id }}">
+            <div class="modal-dialog">
+                <!-- Modal content-
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <h1>Add a new device of vendor {{ vendor.name }}</h1>
+                        {{ wtf.quick_form(vendor.form, action=url_for('.add_new_device', vendor_id=vendor.id)) }}
+                    </div>
+-->
                 </div>
             </div>
         </div>
+    {% endfor %}
+    <div class="btn-group">
+        <button class="btn btn-default dropdown-toggle" type="button" id="btn-add-device-select-vendor"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Add device
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdown-device-vendor">
+
+            {% for vendor in all_vendors %}
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#modal-add-device-vendor-{{ vendor.id }}">
+                        Vendor: {{ vendor.name }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
     </div>
     <br>
     <br>
@@ -92,25 +120,29 @@
                 </tr>
                 {% for device in devices %}
                     {% if device['room_id'] == None %}
-                            <tr>
-                                <td>{{device.name}}</td>
-                                <td>-</td>
-                                <td>{% if device.faulty == False %} OK {% elif device.faulty == True %} Faulty {% endif %}</td>
-                                <td>{{device.vendor}}</td>
-                                <td><a href="#" data-toggle="modal" data-target="#myModal2"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>
-                                <div id="myModal2" class="modal fade" role="dialog">
-                                    <div class="modal-dialog modal-sm">
-                                        <!-- Modal content-->
-                                        <div class="modal-content">
-                                            <div class="modal-body">
-                                                <p>Are you sure you want to delete this room?</p>
-                                                <button type="button" class="btn btn-default" data-dismiss="modal">Back</button>
-                                                <button type="button" class="btn btn-danger" data-dismiss="modal">Delete</button>
-                                            </div>
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('.show_device', device_id=device.device_id) }}">
+                                    {{ device.name }}
+                                </a>
+                            </td>
+                            <td>-</td>
+                            <td>{% if device.faulty == False %} OK {% elif device.faulty == True %} Faulty {% endif %}</td>
+                            <td>{{device.vendor}}</td>
+                            <td><a href="#" data-toggle="modal" data-target="#myModal2"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>
+                            <div id="myModal2" class="modal fade" role="dialog">
+                                <div class="modal-dialog modal-sm">
+                                    <!-- Modal content-->
+                                    <div class="modal-content">
+                                        <div class="modal-body">
+                                            <p>Are you sure you want to delete this room?</p>
+                                            <button type="button" class="btn btn-default" data-dismiss="modal">Back</button>
+                                            <button type="button" class="btn btn-danger" data-dismiss="modal">Delete</button>
                                         </div>
                                     </div>
                                 </div>
-                            </tr>
+                            </div>
+                        </tr>
                     {% endif %}
                 {% endfor %}
             </table>
@@ -130,7 +162,12 @@
                     {% for device in devices %}
                         {% if room.room_id == device['room_id'] %}
                             <tr>
-                                <td>{{device.name}}</td>
+
+                                <td>
+                                    <a href="{{ url_for('.show_device', device_id=device.device_id) }}">
+                                        {{ device.name }}
+                                    </a>
+                                </td>
                                 <td>{{room.name}}</td>
                                 <td>{% if device.faulty == False %} OK {% elif device.faulty == True %} Faulty {% endif %}</td>
                                 <td>{{device.vendor}}</td>
@@ -142,10 +179,10 @@
             </table>
         {% endif %}
     {% else %}
-    <h1>No data to show!</h1>
+        <h1>No data to show!</h1>
     {% endif %}
 
-<!-- TODO: add links to the table -->
+
 {% endblock %}
 
 {% block scripts %}

@@ -7,8 +7,8 @@ from flask import render_template, redirect, flash, url_for, make_response
 import data_interface
 import utilities.session
 from internal import internal_site
-from internal.views import rooms, devices
-from internal.views.forms import AddNewRoomForm
+from internal.views import rooms, devices, triggers
+from shared.forms import AddNewRoomForm
 
 
 @internal_site.route('/triggers')

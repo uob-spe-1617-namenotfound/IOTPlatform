@@ -1,0 +1,75 @@
+<h1>{{ device.name }} <i>({% block device_type %} unknown {% endblock %})</i></h1>
+
+<div class="panel">
+    <h2>Configuration</h2>
+    <ul>
+        {% if device.vendor == "OWN" %}
+            <li>
+                <b>URL: </b> {{ device.configuration.url }}
+            </li>
+        {% elif device.vendor == "energenie" %}
+            <li>
+                <b>Username: </b> {{ device.configuration.username }}
+            </li>
+            <li>
+                <b>Device id: </b> {{ device.configuration.device_id }}
+            </li>
+        {% endif %}
+    </ul>
+</div>
+
+<div clas="panel">
+    <h2>Device status</h2>
+    {% if device.faulty %}
+        <div class="alert alert-danger">
+            There is an error with this device!
+        </div>
+    {% else %}
+        {% block device_status %}
+            status (to be overridden)
+        {% endblock %}
+    {% endif %}
+</div>
+
+{% if device_settings %}
+    <div class="panel">
+        <h2>Device settings</h2>
+        {% block device_settings %}
+        {% endblock %}
+    </div>
+{% endif %}
+
+{% if affected_triggers or affecting_triggers or create_trigger_form %}
+    <div class="panel">
+        <h2>Triggers</h2>
+        {% if affected_triggers %}
+            <h3>Devices affected by {{ device.name }}</h3>
+            <ul>
+                {% for trigger in affected_triggers %}
+                    <li>
+                        {% include "internal/triggers/trigger_element.html" %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if affecting_triggers %}
+            <h3>Devices affecting {{ device.name }}</h3>
+            <ul>
+                {% for trigger in affecting_triggers %}
+                    <li>
+                        {% include "internal/triggers/trigger_element.html" %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if create_trigger_form %}
+            <h3>Create a new trigger</h3>
+            {{ wtf.quick_form(create_trigger_form, action=url_for('.create_trigger_for', device_id=device.device_id)) }}
+        {% endif %}
+    </div>
+{% endif %}
+
+{# <div class="panel">
+    <h2>Themes</h2>
+</div>
+ #}

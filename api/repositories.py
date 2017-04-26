@@ -1,11 +1,11 @@
+import datetime
 import logging
 import random
 import string
-import datetime
 
 import bcrypt
 
-from model import House, Room, User, Device, Thermostat, MotionSensor, LightSwitch, OpenSensor, Token, Trigger
+from model import House, Room, User, Device, Thermostat, MotionSensor, LightSwitch, OpenSensor, Trigger, Theme, Token
 
 
 class RepositoryException(Exception):
@@ -31,6 +31,7 @@ class RepositoryCollection(object):
         self.room_repository = RoomRepository(db.rooms, self)
         self.device_repository = DeviceRepository(db.devices, self)
         self.trigger_repository = TriggerRepository(db.triggers, self)
+        self.theme_repository = ThemeRepository(db.themes, self)
         self.token_repository = TokenRepository(db.token, self)
 
 
@@ -95,14 +96,22 @@ class UserRepository(Repository):
 
     def get_faulty_devices_for_user(self, user_id):
         faulty_devices = self.repositories.device_repository.get_faulty_devices()
-        user = self.collection.get_user_by_id(user_id)
-        attributes = user.get_user_attributes()
+        house_id = self.collection.get_houses_for_user(user_id)[0].house_id
+        target_devices = []
         fault_check = False
         for device in faulty_devices:
-            if device.user_id == user_id:
+            if device.house_id == house_id:
                 fault_check = True
-        attributes['faulty'] = fault_check
-        return attributes
+                target_devices.append(Device(device))
+        self.collection.update_one({'_id': user_id}, {"$set": {'faulty': fault_check}}, upsert=False)
+        return target_devices
+
+    def validate_token(self, user_id, token):
+        user = self.get_user_by_id(user_id)
+        if user is None:
+            return False
+        else:
+            return self.repositories.token_repository.authenticate_user(user_id, token)
 
 
 class HouseRepository(Repository):
@@ -236,11 +245,13 @@ class DeviceRepository(Repository):
                 raise Exception("There is already a device with this name.")
         if vendor == "OWN" and "url" not in configuration:
             raise Exception("Not all required info is in the configuration.")
-        elif vendor == "energenie" and (
-                            "username" not in configuration or "password" not in configuration or "device_id" not in configuration):
+        elif vendor == "energenie" and \
+                ("username" not in configuration
+                 or "password" not in configuration
+                 or "device_id" not in configuration):
             raise Exception("Not all required info is in the configuration.")
         device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
-                                             'name': name, 'device_type': device_type,
+                                             'name': name, 'device_type': device_type, 'locking_theme_id': None,
                                              'target': target, 'status': status,
                                              'configuration': configuration,
                                              'vendor': vendor})
@@ -323,9 +334,10 @@ class DeviceRepository(Repository):
             raise Exception("Device is not a switch.")
         if power_state not in [0, 1]:
             raise Exception("Power_state is not of the correct format")
-        device.configure_power_state(power_state)
-        self.update_device_reading(device)
-        self.collection.update_one({'_id': device_id}, {"$set": {'status.power_state': power_state}}, upsert=False)
+        if device.locking_theme_id is None:
+            device.configure_power_state(power_state)
+            self.update_device_reading(device)
+            self.collection.update_one({'_id': device_id}, {"$set": {'status.power_state': power_state}}, upsert=False)
 
     def set_target_temperature(self, device_id, temp):
         device = self.collection.find_one({'_id': device_id})
@@ -334,9 +346,17 @@ class DeviceRepository(Repository):
             'locked_min_temperature'] <= temp), "Chosen temperature is too low."
         assert ('locked_max_temperature' not in device['target'] or device['target'][
             'locked_max_temperature'] >= temp), "Chosen temperature is too high."
-        self.collection.update_one({'_id': device_id}, {"$set": {'target.target_temperature': temp}}, upsert=False)
+        if device['locking_theme_id'] is None:
+            self.collection.update_one({'_id': device_id}, {"$set": {'target.target_temperature': temp}}, upsert=False)
+            device = self.get_device_by_id(device_id)
+            device.configure_target_temperature(temp)
+            self.update_device_reading(device)
+        return device
+
+    def set_locking_theme_id(self, device_id, locking_theme_id):
         device = self.get_device_by_id(device_id)
-        device.configure_target_temperature(temp)
+        device.locking_theme_id = locking_theme_id
+        self.collection.update_one({'_id': device_id}, {"$set": {'locking_theme_id': locking_theme_id}})
         self.update_device_reading(device)
         return device
 
@@ -409,7 +429,8 @@ class TriggerRepository(Repository):
 
     def add_trigger(self, sensor_id, event, event_params, actor_id, action, action_params, user_id):
         new_trigger = self.collection.insert_one({'sensor_id': sensor_id, 'event': event, 'event_params': event_params,
-                                                  'actor_id': actor_id, 'action': action, 'action_params': action_params,
+                                                  'actor_id': actor_id, 'action': action,
+                                                  'action_params': action_params,
                                                   'user_id': user_id, 'reading': None})
         return new_trigger.inserted_id
 
@@ -426,14 +447,14 @@ class TriggerRepository(Repository):
         return target_trigger
 
     def get_triggers_for_device(self, device_id):
-        triggers = self.collection.find({'sensor_id': device_id})
+        triggers = self.collection.find({'actor_id': device_id})
         target_triggers = []
         for trigger in triggers:
             target_triggers.append(Trigger(trigger))
         return target_triggers
 
     def get_actions_for_device(self, device_id):
-        triggers = self.collection.find({'actor_id': device_id})
+        triggers = self.collection.find({'sensor_id': device_id})
         target_triggers = []
         for trigger in triggers:
             target_triggers.append(Trigger(trigger))
@@ -482,6 +503,105 @@ class TriggerRepository(Repository):
             return False
         else:
             user_id = trigger.user_id
+            return self.repositories.token_repository.authenticate_user(user_id, token)
+
+
+class ThemeRepository(Repository):
+    def __init__(self, mongo_collection, repository_collection):
+        Repository.__init__(self, mongo_collection, repository_collection)
+
+    def add_theme(self, user_id, name, settings, active):
+        new_theme = self.collection.insert_one({'user_id': user_id, 'name': name, 'settings': settings, 'active': active})
+        return new_theme.inserted_id
+
+    def remove_theme(self, theme_id):
+        theme = self.get_theme_by_id(theme_id)
+        self.collection.delete_one({'_id': theme_id})
+        return theme
+
+    def remove_device_from_theme(self, theme_id, device_id):
+        theme = self.get_theme_by_id(theme_id)
+        for dev in theme.settings:
+            if dev['device_id'] == device_id:
+                theme.settings.remove(dev)
+        updated_settings = theme.settings
+        self.collection.update_one({'_id': theme_id}, {"$set": {'settings': updated_settings}})
+        updated_theme = self.get_theme_by_id(theme_id)
+        return updated_theme
+
+    def get_theme_by_id(self, theme_id):
+        theme = self.collection.find_one({'_id': theme_id})
+        if theme is None:
+            return None
+        target_theme = Theme(theme)
+        return target_theme
+
+    def get_themes_for_user(self, user_id):
+        user = self.collection.find({'user_id': user_id})
+        target_themes = []
+        for theme in user:
+            target_themes.append(Theme(theme))
+        return target_themes
+
+    def get_all_themes(self):
+        themes = self.collection.find()
+        target_themes = []
+        for theme in themes:
+            target_themes.append(Theme(theme))
+        return target_themes
+
+    def edit_theme(self, theme_id, settings):
+        self.collection.update_one({'_id': theme_id}, {"$set": {"settings": settings}})
+        return self.get_theme_by_id(theme_id)
+
+    # The next 2 functions are very similar, but I didn't combine them for the sake of clarity.
+    def edit_device_settings(self, theme_id, device_id, setting):
+        settings = self.get_theme_by_id(theme_id).settings
+        new_settings = settings.replace(settings['setting'], setting)
+        self.collection.update_one({'_id': theme_id}, {"$set": {'settings': new_settings}})
+        updated_theme = self.get_theme_by_id(theme_id)
+        return updated_theme
+
+    def add_device_to_theme(self, theme_id, device_id, setting):
+        theme = self.get_theme_by_id(theme_id)
+        settings = theme.settings
+        new_settings = settings.append({'device_id': device_id, 'setting': setting})
+        self.collection.update_one({'_id': theme_id}, {"$set": {'settings': new_settings}})
+        updated_theme = self.get_theme_by_id(theme_id)
+        return updated_theme
+
+    def change_theme_state(self, theme_id, state):
+        theme = self.get_theme_by_id(theme_id)
+        settings = theme.settings
+        ids = [dev['device_id'] for dev in settings]
+        if state is False:
+            theme.active = False
+            for device_id in ids:
+                DeviceRepository.set_locking_theme_id(device_id, None)
+            self.collection.update_one({'_id': theme_id}, {"$set": {'active': False}})
+        elif state is True:
+            theme.active = True
+            for dev in settings:
+                device_setting = dev['setting']
+                if 'target_temp' in device_setting:
+                    target_temp = device_setting['target_temperature']
+                    self.repositories.device_repository.set_target_temperature(dev['device_id'], target_temp)
+                elif 'power_state' in device_setting:
+                    power_state = device_setting['power_state']
+                    self.repositories.device_repository.set_power_state(dev['device_id'], power_state)
+                self.repositories.device_repository.set_locking_theme_id(dev['device_id'], theme_id)
+            self.collection.update_one({'_id': theme_id}, {"$set": {'active': True}})
+        else:
+            raise Exception("Theme active state is not in the correct format")
+        updated_theme = self.get_theme_by_id(theme_id)
+        return updated_theme
+
+    def validate_token(self, theme_id, token):
+        theme = self.get_theme_by_id(theme_id)
+        if theme is None:
+            return False
+        else:
+            user_id = theme.user_id
             return self.repositories.token_repository.authenticate_user(user_id, token)
 
 

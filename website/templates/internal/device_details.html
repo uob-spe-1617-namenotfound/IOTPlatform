@@ -1,0 +1,14 @@
+{% extends "internal/base.html" %}
+{% block page_content %}
+    {% if device.device_type == 'motion_sensor' %}
+        {% include "internal/devices/motion_sensor.html" %}
+    {% elif device.device_type == 'light_switch' %}
+        {% include "internal/devices/light_switch.html" %}
+    {% elif device.device_type == "thermostat" %}
+        {% include "internal/devices/thermostat.html" %}
+    {% elif device.device_type == "door_sensor" %}
+        {% include "internal/devices/door_sensor.html" %}
+    {% else %}
+        <div class="alert alert-danger">Unknown device type!</div>
+    {% endif %}
+{% endblock %}
