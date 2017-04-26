@@ -1,18 +1,13 @@
+import itertools
+
 from flask import flash, redirect, url_for, render_template
 
+import admin.views.admin_user_devices
+import admin.views.admin_user_rooms
+import admin.views.admin_user_triggers
 import data_interface
 import utilities.session
 from admin import admin_site
-import admin.views.admin_user_rooms
-import admin.views.admin_user_devices
-import admin.views.admin_user_triggers
-import itertools
-
-@admin_site.route('/user/<string:user_id>')
-def user(user_id):
-    rooms = data_interface.get_default_rooms_for_user(user_id)
-    user_info = data_interface.get_user_info(user_id)
-    return render_template("internal/home.html", admin=True, rooms=rooms, user_name=user_info["name"])
 
 
 @admin_site.route('/fault_status', methods=['GET'])
@@ -22,7 +17,7 @@ def fault_status():
     for one_device in fault_status:
         int_list.append(one_device['faulty'])
     faults_list = [(k, len(list(v))) for k, v in itertools.groupby(sorted(int_list))]
-    return render_template("admin/fault_status.html", faults_list = faults_list)
+    return render_template("admin/fault_status.html", faults_list=faults_list)
 
 
 @admin_site.route('/')
@@ -61,6 +56,7 @@ def maptest():
     house_location = [house1, house2, house3]
     return render_template("admin/maptest.html", house_location=house_location)
 
+
 @admin_site.route('/test')
 def test(r):
     return None
@@ -71,9 +67,6 @@ def help():
     return "admin help to be implemented"
 
 
-
 @admin_site.route('/account/settings')
 def account_settings():
     return "To be implemented"
-
-
