@@ -4,13 +4,14 @@ import data_interface
 import shared.actions
 import shared.triggers
 from internal import internal_site
-from shared.forms import AddNewDeviceForm, SetThermostatTargetForm
+from shared.forms import SetThermostatTargetForm
+from shared.vendors import get_all_vendors_list, get_vendor_form, get_vendor_configuration_data, get_vendor_backend_id
 from utilities.session import get_active_user
 
 
 @internal_site.route('/devices')
 def show_devices():
-    form = AddNewDeviceForm()
+    all_vendors = get_all_vendors_list()
     devices = data_interface.get_user_devices(get_active_user()['user_id'])
     rooms = data_interface.get_user_default_rooms()
     rooms = sorted(rooms, key=lambda k: k['name'])
@@ -25,15 +26,17 @@ def show_devices():
     # change from default to focal user
     # test requires here to check if devices returns devices correctly
     return render_template("internal/devices.html", devices=devices, groupactions=shared.actions.groupactions,
-                           rooms=rooms, new_device_form=form, table1=any_unlinked, table2=any_linked)
+                           rooms=rooms, all_vendors=all_vendors, table1=any_unlinked, table2=any_linked)
 
 
-@internal_site.route('/devices/new', methods=['POST', 'GET'])
-def add_new_device():
-    form = AddNewDeviceForm()
+@internal_site.route('/devices/vendor/<string:vendor_id>/new', methods=['GET', 'POST'])
+def add_new_device(vendor_id=None):
+    form = get_vendor_form(vendor_id)
     if form.validate_on_submit():
-        data_interface.add_new_device(device_type=form.device_type.data, vendor="OWN",
-                                      configuration={"url": form.url.data},
+        data_interface.add_new_device(user_id=get_active_user()['user_id'],
+                                      device_type=form.device_type.data,
+                                      vendor=get_vendor_backend_id(vendor_id),
+                                      configuration=get_vendor_configuration_data(vendor_id, form),
                                       name=form.name.data)
         flash("New device successfully added!", 'success')
         return redirect(url_for('.show_devices'))

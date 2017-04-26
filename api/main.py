@@ -166,14 +166,14 @@ def add_device(house_id):
         return jsonify({"device": None, "error": {"code": 404, "message": "No such house found"}})
     data = request.get_json()
     logging.debug("Adding device: {}".format(data))
-    device = api.device_repository.add_device(house_id=ObjectId(house_id),
-                                              room_id=None,
-                                              name=data['name'],
-                                              device_type=data['device_type'],
-                                              target=data['target'],
-                                              status=data['status'],
-                                              configuration=data['configuration'],
-                                              vendor=data['vendor'])
+    device_id = api.device_repository.add_device(house_id=ObjectId(house_id),
+                                                 room_id=None,
+                                                 name=data['name'],
+                                                 device_type=data['device_type'],
+                                                 target=data['target'] if 'target' in data else {},
+                                                 status=data['status'] if 'status' in data else {},
+                                                 configuration=data['configuration'],
+                                                 vendor=data['vendor'])
     device = api.device_repository.get_device_by_id(device_id)
     logging.debug("Device added: {}".format(device))
     if device is None:
