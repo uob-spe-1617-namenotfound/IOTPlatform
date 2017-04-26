@@ -1,4 +1,4 @@
-{% extends "internal/devices/device.html" %}
+{% extends "internal/devices/device_base.html" %}
 {% block device_type %}thermostat{% endblock %}
 
 {% block device_status %}
@@ -28,4 +28,8 @@
             {% endif %}
         </li>
     </ul>
+{% endblock %}
+
+{% block device_settings %}
+    {{ wtf.quick_form(device_settings.form, action=url_for('.set_thermostat_settings', device_id=device.device_id)) }}
 {% endblock %}

@@ -45,15 +45,19 @@ def add_new_device(vendor_id=None):
 
 
 @internal_site.route('/device/<string:device_id>')
-def show_device(device_id, configuration_form=None, create_trigger_form=None):
-    triggers = None
+def show_device(device_id, thermostat_settings_form=None, create_trigger_form=None):
     device = data_interface.get_device_info(device_id)
     device_type = device['device_type']
 
-    if configuration_form is not None:
-        pass
-    elif device_type == "thermostat":
-        configuration_form = SetThermostatTargetForm()
+    device_settings = None
+    if device_type == "thermostat":
+        device_settings = {"has_settings": True}
+        if thermostat_settings_form is not None:
+            device_settings["form"] = thermostat_settings_form
+        else:
+            device_settings["form"] = SetThermostatTargetForm()
+    elif device_type == "light_switch":
+        device_settings = {"has_settings": True}
 
     if create_trigger_form is not None:
         pass
@@ -64,34 +68,12 @@ def show_device(device_id, configuration_form=None, create_trigger_form=None):
         create_trigger_form = CreateTriggerFormMotionSensor(
             possible_affected_devices=data_interface.get_possible_affected_devices(device_id))
 
-    if device['device_type'] == "thermostat":
-        triggers = shared.triggers.thermostat_triggers
-        if configuration_form is None:
-            configuration_form = SetThermostatTargetForm()
-    elif device['device_type'] == "motion_sensor":
-        triggers = shared.triggers.motion_triggers
-    elif device['device_type'] == "light_switch":
-        triggers = shared.triggers.light_triggers
-    elif device['device_type'] == "door_sensor":
-        triggers = shared.triggers.door_triggers
-    all_user_devices = data_interface.get_user_devices(get_active_user()['user_id'])
-    actors = [{"id": actor['device_id'], "name": actor['name'], "type": "device", "device": actor,
-               "action": shared.actions.actions[actor['device_type']]} for actor in
-              all_user_devices] + [{"id": "webhook_url", "type": "webhook", "url": "#", "name": "Send email"}]
-    thermostats = filter(lambda x: x['device_id'] == "thermostat", all_user_devices)
-    door_sensors = filter(lambda x: x['device_id'] == "door_sensor", all_user_devices)
-    motion_sensors = filter(lambda x: x['device_id'] == "motion_sensor", all_user_devices)
-    light_switches = filter(lambda x: x['device_id'] == "light_switch", all_user_devices)
-
     return render_template("internal/device_details.html",
                            device=device,
-                           configuration_form=configuration_form,
+                           device_settings=device_settings,
                            affecting_triggers=data_interface.get_affecting_triggers(device_id),
                            affected_triggers=data_interface.get_affected_triggers(device_id),
-                           create_trigger_form=create_trigger_form,
-                           triggers=triggers, actors=actors,
-                           thermostats=thermostats, light_switches=light_switches, door_sensors=door_sensors,
-                           motion_sensors=motion_sensors)
+                           create_trigger_form=create_trigger_form)
 
 
 @internal_site.route('/device/<string:device_id>/triggers/create', methods=['POST'])
@@ -142,14 +124,14 @@ def create_trigger_action_for(device_id, actor_id):
     return redirect(url_for('.show_device', device_id=device_id))
 
 
-@internal_site.route('/device/<string:device_id>/configure', methods=['POST'])
-def set_device_settings(device_id):
+@internal_site.route('/device/<string:device_id>/thermostat/configure', methods=['POST'])
+def set_thermostat_settings(device_id):
     form = SetThermostatTargetForm()
     if form.validate_on_submit():
         data_interface.set_thermostat_target(device_id, float(form.target_temperature.data))
         flash('Target temperature successfully set!', 'success')
         return redirect(url_for('.show_device', device_id=device_id))
-    return show_device(device_id, configuration_form=form)
+    return show_device(device_id, thermostat_settings_form=form)
 
 
 @internal_site.route('/device/<string:device_id>/switch/configure/<int:state>')
