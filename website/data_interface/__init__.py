@@ -118,6 +118,10 @@ def link_device_to_room(room_id, device_id):
     return data['device']['device_id']
 
 
+def move_device2room(device2room):
+    return "done"
+
+
 def get_house_info(house_id):
     r = requests.post(get_api_url('/house/{}'.format(house_id)),
                       json=get_authentication_token())

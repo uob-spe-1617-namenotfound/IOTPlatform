@@ -1,6 +1,6 @@
-from flask import render_template, flash, redirect, url_for
+from flask import render_template, flash, redirect, url_for, request
 
-import data_interface
+import data_interface, logging
 from internal import internal_site
 from internal.views.forms import AddNewDeviceForm, SetThermostatTargetForm
 
@@ -100,3 +100,11 @@ def set_switch_settings(device_id, state):
     if error is not None:
         flash("State successfully set", "success")
     return redirect(url_for('.show_device', device_id=device_id))
+
+
+@internal_site.route('/device/move', methods=['POST'])
+def move_device():
+    device2room = request.form
+    data_interface.move_device2room(device2room)
+    return "done"
+

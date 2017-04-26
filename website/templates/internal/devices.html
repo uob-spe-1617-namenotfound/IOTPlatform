@@ -1,19 +1,15 @@
 {% extends "internal/base.html" %}
+
+
+{$ block styles $}
+
+
+{$ endblock $}
 {% block page_content %}
     <h2>Devices</h2>
     <br>
     <a  href="#" data-toggle="modal" data-target="#myModal" class="btn btn-primary" >
         <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add New Device
-
-
-
-
-        <script>
-            function myfunction(device2move){
-                {% if moveinfo.append(device2move) %}{% endif %};
-                window.alert({{moveinfo[0]}});
-            }
-        </script>
     </a>
     <span data-toggle="modal" data-target="#myModal2">
         <button class="btn btn-default" type="submit">Move device to different room</button>
@@ -23,18 +19,20 @@
             <!-- Modal content-->
             <div class="modal-content">
                 <div class="modal-body">
-                    <table class="table table-condensed table-striped">
-                        <h3>Choose a device</h3>
+                    <table class="table table-condensed table-striped devices-table table-hover">
+                        <h3 class="devices-table">Choose a device</h3>
                         {% if devices %}
-                            <tr>
-                                <th>Devices</th>
-                                <th>Location</th>
-                                <th>Vendor</th>
-                            </tr>
+                            <thead>
+                                <tr>
+                                    <th>Devices</th>
+                                    <th>Location</th>
+                                    <th>Vendor</th>
+                                </tr>
+                            </thead>
                             {% for room in rooms %}
                                 {% for device in devices %}
                                     {% if room.room_id == device['room_id'] %}
-                                            <tr onclick="myfunction({{device.device_id | safe}})">
+                                            <tr class="device-row" data-device-id="{{ device.device_id }}">
                                                 <td>{{device.name}}</td>
                                                 <td>{{room.name}}</td>
                                                 <td>{{device.vendor}}</td>
@@ -44,6 +42,23 @@
                             {% endfor %}
                         {% else %}
                             No devices
+                        {% endif %}
+                    </table>
+                    <table class="table table-condensed table-striped rooms-table table-hover">
+                        <h3 class="rooms-table">Choose destination room</h3>
+                        {% if rooms %}
+                            <thead>
+                                <tr>
+                                    <th>Room</th>
+                                </tr>
+                            </thead>
+                            {% for room in rooms %}
+                                <tr>
+                                    <td>{{room.name}}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            No rooms
                         {% endif %}
                     </table>
                 </div>
@@ -131,5 +146,35 @@
     {% endif %}
 
 <!-- TODO: add links to the table -->
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+    var device_id = null;
+    var room_id = null;
+    $(function(){
+        $('.rooms-table').hide();
+        $('#myModal2').on('hidden.bs.modal', function(){
+           $('.devices-table').show();
+           $('.rooms-table').hide();
+        });
+        $('.device-row').click(function(){
+           device_id = $(this).data('device-id');
+           $('.devices-table').hide();
+           $('.rooms-table').show();
+        });
+        $('.rooms-table tr').click(function(){
+            room_id = $(this).data('room-id');
+            $.post('device/move', {
+                room_id: room_id,
+                device_id: device_id
+            }, function(rsp){
+                alert(rsp)
+                $('#myModal2').modal('hide');
+            });
+        });
+    });
+    </script>
 
 {% endblock %}
