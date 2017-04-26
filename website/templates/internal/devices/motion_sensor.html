@@ -1,0 +1,27 @@
+{% extends "internal/devices/device.html" %}
+{% block device_type %}motion sensor{% endblock %}
+
+{% block device_status %}
+    <ul>
+        <li>
+            <b>Last reading: </b>
+            {% if device.status.last_read and device.status.last_read.timestamp %}
+                {{ device.status.last_read.timestamp|timestamp_to_str }}
+            {% else %}
+                <i>Not available</i>
+            {% endif %}
+        </li>
+        <li>
+            <b>Motion: </b>
+            {% if device.status.last_read and device.status.last_read.data %}
+                {% if device.status.last_read.data.motion %}
+                    Yes
+                {% else %}
+                    No
+                {% endif %}
+            {% else %}
+                <i>Not available</i>
+            {% endif %}
+        </li>
+    </ul>
+{% endblock %}

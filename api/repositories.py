@@ -104,6 +104,13 @@ class UserRepository(Repository):
         attributes['faulty'] = fault_check
         return attributes
 
+    def validate_token(self, user_id, token):
+        user = self.get_user_by_id(user_id)
+        if user is None:
+            return False
+        else:
+            return self.repositories.token_repository.authenticate_user(user_id, token)
+
 
 class HouseRepository(Repository):
     def __init__(self, mongo_collection, repository_collection):
@@ -429,14 +436,14 @@ class TriggerRepository(Repository):
         return target_trigger
 
     def get_triggers_for_device(self, device_id):
-        triggers = self.collection.find({'sensor_id': device_id})
+        triggers = self.collection.find({'actor_id': device_id})
         target_triggers = []
         for trigger in triggers:
             target_triggers.append(Trigger(trigger))
         return target_triggers
 
     def get_actions_for_device(self, device_id):
-        triggers = self.collection.find({'actor_id': device_id})
+        triggers = self.collection.find({'sensor_id': device_id})
         target_triggers = []
         for trigger in triggers:
             target_triggers.append(Trigger(trigger))

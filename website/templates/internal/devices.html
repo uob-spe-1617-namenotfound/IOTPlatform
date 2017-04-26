@@ -49,7 +49,11 @@
                 {% for device in devices %}
                     {% if device['room_id'] == None %}
                         <tr>
-                            <td>{{ device.name }}</td>
+                            <td>
+                                <a href="{{ url_for('.show_device', device_id=device.device_id) }}">
+                                    {{ device.name }}
+                                </a>
+                            </td>
                             <td>-</td>
                             <td>{device.faulty}}</td>
                             <td>{{ device.vendor }}</td>
@@ -88,7 +92,11 @@
                     {% for device in devices %}
                         {% if room.room_id == device['room_id'] %}
                             <tr>
-                                <td>{{ device.name }}</td>
+                                <td>
+                                    <a href="{{ url_for('.show_device', device_id=device.device_id) }}">
+                                        {{ device.name }}
+                                    </a>
+                                </td>
                                 <td>{{ room.name }}</td>
                                 <td>{device.faulty}}</td>
                                 <td>{{ device.vendor }}</td>

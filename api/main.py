@@ -285,7 +285,7 @@ def get_trigger_info(trigger_id):
 
 @api.route('/device/<string:device_id>/triggers', methods=['POST'])
 def get_triggers_for_device(device_id):
-    access = api.device_repository.validate_token(ObjectId(device_id))
+    access = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
     if not access:
         return jsonify({"triggers": None, "error": {"code": 401, "message": "Authentication failed"}})
     triggers = api.trigger_repository.get_triggers_for_device(ObjectId(device_id))
@@ -296,7 +296,7 @@ def get_triggers_for_device(device_id):
 
 @api.route('/device/<string:device_id>/actions', methods=['POST'])
 def get_actions_for_device(device_id):
-    access = api.device_repository.validate_token(ObjectId(device_id))
+    access = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
     if not access:
         return jsonify({"triggers": None, "error": {"code": 401, "message": "Authentication failed"}})
     triggers = api.trigger_repository.get_actions_for_device(ObjectId(device_id))
@@ -308,9 +308,10 @@ def get_actions_for_device(device_id):
 @api.route('/trigger/create', methods=['POST'])
 def add_new_trigger():
     data = request.get_json()
+    access0 = api.user_repository.validate_token(ObjectId(data['user_id']), get_request_token())
     access1 = api.device_repository.validate_token(ObjectId(data['sensor_id']), get_request_token())
     access2 = api.device_repository.validate_token(ObjectId(data['actor_id']), get_request_token())
-    if not access1 or not access2:
+    if not access0 or not access1 or not access2:
         return jsonify({"trigger": None, "error": {"code": 401, "message": "Authentication failed"}})
     sensor = api.device_repository.get_device_by_id(ObjectId(data['sensor_id']))
     actor = api.device_repository.get_device_by_id(ObjectId(data['actor_id']))
@@ -351,7 +352,7 @@ def remove_trigger(trigger_id):
     result = api.trigger_repository.remove_trigger(ObjectId(trigger_id))
     if result is None:
         return jsonify({"trigger": None, "error": {"code": 404, "message": "No such trigger found"}})
-    return jsonify({"trigger": trigger.trigger_id, "error": None})
+    return jsonify({"trigger": trigger_id, "error": None})
 
 
 @api.route('/user/<string:user_id>/triggers', methods=['POST'])

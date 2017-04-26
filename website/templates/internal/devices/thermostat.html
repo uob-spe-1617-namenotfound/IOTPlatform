@@ -1,0 +1,31 @@
+{% extends "internal/devices/device.html" %}
+{% block device_type %}thermostat{% endblock %}
+
+{% block device_status %}
+    <ul>
+        <li>
+            <b>Last reading: </b>
+            {% if device.status.last_read and device.status.last_read.timestamp %}
+                {{ device.status.last_read.timestamp|timestamp_to_str }}
+            {% else %}
+                <i>Not available</i>
+            {% endif %}
+        </li>
+        <li>
+            <b>Temperature: </b>
+            {% if device.status.last_read and device.status.last_read.data  and device.status.last_read.data.temperature %}
+                {{ device.status.last_read.data.temperature }}°C
+            {% else %}
+                <i>Not available</i>
+            {% endif %}
+        </li>
+        <li>
+            <b>Target temperature: </b>
+            {% if device.target and device.target.target_temperature %}
+                {{ device.target.target_temperature }}°C
+            {% else %}
+                <i>Not available</i>
+            {% endif %}
+        </li>
+    </ul>
+{% endblock %}
