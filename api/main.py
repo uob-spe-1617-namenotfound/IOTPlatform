@@ -17,6 +17,7 @@ mongo = MongoClient(api.config['MONGO_HOST'], api.config['MONGO_PORT'])
 db = mongo.database
 authentication = api.config['AUTHENTICATION_ENABLED']
 
+
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, ObjectId):
@@ -35,6 +36,7 @@ api.house_repository = api.repository_collection.house_repository
 api.room_repository = api.repository_collection.room_repository
 api.device_repository = api.repository_collection.device_repository
 api.trigger_repository = api.repository_collection.trigger_repository
+api.theme_repository = api.repository_collection.theme_repository
 api.token_repository = api.repository_collection.token_repository
 
 
@@ -164,14 +166,14 @@ def add_device(house_id):
         return jsonify({"device": None, "error": {"code": 404, "message": "No such house found"}})
     data = request.get_json()
     logging.debug("Adding device: {}".format(data))
-    device = api.device_repository.add_device(house_id=ObjectId(house_id),
-                                              room_id=None,
-                                              name=data['name'],
-                                              device_type=data['device_type'],
-                                              target=data['target'],
-                                              status=data['status'],
-                                              configuration=data['configuration'],
-                                              vendor=data['vendor'])
+    device_id = api.device_repository.add_device(house_id=ObjectId(house_id),
+                                                 room_id=None,
+                                                 name=data['name'],
+                                                 device_type=data['device_type'],
+                                                 target=data['target'] if 'target' in data else {},
+                                                 status=data['status'] if 'status' in data else {},
+                                                 configuration=data['configuration'],
+                                                 vendor=data['vendor'])
     device = api.device_repository.get_device_by_id(device_id)
     logging.debug("Device added: {}".format(device))
     if device is None:
@@ -284,7 +286,7 @@ def get_trigger_info(trigger_id):
 
 @api.route('/device/<string:device_id>/triggers', methods=['POST'])
 def get_triggers_for_device(device_id):
-    access = api.device_repository.validate_token(ObjectId(device_id))
+    access = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
     if not access:
         return jsonify({"triggers": None, "error": {"code": 401, "message": "Authentication failed"}})
     triggers = api.trigger_repository.get_triggers_for_device(ObjectId(device_id))
@@ -295,7 +297,7 @@ def get_triggers_for_device(device_id):
 
 @api.route('/device/<string:device_id>/actions', methods=['POST'])
 def get_actions_for_device(device_id):
-    access = api.device_repository.validate_token(ObjectId(device_id))
+    access = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
     if not access:
         return jsonify({"triggers": None, "error": {"code": 401, "message": "Authentication failed"}})
     triggers = api.trigger_repository.get_actions_for_device(ObjectId(device_id))
@@ -307,9 +309,10 @@ def get_actions_for_device(device_id):
 @api.route('/trigger/create', methods=['POST'])
 def add_new_trigger():
     data = request.get_json()
+    access0 = api.user_repository.validate_token(ObjectId(data['user_id']), get_request_token())
     access1 = api.device_repository.validate_token(ObjectId(data['sensor_id']), get_request_token())
     access2 = api.device_repository.validate_token(ObjectId(data['actor_id']), get_request_token())
-    if not access1 or not access2:
+    if not access0 or not access1 or not access2:
         return jsonify({"trigger": None, "error": {"code": 401, "message": "Authentication failed"}})
     sensor = api.device_repository.get_device_by_id(ObjectId(data['sensor_id']))
     actor = api.device_repository.get_device_by_id(ObjectId(data['actor_id']))
@@ -350,18 +353,130 @@ def remove_trigger(trigger_id):
     result = api.trigger_repository.remove_trigger(ObjectId(trigger_id))
     if result is None:
         return jsonify({"trigger": None, "error": {"code": 404, "message": "No such trigger found"}})
-    return jsonify({"trigger": trigger.trigger_id, "error": None})
+    return jsonify({"trigger": trigger_id, "error": None})
 
 
 @api.route('/user/<string:user_id>/triggers', methods=['POST'])
 def get_triggers_for_user(user_id):
-    access = api.token_repository.validate_token(ObjectId(user_id), get_request_token())
+    access = api.user_repository.validate_token(ObjectId(user_id), get_request_token())
     if not access:
         return jsonify({"triggers": None, "error": {"code": 401, "message": "Authentication failed"}})
     triggers = api.trigger_repository.get_triggers_for_user(ObjectId(user_id))
     if triggers is None:
         return jsonify({"triggers": None, "error": {"code": 404, "message": "No triggers found for this user"}})
-    return jsonify({"triggers": triggers, "error": None})
+    return jsonify({"triggers": [trigger.get_trigger_attributes() for trigger in triggers], "error": None})
+
+
+@api.route('/user/<string:user_id>/themes', methods=['POST'])
+def get_themes_for_user(user_id):
+    access = api.token_repository.validate_token(ObjectId(user_id), get_request_token())
+    if not access:
+        return jsonify({"themes": None, "error": {"code": 401, "message": "Authentication failed"}})
+    themes = api.theme_repository.get_themes_for_user(ObjectId(user_id))
+    if themes is None:
+        return jsonify({"themes": None, "error": {"code": 404, "message": "No themes found for this user"}})
+    return jsonify({"themes": themes, "error": None})
+
+
+@api.route('/theme/<string:theme_id>', methods=['POST'])
+def get_theme_info(theme_id):
+    access = api.theme_repository.validate_token(ObjectId(theme_id), get_request_token())
+    if not access:
+        return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    theme = api.theme_repository.get_theme_by_id(ObjectId(theme_id))
+    if theme is None:
+        return jsonify({"theme": None, "error": {"code": 404, "message": "No such theme found"}})
+    return jsonify({"theme": theme.get_theme_attributes(), "error": None})
+
+
+@api.route('/theme/create', methods=['POST'])
+def add_new_theme():
+    data = request.get_json()
+    for dev_id in data['settings']:
+        access = api.device_repository.validate_token(ObjectId(dev_id), get_request_token())
+        if not access:
+            return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    theme_id = api.theme_repository.add_theme(ObjectId(data['user_id']), data['name'], data['settings'],
+                                              ObjectId(data['active']))
+    theme = api.theme_repository.get_theme_by_id(theme_id)
+    if theme is None:
+        return jsonify({"theme": None, "error": {"code": 400, "message": "Theme could not be added"}})
+    return jsonify({"theme": theme.get_theme_attributes(), "error": None})
+
+
+@api.route('/theme/<string:theme_id>/edit', methods=['POST'])
+def edit_theme(theme_id):
+    data = request.get_json()
+    for dev_id in data['settings']:
+        access = api.device_repository.validate_token(ObjectId(dev_id), get_request_token())
+        if not access:
+            return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    theme = api.theme_repository.get_theme_by_id(theme_id)
+    if theme is None:
+        return jsonify({"theme": None, "error": {"code": 404, "message": "No such theme found"}})
+    theme = api.theme_repository.edit_theme(theme_id, data['settings'], data['active'])
+    return jsonify({"theme": theme.get_theme_attributes(), "error": None})
+
+
+@api.route('/theme/<string:theme_id>/device/<string:device_id>/update')
+def update_theme(theme_id, device_id, setting):
+    access = api.theme_repository.validate_token(ObjectId(theme_id), get_request_token())
+    if not access:
+        return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    theme = api.theme_repository.get_theme_by_id(theme_id)
+    if device_id not in theme.settings:
+        updated_theme = theme.add_device_to_theme(theme_id, device_id, setting)
+    else:
+        updated_theme = theme.edit_device_settings(theme_id, device_id, setting)
+    return jsonify({"theme": updated_theme.get_theme_attributes(), "error": None})
+
+
+@api.route('/theme/<string:theme_id>/device/<string:device_id>/remove', methods=['POST'])
+def remove_device_from_theme(theme_id, device_id):
+    access = api.theme_repository.validate_token(ObjectId(theme_id), get_request_token())
+    if not access:
+        return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    theme = api.theme_repository.remove_device_from_theme(theme_id, device_id)
+    return jsonify({"theme": theme, "error": None})
+
+
+@api.route('/theme/<string:theme_id>/delete', methods=['POST'])
+def remove_theme(theme_id):
+    access = api.theme_repository.validate_token(ObjectId(theme_id), get_request_token())
+    if not access:
+        return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    result = api.theme_repository.remove_theme(ObjectId(theme_id))
+    if result is None:
+        return jsonify({"theme": None, "error": {"code": 404, "message": "No such theme found"}})
+    return jsonify({"theme": result.theme_id, "error": None})
+
+
+@api.route('/theme/<string:theme_id>/activate', methods=['POST'])
+def activate_theme(theme_id):
+    access = api.theme_repository.validate_token(ObjectId(theme_id), get_request_token())
+    if not access:
+        return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    theme = api.theme_repository.get_theme_by_id(theme_id)
+    for dev_id in theme.settings:
+        access = api.device_repository.validate_token(ObjectId(dev_id), get_request_token())
+        if not access:
+            return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    result = api.theme_repository.change_theme_state(theme_id, True)
+    return jsonify({"theme": result, "error": None})
+
+
+@api.route('/theme/<string:theme_id>/deactivate', methods=['POST'])
+def deactivate_theme(theme_id):
+    access = api.theme_repository.validate_token(ObjectId(theme_id), get_request_token())
+    if not access:
+        return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    theme = api.theme_repository.get_theme_by_id(theme_id)
+    for dev_id in theme.settings:
+        access = api.device_repository.validate_token(ObjectId(dev_id), get_request_token())
+        if not access:
+            return jsonify({"theme": None, "error": {"code": 401, "message": "Authentication failed"}})
+    result = api.theme_repository.change_theme_state(theme_id, False)
+    return jsonify({"theme": result, "error": None})
 
 
 @api.route('/user/<string:user_id>/faults', methods=['POST'])
@@ -415,9 +530,9 @@ def get_overall_consumption():
         return jsonify({"consumption": None, "error": {"code": 401, "message": "Authentication failed"}})
     overall_consumption = api.device_repository.get_overall_consumption()
     if overall_consumption is None:
-        return jsonify({"consumption": None, "error": {"code": 404, "message": "Overall consumption could not be obtained"}})
+        return jsonify(
+            {"consumption": None, "error": {"code": 404, "message": "Overall consumption could not be obtained"}})
     return jsonify({"consumption": overall_consumption, "error": None})
-
 
 
 @api.route('/login', methods=['POST'])
@@ -427,7 +542,7 @@ def login():
     data = dict()
     logging.debug("API login, received data: {} {}".format(email_address, password))
     try:
-        login_user = api.user_repository.check_password(email_address=email_address,password=password)
+        login_user = api.user_repository.check_password(email_address=email_address, password=password)
         token = api.token_repository.generate_token(login_user.user_id)
         logging.debug("Token generated: {}".format(token))
         data['result'] = {'success': True, 'admin': login_user.is_admin, 'user_id': login_user.user_id,
@@ -446,7 +561,7 @@ def register():
     logging.debug("Data: {}".format(registration))
     try:
         new_user = api.user_repository.register_new_user(registration['email_address'], registration['password'],
-                                                     registration['name'], False)
+                                                         registration['name'], False)
         logging.debug("New user: {}".format(new_user))
         house_id = api.house_repository.add_house(new_user, "{}'s house".format(registration['name']), None)
         logging.debug("Add house: {}".format(house_id))

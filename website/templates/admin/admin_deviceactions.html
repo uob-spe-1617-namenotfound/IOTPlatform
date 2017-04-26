@@ -1,5 +1,7 @@
-{% extends "internal/base.html" %}
+{% extends "admin/admin_user_base.html" %}
 {% block page_content %}
+    <a href="{{ url_for('.user', user_id=user.user_id) }}" class="btn btn-primary">Back to home of {{ user.name }}</a>
+
     {% if device.device_type == 'motion_sensor' %}
         <h1> Motion Sensor Action Settings </h1>
         <hr>
@@ -16,11 +18,11 @@
         {% if device.last_read %}
             {% if device.last_read.data.power_state == 1 %}
                 Switch is on.<a class="btn btn-default btn-primary"
-                                href="{{ url_for('.set_switch_settings', device_id=device.device_id, state=0) }}">Turn
+                                href="{{ url_for('.set_switch_settings', user_id=user.user_id, device_id=device.device_id, state=0) }}">Turn
                 it off</a>
             {% else %}
                 Switch is off.<a class="btn btn-default btn-primary"
-                                 href="{{ url_for('.set_switch_settings', device_id=device.device_id, state=1) }}">Turn
+                                 href="{{ url_for('.set_switch_settings', user_id=user.user_id, device_id=device.device_id, state=1) }}">Turn
                 it on</a>
             {% endif %}
         {% else %}
@@ -54,7 +56,7 @@
                 <i>No actual data available yet.</i>
             </p>
         {% endif %}
-        {{ wtf.quick_form(change_settings_form, action=url_for('.set_device_settings', device_id=device.device_id)) }}
+        {{ wtf.quick_form(change_settings_form, action=url_for('.set_device_settings', user_id=user.user_id, device_id=device.device_id)) }}
         <hr>
     {% elif device.device_type == "door_sensor" %}
         <h1> Light Switch Action Settings </h1>
