@@ -277,7 +277,9 @@ def get_triggers_for_user(user_id):
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
-    return data['triggers']
+    triggers = data['triggers']
+    load_trigger_devices_data(triggers)
+    return triggers
 
 
 def get_all_faulty_devices():

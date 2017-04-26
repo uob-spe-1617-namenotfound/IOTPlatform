@@ -1,0 +1,12 @@
+{% extends "internal/base.html" %}
+{% block page_content %}
+    <h1>Triggers</h1>
+    <ul>
+        {% for trigger in all_triggers %}
+            <li>
+                {% include "internal/triggers/trigger_element.html" %}
+                <a href="{{ url_for('.delete_trigger', trigger_id=trigger.trigger_id) }}">Delete</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
