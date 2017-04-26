@@ -119,7 +119,7 @@ def link_device_to_room(room_id, device_id):
 
 
 def move_device2room(device2room):
-    return "done"
+    return None
 
 
 def get_house_info(house_id):

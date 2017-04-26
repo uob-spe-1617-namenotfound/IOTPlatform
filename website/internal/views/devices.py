@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, jsonify
 
 import data_interface, logging
 from internal import internal_site
@@ -102,9 +102,10 @@ def set_switch_settings(device_id, state):
     return redirect(url_for('.show_device', device_id=device_id))
 
 
-@internal_site.route('/device/move', methods=['POST'])
+@internal_site.route('/device/move', methods=['POST', 'GET'])
 def move_device():
     device2room = request.form
+    device2room = device2room.to_dict()
     data_interface.move_device2room(device2room)
-    return "done"
+    return jsonify(device2room)
 

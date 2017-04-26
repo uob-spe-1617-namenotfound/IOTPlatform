@@ -54,7 +54,7 @@
                             </thead>
                             {% for room in rooms %}
                                 <tr>
-                                    <td>{{room.name}}</td>
+                                    <td class="room-row" data-room-id="{{ room.room_id }}">{{room.name}}</td>
                                 </tr>
                             {% endfor %}
                         {% else %}
@@ -164,14 +164,15 @@
            $('.devices-table').hide();
            $('.rooms-table').show();
         });
-        $('.rooms-table tr').click(function(){
+        $('.room-row').click(function(){
             room_id = $(this).data('room-id');
-            $.post('device/move', {
+            var data = {
                 room_id: room_id,
                 device_id: device_id
-            }, function(rsp){
-                alert(rsp)
+            };
+            $.post('device/move', data, function(){
                 $('#myModal2').modal('hide');
+                location.reload(true);
             });
         });
     });
