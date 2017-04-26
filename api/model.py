@@ -87,6 +87,7 @@ class Device(object):
         self.device_type = None
         self.vendor = None
         self.configuration = None
+        self.locking_theme_id = None
         self.faulty = None
         self.target = {}
         self.status = {}
@@ -98,6 +99,7 @@ class Device(object):
         self.room_id = attributes['room_id']
         self.name = attributes['name']
         self.device_type = attributes['device_type']
+        self.locking_theme_id = get_optional_attribute(attributes, 'locking_theme_id', None)
         self.faulty = get_optional_attribute(attributes, 'faulty', False)
         self.target = get_optional_attribute(attributes, 'target', {})
         self.status = get_optional_attribute(attributes, 'status', {})
@@ -107,8 +109,8 @@ class Device(object):
     def get_device_attributes(self):
         return {'device_id': self.device_id, 'house_id': self.house_id,
                 'room_id': self.room_id, 'name': self.name, 'device_type': self.device_type,
-                'faulty': self.faulty, 'target': self.target, 'status': self.status,
-                'vendor': self.vendor, 'configuration': self.configuration}
+                'locking_theme_id': self.locking_theme_id, 'faulty': self.faulty, 'target': self.target,
+                'status': self.status, 'vendor': self.vendor, 'configuration': self.configuration}
 
     def get_device_id(self):
         return self.device_id
@@ -344,6 +346,27 @@ class Trigger:
                 'event': self.event, 'event_params': self.event_params, 'actor_id': self.actor_id,
                 'action': self.action, 'action_params': self.action_params, 'user_id': self.user_id,
                 'reading': self.reading}
+
+
+class Theme:
+    def __init__(self, attributes):
+        self.theme_id = None
+        self.name = None
+        self.user_id = None
+        self.settings = []
+        self.active = False
+        self.set_attributes(attributes)
+
+    def set_attributes(self, attributes):
+        self.theme_id = attributes['_id']
+        self.name = attributes['name']
+        self.user_id = attributes['user_id']
+        self.settings = attributes['settings']
+        self.active = attributes['active']
+
+    def get_theme_attributes(self):
+        return {'theme_id': self.theme_id, 'name': self.name,
+                'user_id': self.user_id, 'settings': self.settings, 'active': self.active}
 
 
 class Token:
