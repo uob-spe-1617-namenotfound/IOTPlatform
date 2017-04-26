@@ -48,12 +48,12 @@ def get_user_default_rooms():
     return data['rooms']
 
 
-def get_default_house_id_for_user(user_id):
+def get_house_id_for_user(user_id):
     return get_house_for_user(user_id)["house_id"]
 
 
-def get_default_rooms_for_user(user_id):
-    r = requests.post(get_api_url('/house/{}/rooms'.format(get_default_house_id_for_user(user_id))),
+def get_rooms_for_user(user_id):
+    r = requests.post(get_api_url('/house/{}/rooms'.format(get_house_id_for_user(user_id))),
                       json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
@@ -61,22 +61,26 @@ def get_default_rooms_for_user(user_id):
     return data['rooms']
 
 
-def add_new_device(name, device_type, vendor, configuration):
-    r = requests.post(get_api_url('/house/{}/devices/add'.format(get_default_house_id())),
+def add_new_device(user_id, name, device_type, vendor, configuration):
+    r = requests.post(get_api_url('/house/{}/devices/add'.format(get_house_id_for_user(user_id))),
                       json={"name": name,
                             "configuration": configuration,
                             "device_type": device_type,
                             "vendor": vendor,
                             "token": utilities.session.get_active_user_token()})
     logging.debug("Received from add new device: {}".format(r.content))
-    data = r.json()
+    try:
+        data = r.json()
+    except:
+        logging.debug("Parsing response to JSON failed!")
+        raise Exception("JSON parse error")
     if data['error'] is not None:
         raise Exception("Error!")
     return data['device']['_id']
 
 
-def add_new_room(name):
-    r = requests.post(get_api_url('/house/{}/rooms/add'.format(get_default_house_id())),
+def add_new_room(user_id, name):
+    r = requests.post(get_api_url('/house/{}/rooms/add'.format(get_house_id_for_user(user_id))),
                       json={"name": name,
                             "token": utilities.session.get_active_user_token()})
     logging.debug(r.content)
@@ -91,8 +95,8 @@ def add_new_room(name):
     return data['room']['room_id']
 
 
-def get_user_default_devices():
-    r = requests.post(get_api_url('/house/{}/devices'.format(get_default_house_id())),
+def get_user_devices(user_id):
+    r = requests.post(get_api_url('/house/{}/devices'.format(get_house_id_for_user(user_id))),
                       json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
@@ -134,6 +138,7 @@ def get_room_info(room_id):
     if data['error'] is not None:
         raise Exception("Error!")
     return data['room']
+
 
 def remove_room(room_id):
     r = requests.post(get_api_url('/room/{}/remove'.format(room_id)),
@@ -301,12 +306,3 @@ def logout():
     if data['error'] is not None:
         raise Exception("Error!")
     return data['success']
-
-
-def get_user_graph_data(user_id):
-    r = requests.post(get_api_url('/graph/{}'.format(user_id)),
-                      json=get_authentication_token())
-    data = r.json()
-    if data['error'] is not None:
-        raise Exception("Error!")
-    return data['data']
