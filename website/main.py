@@ -20,6 +20,8 @@ app.register_blueprint(internal.internal_site, url_prefix='/internal')
 app.register_blueprint(public.public_site)
 
 from utilities.ui.bootstrap import CustomBootstrapRenderer
+from utilities.ui import timestamp_to_date_time
+app.add_template_filter(timestamp_to_date_time, "timestamp_to_str")
 
 register_renderer(app, 'custom_bootstrap_nav', CustomBootstrapRenderer)
 nav.register_element('public_navbar', public.navbar)

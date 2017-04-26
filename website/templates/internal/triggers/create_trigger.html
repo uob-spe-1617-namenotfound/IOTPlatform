@@ -1,0 +1,4 @@
+{% extends "internal/base.html" %}
+{% block page_content %}
+    {{ wtf.quick_form(action_form, action=url_for('.create_trigger_action_for', device_id=device.device_id, actor_id=actor.device_id)) }}
+{% endblock %}

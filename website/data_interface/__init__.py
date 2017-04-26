@@ -97,7 +97,11 @@ def add_new_room(user_id, name):
 
 
 def get_user_devices(user_id):
-    r = requests.post(get_api_url('/house/{}/devices'.format(get_house_id_for_user(user_id))),
+    return get_house_devices(get_house_id_for_user(user_id))
+
+
+def get_house_devices(house_id):
+    r = requests.post(get_api_url('/house/{}/devices'.format(house_id)),
                       json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
@@ -206,22 +210,43 @@ def get_trigger_info(trigger_id):
     return data['trigger']
 
 
-def get_triggers_for_device(device_id):
+def get_possible_affected_devices(device_id):
+    device_info = get_device_info(device_id)
+    all_devices = get_house_devices(device_info["house_id"])
+    all_affected_devices = get_affected_triggers(device_id)
+    logging.info("All affected devices: {}".format(all_affected_devices))
+    invalid_devices = {device["actor_id"] for device in all_affected_devices} | {device_id} | {
+        device["device_id"] for device in all_devices if device["device_type"] in ["motion_sensor"]
+    }
+    return [device for device in all_devices if (device["device_id"] not in invalid_devices)]
+
+
+def load_trigger_devices_data(triggers):
+    for t in triggers:
+        t["sensor_info"] = get_device_info(t["sensor_id"])
+        t["actor_info"] = get_device_info(t["actor_id"])
+
+
+def get_affecting_triggers(device_id):
     r = requests.post(get_api_url('/device/{}/triggers'.format(device_id)),
                       json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
-    return data['triggers']
+    triggers = data['triggers']
+    load_trigger_devices_data(triggers)
+    return triggers
 
 
-def get_actions_for_device(device_id):
+def get_affected_triggers(device_id):
     r = requests.post(get_api_url('/device/{}/actions'.format(device_id)),
                       json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception("Error!")
-    return data['triggers']
+    triggers = data['triggers']
+    load_trigger_devices_data(triggers)
+    return triggers
 
 
 def edit_trigger(trigger_id, event, event_params, action, action_params):
