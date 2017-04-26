@@ -218,6 +218,7 @@ def remove_room(room_id):
 
 @api.route('/room/<string:room_id>/device/<string:device_id>/link', methods=['POST'])
 def link_device_to_room(room_id, device_id):
+    room = api.room_repository.get_room_by_id(ObjectId(room_id))
     if room is None:
         return jsonify({"device": None, "error": {"code": 404, "message": "No such room found"}})
     result = api.device_repository.link_device_to_room(ObjectId(room_id), ObjectId(device_id))
