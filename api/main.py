@@ -160,7 +160,7 @@ def get_device_info(device_id):
 def add_device(house_id):
     access = api.house_repository.validate_token(ObjectId(house_id), get_request_token())
     if not access:
-        return jsonify({"house": None, "error": {"code": 401, "message": "Authentication failed"}})
+        return jsonify({"device": None, "error": {"code": 401, "message": "Authentication failed"}})
     house = api.house_repository.get_house_by_id(ObjectId(house_id))
     if house is None:
         return jsonify({"device": None, "error": {"code": 404, "message": "No such house found"}})
