@@ -1,5 +1,7 @@
 {% extends "admin/admin_user_base.html" %}
 {% block page_content %}
+    <a href="{{ url_for('.user', user_id=user.user_id) }}" class="btn btn-primary">Back to home of {{ user.name }}</a>
+
     {% if device.device_type == 'motion_sensor' %}
         <h1> Motion Sensor Action Settings </h1>
         <hr>
