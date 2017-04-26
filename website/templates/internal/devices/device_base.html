@@ -31,10 +31,11 @@
     {% endif %}
 </div>
 
-{% if configuration_form %}
+{% if device_settings %}
     <div class="panel">
         <h2>Device settings</h2>
-        {{ wtf.quick_form(configuration_form, action=url_for('.set_device_settings', device_id=device.device_id)) }}
+        {% block device_settings %}
+        {% endblock %}
     </div>
 {% endif %}
 
