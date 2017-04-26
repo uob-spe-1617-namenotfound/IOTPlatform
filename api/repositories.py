@@ -96,14 +96,15 @@ class UserRepository(Repository):
 
     def get_faulty_devices_for_user(self, user_id):
         faulty_devices = self.repositories.device_repository.get_faulty_devices()
-        user = self.collection.get_user_by_id(user_id)
-        attributes = user.get_user_attributes()
+        house_id = self.collection.get_houses_for_user(user_id)[0].house_id
+        target_devices = []
         fault_check = False
         for device in faulty_devices:
-            if device.user_id == user_id:
+            if device.house_id == house_id:
                 fault_check = True
-        attributes['faulty'] = fault_check
-        return attributes
+                target_devices.append(Device(device))
+        self.collection.update_one({'_id': user_id}, {"$set": {'faulty': fault_check}}, upsert=False)
+        return target_devices
 
     def validate_token(self, user_id, token):
         user = self.get_user_by_id(user_id)
