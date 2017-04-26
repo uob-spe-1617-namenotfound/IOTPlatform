@@ -7,8 +7,9 @@ internal_navbar = CustomNavbar(
     'IoT',
     [
         View('Home', '.index'),
-        Subgroup('Devices',
-                 View('All Devices','.show_devices'),
+        View('All devices', '.show_devices'),
+        Subgroup('More',
+                 View('Triggers', '.show_all_triggers'),
                  View('Themes', '.themes'),
                  View('Graph', '.graph')
                  )

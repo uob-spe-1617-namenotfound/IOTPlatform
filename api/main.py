@@ -358,13 +358,13 @@ def remove_trigger(trigger_id):
 
 @api.route('/user/<string:user_id>/triggers', methods=['POST'])
 def get_triggers_for_user(user_id):
-    access = api.token_repository.validate_token(ObjectId(user_id), get_request_token())
+    access = api.user_repository.validate_token(ObjectId(user_id), get_request_token())
     if not access:
         return jsonify({"triggers": None, "error": {"code": 401, "message": "Authentication failed"}})
     triggers = api.trigger_repository.get_triggers_for_user(ObjectId(user_id))
     if triggers is None:
         return jsonify({"triggers": None, "error": {"code": 404, "message": "No triggers found for this user"}})
-    return jsonify({"triggers": triggers, "error": None})
+    return jsonify({"triggers": [trigger.get_trigger_attributes() for trigger in triggers], "error": None})
 
 
 @api.route('/user/<string:user_id>/themes', methods=['POST'])
