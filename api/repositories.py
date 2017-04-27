@@ -228,14 +228,6 @@ class DeviceRepository(Repository):
                 devices.append(device)
         return devices
 
-    def get_faulty_devices_for_user(self, user_id):
-        faulty_devices = self.get_faulty_devices()
-        user_faulty_devices = []
-        for device in faulty_devices:
-            if device.user_id == user_id:
-                user_faulty_devices.append(device)
-        return user_faulty_devices
-
     def update_device_reading(self, device):
         last_read = device.read_current_state()
         self.collection.update_one({'_id': device.device_id},

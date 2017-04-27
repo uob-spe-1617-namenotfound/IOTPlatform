@@ -485,7 +485,7 @@ def faulty_user_devices(user_id):
     access = api.token_repository.authenticate_admin(get_request_token())
     if not access:
         return jsonify({"devices": None, "error": {"code": 401, "message": "Authentication failed"}})
-    faulty_devices = api.device_repository.get_faulty_devices_for_user(user_id)
+    faulty_devices = api.user_repository.get_faulty_devices_for_user(user_id)
     devices = []
     if faulty_devices is None:
         return jsonify({"devices": None, "error": None})
