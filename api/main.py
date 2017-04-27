@@ -550,7 +550,7 @@ def login():
                           'token': token}
         data['error'] = None
     except repositories.RepositoryException as ex:
-        data['success'] = False
+        data['result'] = False
         data['error'] = ex.error_data
     return jsonify(data)
 
