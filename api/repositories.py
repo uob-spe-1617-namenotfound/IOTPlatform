@@ -319,6 +319,14 @@ class DeviceRepository(Repository):
         devices = self.collection.find({'house_id': house_id})
         target_devices = []
         for device in devices:
+            if device. == "thermostat":
+                target_devices.append(Thermostat(device))
+            elif device_type == "motion_sensor":
+                target_devices.append(MotionSensor(device))
+            elif device_type == "light_switch":
+                target_devices.append(LightSwitch(device))
+            elif device_type == "open_sensor":
+                target_devices.append(OpenSensor(device))
             target_devices.append(Device(device))
         return target_devices
 
