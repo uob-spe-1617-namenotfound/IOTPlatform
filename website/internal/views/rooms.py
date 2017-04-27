@@ -27,7 +27,6 @@ def add_new_room():
 def view_room(room_id):
     room = data_interface.get_room_info(room_id)
     all_devices = data_interface.get_user_devices(get_active_user()['user_id'])
-    print(all_devices)
     linked_devices = [d for d in all_devices if d['room_id'] is not None]
     unlinked_devices = [d for d in all_devices if d['room_id'] is None]
     room_devices = [d for d in all_devices if d['room_id'] == room_id]

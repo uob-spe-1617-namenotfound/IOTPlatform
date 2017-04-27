@@ -11,11 +11,6 @@ from internal.views import rooms, devices, triggers
 from shared.forms import AddNewRoomForm
 
 
-@internal_site.route('/triggers')
-def triggers():
-    return render_template("internal/triggers.html")
-
-
 @internal_site.route('/')
 def index():
     form = AddNewRoomForm()

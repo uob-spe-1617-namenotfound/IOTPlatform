@@ -152,3 +152,18 @@ def move_device():
     device2room = device2room.to_dict()
     data_interface.move_device2room(device2room)
     return jsonify(device2room)
+
+
+@internal_site.route('/add_theme')
+def add_theme():
+    devices = data_interface.get_user_devices(get_active_user()['user_id'])
+    rooms = data_interface.get_user_default_rooms()
+    rooms = sorted(rooms, key=lambda k: k['name'])
+    return render_template("internal/add_theme.html", devices=devices,
+                           rooms=rooms)
+
+
+@internal_site.route('/new_theme', methods=['POST', 'GET'])
+def new_theme():
+    theme_devices = request.form
+    return 'done'

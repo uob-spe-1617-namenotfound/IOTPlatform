@@ -22,11 +22,11 @@
                         <h3 class="devices-table">Choose a device</h3>
                         {% if devices %}
                             <thead>
-                            <tr>
-                                <th>Devices</th>
-                                <th>Location</th>
-                                <th>Vendor</th>
-                            </tr>
+                                <tr>
+                                    <th>Devices</th>
+                                    <th>Location</th>
+                                    <th>Vendor</th>
+                                </tr>
                             </thead>
                             {% for room in rooms %}
                                 {% for device in devices %}
@@ -52,8 +52,8 @@
                             </tr>
                             </thead>
                             {% for room in rooms %}
-                                <tr>
-                                    <td class="room-row" data-room-id="{{ room.room_id }}">{{ room.name }}</td>
+                                <tr class="room-row" data-room-id="{{ room.room_id }}">
+                                    <td>{{ room.name }}</td>
                                 </tr>
                             {% endfor %}
                         {% else %}
