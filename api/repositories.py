@@ -237,15 +237,20 @@ class DeviceRepository(Repository):
         return user_faulty_devices
 
     def update_device_reading(self, device):
-        reading = device.read_current_state()
-        self.collection.update_one({'_id': device.get_device_id()},
-                                   {"$set": {'status.last_read': reading}})
+        last_read = device.read_current_state()['timestamp']
+        self.collection.update_one({'_id': device.device_id},
+                                   {"$set": {'status.last_read': last_read}})
+        updated_device = self.collection.find({'_id': device.device_id})
+        return updated_device
 
     def update_all_device_readings(self):
         all_device_ids = [x['_id'] for x in self.collection.find({}, {})]
+        updated_devices = []
         for device_id in all_device_ids:
             device = self.get_device_by_id(device_id)
-            self.update_device_reading(device)
+            updated_device = self.update_device_reading(device)
+            updated_devices.append(updated_device)
+        return updated_devices
 
     def add_device(self, house_id, room_id, name, device_type, target, configuration, vendor):
         house_devices = self.get_devices_for_house(house_id)
@@ -365,15 +370,15 @@ class DeviceRepository(Repository):
             self.collection.update_one({'_id': device_id}, {"$set": {'target.target_temperature': temp}}, upsert=False)
             device = self.get_device_by_id(device_id)
             device.configure_target_temperature(temp)
-            self.update_device_reading(device)
-        return device
+            updated_device = self.update_device_reading(device)
+        return updated_device
 
     def set_locking_theme_id(self, device_id, locking_theme_id):
         device = self.get_device_by_id(device_id)
         device.locking_theme_id = locking_theme_id
         self.collection.update_one({'_id': device_id}, {"$set": {'locking_theme_id': locking_theme_id}})
-        self.update_device_reading(device)
-        return device
+        updated_device = self.update_device_reading(device)
+        return updated_device
 
     def change_temperature_scale(self, device_id):
         device = self.collection.find_one({'_id': device_id})
