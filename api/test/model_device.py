@@ -17,7 +17,7 @@ class DeviceTests(unittest.TestCase):
         self.house2id = self.houses.add_house(self.user2id, "Floris' House", None)
         self.device1id = self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat",
                                                  {'target_temperature': 20}, None, "example")
-        self.device2id = self.devices.add_device(self.house1id, None, "Kitchen Motion Sensor", "motion_sensor", {}, None,
+        self.device2id = self.devices.add_device(self.house1id, None, "Kitchen Motion Sensor", "motion_sensor", {'sensor_data': None}, None,
                                                  "example")
         self.device3id = self.devices.add_device(self.house1id, None, "Kitchen Light Switch", "light_switch", {}, None,
                                                  "example")

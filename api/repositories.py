@@ -291,11 +291,11 @@ class DeviceRepository(Repository):
             self.collection.update_one({'_id': device_id}, {"$set": {'target.target_temperature': 25}})
             self.collection.update_one({'_id': device_id}, {"$set": {'status.last_temperature': 0}})
         elif device['device_type'] == "motion_sensor":
-            self.collection.update_one({'_id': device_id}, {"$set": {'sensor_data': 0}})
+            self.collection.update_one({'_id': device_id}, {"$set": {'status.sensor_data': 0}})
         elif device['device_type'] == "light_switch":
             self.collection.update_one({'_id': device_id}, {"$set": {'status.power_state': 0}})
         elif device['device_type'] == "open_sensor":
-            self.collection.update_one({'_id': device_id}, {"$set": {'sensor_data': 0}})
+            self.collection.update_one({'_id': device_id}, {"$set": {'status.sensor_data': 0}})
 
     def remove_device(self, device_id):
         device = self.get_device_by_id(device_id)
