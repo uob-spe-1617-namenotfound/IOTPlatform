@@ -237,7 +237,7 @@ class DeviceRepository(Repository):
         return user_faulty_devices
 
     def update_device_reading(self, device):
-        last_read = device.read_current_state()['timestamp']
+        last_read = device.read_current_state()
         self.collection.update_one({'_id': device.device_id},
                                    {"$set": {'status.last_read': last_read}})
         updated_device = self.collection.find({'_id': device.device_id})
