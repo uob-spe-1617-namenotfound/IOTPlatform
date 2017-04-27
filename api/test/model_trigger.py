@@ -8,7 +8,8 @@ class TriggerTests(unittest.TestCase):
 
     def setUp(self):
         self.triggers = TriggerTests.repository_collection.trigger_repository
-        self.user1id = ObjectId()
+        self.users = TriggerTests.repository_collection.user_repository
+        self.user1id = self.users.add_user("Benny Clark", "xxxxxxxx", "benny@example.com", False)
         self.sensor1id = ObjectId()
         self.sensor2id = ObjectId()
         self.actor1id = ObjectId()
@@ -25,6 +26,7 @@ class TriggerTests(unittest.TestCase):
 
     def tearDown(self):
         self.triggers.clear_db()
+        self.users.clear_db()
 
     def test_TriggerAddedCorrectly(self):
         trigger1 = self.triggers.get_trigger_by_id(self.trigger1id)

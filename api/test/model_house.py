@@ -10,14 +10,16 @@ class HouseTests(unittest.TestCase):
 
     def setUp(self):
         self.houses = HouseTests.repository_collection.house_repository
-        self.user1id = ObjectId()
-        self.user2id = ObjectId()
+        self.users = HouseTests.repository_collection.user_repository
+        self.user1id = self.users.add_user("Benny Clark", "xxxxxxxx", "benny@example.com", False)
+        self.user2id = self.users.add_user("Floris Kint", "xxxxxxxx", "floris@example.com", True)
         self.house1id = self.houses.add_house(self.user1id, "Benny's House", None)
         self.house2id = self.houses.add_house(self.user2id, "Floris' House", None)
         self.house3id = self.houses.add_house(self.user2id, "Floris' Other House", None)
 
     def tearDown(self):
         self.houses.clear_db()
+        self.users.clear_db()
 
     def test_HouseAddedCorrectly(self):
         house3 = self.houses.get_house_by_id(self.house3id)

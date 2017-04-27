@@ -10,11 +10,13 @@ class DeviceTests(unittest.TestCase):
     def setUp(self):
         self.devices = DeviceTests.repository_collection.device_repository
         self.houses = DeviceTests.repository_collection.house_repository
-        self.room1id = ObjectId()
-        self.user1id = ObjectId()
-        self.user2id = ObjectId()
+        self.rooms = DeviceTests.repository_collection.room_repository
+        self.users = DeviceTests.repository_collection.user_repository
+        self.user1id = self.users.add_user("Benny Clark", "xxxxxxxx", "benny@example.com", False)
+        self.user2id = self.users.add_user("Floris Kint", "xxxxxxxx", "floris@example.com", True)
         self.house1id = self.houses.add_house(self.user1id, "Benny's House", None)
         self.house2id = self.houses.add_house(self.user2id, "Floris' House", None)
+        self.room1id = self.rooms.add_room(self.house1id, "Living Room")
         self.device1id = self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat",
                                                  {'target_temperature': 20}, None, "example")
         self.device2id = self.devices.add_device(self.house1id, None, "Kitchen Motion Sensor", "motion_sensor", {'sensor_data': None}, None,
@@ -28,6 +30,8 @@ class DeviceTests(unittest.TestCase):
     def tearDown(self):
         self.devices.clear_db()
         self.houses.clear_db()
+        self.rooms.clear_db()
+        self.users.clear_db()
 
     def test_DeviceAddedCorrectly(self):
         device3 = self.devices.get_device_by_id(self.device3id)

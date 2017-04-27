@@ -10,7 +10,8 @@ class ThemeTests(unittest.TestCase):
         self.themes = ThemeTests.repository_collection.theme_repository
         self.devices = ThemeTests.repository_collection.device_repository
         self.houses = ThemeTests.repository_collection.house_repository
-        self.user1id = ObjectId()
+        self.users = ThemeTests.repository_collection.user_repository
+        self.user1id = self.users.add_user("Benny Clark", "xxxxxxxx", "benny@example.com", False)
         self.house1id = self.houses.add_house(self.user1id, "Benny's House", None)
         self.device1id = self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat",
                                                  {'target_temperature': 20}, None, "example")
@@ -31,6 +32,7 @@ class ThemeTests(unittest.TestCase):
         self.themes.clear_db()
         self.devices.clear_db()
         self.houses.clear_db()
+        self.users.clear_db()
 
     def test_ThemeAddedCorrectly(self):
         theme = self.themes.get_theme_by_id(self.theme1id)
