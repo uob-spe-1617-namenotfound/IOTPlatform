@@ -203,15 +203,12 @@ class Thermostat(Device):
         Device.__init__(self, attributes)
 
     def set_attributes(self, attributes):
-        attributes['device_type'] = "thermostat"
         Device.set_attributes(self, attributes=attributes)
         self.temperature_scale = get_optional_attribute(attributes, 'temperature_scale')
 
     def get_device_attributes(self):
         attributes = Device.get_device_attributes(self)
-        attributes.update({
-            'target': self.target, 'status': self.status, 'temperature_scale': self.temperature_scale
-        })
+        attributes.update({'temperature_scale': self.temperature_scale})
         return attributes
 
     def configure_target_temperature(self, temperature):
