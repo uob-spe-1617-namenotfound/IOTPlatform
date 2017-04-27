@@ -1,7 +1,7 @@
+import datetime
 import logging
 import random
 import string
-import datetime
 
 import bcrypt
 
@@ -94,16 +94,24 @@ class UserRepository(Repository):
             target_users.append(User(user))
         return target_users
 
-    # def get_faulty_devices_for_user(self, user_id):
-    #     faulty_devices = self.repositories.device_repository.get_faulty_devices()
-    #     user = self.collection.get_user_by_id(user_id)
-    #     attributes = user.get_user_attributes()
-    #     fault_check = False
-    #     for device in faulty_devices:
-    #         if device.user_id == user_id:
-    #             fault_check = True
-    #     attributes['faulty'] = fault_check
-    #     return attributes
+    def get_faulty_devices_for_user(self, user_id):
+        faulty_devices = self.repositories.device_repository.get_faulty_devices()
+        house_id = self.collection.get_houses_for_user(user_id)[0].house_id
+        target_devices = []
+        fault_check = False
+        for device in faulty_devices:
+            if device.house_id == house_id:
+                fault_check = True
+                target_devices.append(Device(device))
+        self.collection.update_one({'_id': user_id}, {"$set": {'faulty': fault_check}}, upsert=False)
+        return target_devices
+
+    def validate_token(self, user_id, token):
+        user = self.get_user_by_id(user_id)
+        if user is None:
+            return False
+        else:
+            return self.repositories.token_repository.authenticate_user(user_id, token)
 
 
 class HouseRepository(Repository):
@@ -126,6 +134,8 @@ class HouseRepository(Repository):
 
     def get_house_by_id(self, house_id):
         house = self.collection.find_one({'_id': house_id})
+        if house is None:
+            return None
         target_house = House(house)
         return target_house
 
@@ -237,16 +247,19 @@ class DeviceRepository(Repository):
             device = self.get_device_by_id(device_id)
             self.update_device_reading(device)
 
-    def add_device(self, house_id, room_id, user_id, name, device_type, target, configuration, vendor):
+    def add_device(self, house_id, room_id, name, device_type, target, configuration, vendor):
         house_devices = self.get_devices_for_house(house_id)
+        user_id = self.get_user_by_house_id(house_id)
         for device in house_devices:
             other_name = device.name
             if name == other_name:
                 raise Exception("There is already a device with this name.")
         if vendor == "OWN" and "url" not in configuration:
             raise Exception("Not all required info is in the configuration.")
-        elif vendor == "energenie" and (
-                            "username" not in configuration or "password" not in configuration or "device_id" not in configuration):
+        elif vendor == "energenie" and \
+                ("username" not in configuration
+                 or "password" not in configuration
+                 or "device_id" not in configuration):
             raise Exception("Not all required info is in the configuration.")
         device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id, 'user_id': user_id,
                                              'name': name, 'device_type': device_type, 'locking_theme_id': None,
@@ -258,6 +271,11 @@ class DeviceRepository(Repository):
         device = self.get_device_by_id(device_id=device_id)
         self.update_device_reading(device)
         return device_id
+
+    def get_user_by_house_id(self, house_id):
+        house = self.repositories.house_repository.get_house_by_id(house_id)
+        user_id = house.user_id
+        return user_id
 
     def set_device_type(self, device_id):
         device = self.collection.find_one({'_id': device_id})
@@ -426,7 +444,8 @@ class TriggerRepository(Repository):
 
     def add_trigger(self, sensor_id, event, event_params, actor_id, action, action_params, user_id):
         new_trigger = self.collection.insert_one({'sensor_id': sensor_id, 'event': event, 'event_params': event_params,
-                                                  'actor_id': actor_id, 'action': action, 'action_params': action_params,
+                                                  'actor_id': actor_id, 'action': action,
+                                                  'action_params': action_params,
                                                   'user_id': user_id, 'reading': None})
         return new_trigger.inserted_id
 
@@ -443,14 +462,14 @@ class TriggerRepository(Repository):
         return target_trigger
 
     def get_triggers_for_device(self, device_id):
-        triggers = self.collection.find({'sensor_id': device_id})
+        triggers = self.collection.find({'actor_id': device_id})
         target_triggers = []
         for trigger in triggers:
             target_triggers.append(Trigger(trigger))
         return target_triggers
 
     def get_actions_for_device(self, device_id):
-        triggers = self.collection.find({'actor_id': device_id})
+        triggers = self.collection.find({'sensor_id': device_id})
         target_triggers = []
         for trigger in triggers:
             target_triggers.append(Trigger(trigger))

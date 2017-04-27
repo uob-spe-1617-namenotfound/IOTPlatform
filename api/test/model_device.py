@@ -9,21 +9,25 @@ class DeviceTests(unittest.TestCase):
 
     def setUp(self):
         self.devices = DeviceTests.repository_collection.device_repository
-        self.house1id = ObjectId()
-        self.house2id = ObjectId()
+        self.houses = DeviceTests.repository_collection.house_repository
         self.room1id = ObjectId()
-        self.device1id = self.devices.add_device(self.house1id, None, None, "Kitchen Thermostat", "thermostat",
+        self.user1id = ObjectId()
+        self.user2id = ObjectId()
+        self.house1id = self.houses.add_house(self.user1id, "Benny's House", None)
+        self.house2id = self.houses.add_house(self.user2id, "Floris' House", None)
+        self.device1id = self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat",
                                                  {'target_temperature': 20}, None, "example")
-        self.device2id = self.devices.add_device(self.house1id, None, None, "Kitchen Motion Sensor", "motion_sensor", {}, None,
+        self.device2id = self.devices.add_device(self.house1id, None, "Kitchen Motion Sensor", "motion_sensor", {}, None,
                                                  "example")
-        self.device3id = self.devices.add_device(self.house1id, None, None, "Kitchen Light Switch", "light_switch", {}, None,
+        self.device3id = self.devices.add_device(self.house1id, None, "Kitchen Light Switch", "light_switch", {}, None,
                                                  "example")
-        self.socket_id = self.devices.add_device(self.house2id, None, None, "Benny's Adapter", "light_switch", {},
+        self.socket_id = self.devices.add_device(self.house2id, None, "Benny's Adapter", "light_switch", {},
                                                  {'username': 'bc15050@mybristol.ac.uk', 'password': 'test1234',
                                                   'device_id': '46865'}, "energenie")
 
     def tearDown(self):
         self.devices.clear_db()
+        self.houses.clear_db()
 
     def test_DeviceAddedCorrectly(self):
         device3 = self.devices.get_device_by_id(self.device3id)
@@ -97,7 +101,7 @@ class DeviceTests(unittest.TestCase):
 
     def test_DevicesCannotHaveSameName(self):
         with self.assertRaisesRegex(Exception, "There is already a device with this name."):
-            self.devices.add_device(self.house2id, None, None, "Benny's Adapter", "light_switch", {}, None, "example")
+            self.devices.add_device(self.house2id, None, "Benny's Adapter", "light_switch", {}, None, "example")
 
     def test_EnergenieDeviceAddedCorrectly(self):
         device = self.devices.get_device_by_id(self.socket_id)

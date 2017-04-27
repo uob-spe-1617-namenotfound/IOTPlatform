@@ -1,0 +1,12 @@
+When <a href="{{ url_for('.show_device', device_id=trigger.sensor_id) }}">{{ trigger.sensor_info.name }}</a>
+{% if trigger.event == "temperature_gets_higher_than" %}reaches a temperature higher than {{ trigger.event_params }}°C
+{% elif trigger.event == "temperature_gets_lower_than" %}reaches a temperature lower than {{ trigger.event_params }}°C
+{% elif trigger.event == "motion_detected_start" %}starts detecting motion
+{% elif trigger.event == "motion_detected_stop" %}detects that motion has stopped
+{% else %}
+    {{ trigger.event }} ({{ trigger.event_params }})
+{% endif %}, <a href="{{ url_for('.show_device', device_id=trigger.actor_id) }}">{{ trigger.actor_info.name }}</a> will
+{% if trigger.action == "set_target_temperature" %}set the target temperature to {{ trigger.action_params }}°C
+{% else %}
+    {{ trigger.action }} ({{ trigger.action_params }})
+{% endif %}

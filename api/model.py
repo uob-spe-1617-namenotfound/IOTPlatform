@@ -101,7 +101,7 @@ class Device(object):
         self.room_id = attributes['room_id']
         self.name = attributes['name']
         self.device_type = attributes['device_type']
-        self.locking_theme_id = attributes['locking_theme_id']
+        self.locking_theme_id = get_optional_attribute(attributes, 'locking_theme_id', None)
         self.faulty = get_optional_attribute(attributes, 'faulty', False)
         self.target = get_optional_attribute(attributes, 'target', {})
         self.status = get_optional_attribute(attributes, 'status', {})

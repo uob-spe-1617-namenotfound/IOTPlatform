@@ -38,19 +38,19 @@ class TriggerTests(unittest.TestCase):
         self.assertEqual(attributes['user_id'], self.user1id, "Trigger user was not added correctly.")
 
     def test_GetTriggersForDevice(self):
-        triggers = self.triggers.get_triggers_for_device(self.sensor1id)
-        self.assertEqual(len(triggers), 2, "Incorrect number of triggers.")
-        trigger1attr = triggers[0]
-        trigger2attr = triggers[1]
-        self.assertEqual(trigger1attr.trigger_id, self.trigger1id, "First trigger has incorrect id.")
-        self.assertEqual(trigger2attr.trigger_id, self.trigger3id, "Second trigger has incorrect id.")
-
-    def test_GetActionsForDevice(self):
-        triggers = self.triggers.get_actions_for_device(self.actor2id)
+        triggers = self.triggers.get_triggers_for_device(self.actor2id)
         self.assertEqual(len(triggers), 2, "Incorrect number of triggers.")
         trigger1attr = triggers[0]
         trigger2attr = triggers[1]
         self.assertEqual(trigger1attr.trigger_id, self.trigger2id, "First trigger has incorrect id.")
+        self.assertEqual(trigger2attr.trigger_id, self.trigger3id, "Second trigger has incorrect id.")
+
+    def test_GetActionsForDevice(self):
+        triggers = self.triggers.get_actions_for_device(self.sensor1id)
+        self.assertEqual(len(triggers), 2, "Incorrect number of triggers.")
+        trigger1attr = triggers[0]
+        trigger2attr = triggers[1]
+        self.assertEqual(trigger1attr.trigger_id, self.trigger1id, "First trigger has incorrect id.")
         self.assertEqual(trigger2attr.trigger_id, self.trigger3id, "Second trigger has incorrect id.")
 
     def test_GetAllTriggers(self):

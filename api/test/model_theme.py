@@ -9,12 +9,13 @@ class ThemeTests(unittest.TestCase):
     def setUp(self):
         self.themes = ThemeTests.repository_collection.theme_repository
         self.devices = ThemeTests.repository_collection.device_repository
+        self.houses = ThemeTests.repository_collection.house_repository
         self.user1id = ObjectId()
-        self.house1id = ObjectId()
-        self.device1id = self.devices.add_device(self.house1id, None, self.user1id, "Kitchen Thermostat", "thermostat",
+        self.house1id = self.houses.add_house(self.user1id, "Benny's House", None)
+        self.device1id = self.devices.add_device(self.house1id, None, "Kitchen Thermostat", "thermostat",
                                                  {'target_temperature': 20}, None, "example")
-        self.device2id = self.devices.add_device(self.house1id, None, self.user1id, "Kitchen Light Switch", "light_switch", {}, None, "example")
-        self.device3id = self.devices.add_device(self.house1id, None, self.user1id, "Lounge Light Switch", "light_switch", {}, None, "example")
+        self.device2id = self.devices.add_device(self.house1id, None, "Kitchen Light Switch", "light_switch", {}, None, "example")
+        self.device3id = self.devices.add_device(self.house1id, None, "Lounge Light Switch", "light_switch", {}, None, "example")
         self.theme1id = self.themes.add_theme(self.user1id, "Test Thermostat",
                                               [{'device_id': self.device1id, 'setting': {'target_temperature': 30}}],
                                               False)
@@ -28,6 +29,8 @@ class ThemeTests(unittest.TestCase):
 
     def tearDown(self):
         self.themes.clear_db()
+        self.devices.clear_db()
+        self.houses.clear_db()
 
     def test_ThemeAddedCorrectly(self):
         theme = self.themes.get_theme_by_id(self.theme1id)

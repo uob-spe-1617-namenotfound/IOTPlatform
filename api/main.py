@@ -158,20 +158,20 @@ def get_device_info(device_id):
 
 @api.route('/house/<string:house_id>/devices/add', methods=['POST'])
 def add_device(house_id):
-    access = api.house_repository.validate_token(ObjectId(house_id), get_request_token())
-    if not access:
-        return jsonify({"house": None, "error": {"code": 401, "message": "Authentication failed"}})
     house = api.house_repository.get_house_by_id(ObjectId(house_id))
     if house is None:
         return jsonify({"device": None, "error": {"code": 404, "message": "No such house found"}})
+    access = api.house_repository.validate_token(ObjectId(house_id), get_request_token())
+    if not access:
+        return jsonify({"device": None, "error": {"code": 401, "message": "Authentication failed"}})
     data = request.get_json()
     logging.debug("Adding device: {}".format(data))
     device_id = api.device_repository.add_device(house_id=ObjectId(house_id),
                                                  room_id=None,
-                                                 user_id=None,
                                                  name=data['name'],
                                                  device_type=data['device_type'],
-                                                 target=data['target'],
+                                                 target=data['target'] if 'target' in data else {},
+                                                 status=data['status'] if 'status' in data else {},
                                                  configuration=data['configuration'],
                                                  vendor=data['vendor'])
     device = api.device_repository.get_device_by_id(device_id)
@@ -218,16 +218,17 @@ def remove_room(room_id):
 
 @api.route('/room/<string:room_id>/device/<string:device_id>/link', methods=['POST'])
 def link_device_to_room(room_id, device_id):
-    access1 = api.room_repository.validate_token(ObjectId(room_id), get_request_token())
-    access2 = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
-    if not access1 or not access2:
-        return jsonify({"device": None, "error": {"code": 401, "message": "Authentication failed"}})
     room = api.room_repository.get_room_by_id(ObjectId(room_id))
     if room is None:
         return jsonify({"device": None, "error": {"code": 404, "message": "No such room found"}})
     result = api.device_repository.link_device_to_room(ObjectId(room_id), ObjectId(device_id))
     if result is None:
         return jsonify({"device": None, "error": {"code": 404, "message": "No such device found."}})
+    access1 = api.room_repository.validate_token(ObjectId(room_id), get_request_token())
+    access2 = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
+    if not access1 or not access2:
+        return jsonify({"device": None, "error": {"code": 401, "message": "Authentication failed"}})
+    room = api.room_repository.get_room_by_id(ObjectId(room_id))
     return jsonify({"device": result.get_device_attributes(), "error": None})
 
 
@@ -286,7 +287,7 @@ def get_trigger_info(trigger_id):
 
 @api.route('/device/<string:device_id>/triggers', methods=['POST'])
 def get_triggers_for_device(device_id):
-    access = api.device_repository.validate_token(ObjectId(device_id))
+    access = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
     if not access:
         return jsonify({"triggers": None, "error": {"code": 401, "message": "Authentication failed"}})
     triggers = api.trigger_repository.get_triggers_for_device(ObjectId(device_id))
@@ -297,7 +298,7 @@ def get_triggers_for_device(device_id):
 
 @api.route('/device/<string:device_id>/actions', methods=['POST'])
 def get_actions_for_device(device_id):
-    access = api.device_repository.validate_token(ObjectId(device_id))
+    access = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
     if not access:
         return jsonify({"triggers": None, "error": {"code": 401, "message": "Authentication failed"}})
     triggers = api.trigger_repository.get_actions_for_device(ObjectId(device_id))
@@ -309,16 +310,17 @@ def get_actions_for_device(device_id):
 @api.route('/trigger/create', methods=['POST'])
 def add_new_trigger():
     data = request.get_json()
-    access1 = api.device_repository.validate_token(ObjectId(data['sensor_id']), get_request_token())
-    access2 = api.device_repository.validate_token(ObjectId(data['actor_id']), get_request_token())
-    if not access1 or not access2:
-        return jsonify({"trigger": None, "error": {"code": 401, "message": "Authentication failed"}})
     sensor = api.device_repository.get_device_by_id(ObjectId(data['sensor_id']))
     actor = api.device_repository.get_device_by_id(ObjectId(data['actor_id']))
     if sensor is None:
         return jsonify({"trigger": None, "error": {"code": 404, "message": "No such sensor found"}})
     if actor is None:
         return jsonify({"trigger": None, "error": {"code": 404, "message": "No such actor found"}})
+    access0 = api.user_repository.validate_token(ObjectId(data['user_id']), get_request_token())
+    access1 = api.device_repository.validate_token(ObjectId(data['sensor_id']), get_request_token())
+    access2 = api.device_repository.validate_token(ObjectId(data['actor_id']), get_request_token())
+    if not access0 or not access1 or not access2:
+        return jsonify({"trigger": None, "error": {"code": 401, "message": "Authentication failed"}})
     trigger_id = api.trigger_repository.add_trigger(ObjectId(data['sensor_id']), data['event'], data['event_params'],
                                                     ObjectId(data['actor_id']), data['action'], data['action_params'],
                                                     ObjectId(data['user_id']))
@@ -352,18 +354,18 @@ def remove_trigger(trigger_id):
     result = api.trigger_repository.remove_trigger(ObjectId(trigger_id))
     if result is None:
         return jsonify({"trigger": None, "error": {"code": 404, "message": "No such trigger found"}})
-    return jsonify({"trigger": trigger.trigger_id, "error": None})
+    return jsonify({"trigger": trigger_id, "error": None})
 
 
 @api.route('/user/<string:user_id>/triggers', methods=['POST'])
 def get_triggers_for_user(user_id):
-    access = api.token_repository.validate_token(ObjectId(user_id), get_request_token())
+    access = api.user_repository.validate_token(ObjectId(user_id), get_request_token())
     if not access:
         return jsonify({"triggers": None, "error": {"code": 401, "message": "Authentication failed"}})
     triggers = api.trigger_repository.get_triggers_for_user(ObjectId(user_id))
     if triggers is None:
         return jsonify({"triggers": None, "error": {"code": 404, "message": "No triggers found for this user"}})
-    return jsonify({"triggers": triggers, "error": None})
+    return jsonify({"triggers": [trigger.get_trigger_attributes() for trigger in triggers], "error": None})
 
 
 @api.route('/user/<string:user_id>/themes', methods=['POST'])
