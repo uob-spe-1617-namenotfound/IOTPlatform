@@ -264,7 +264,7 @@ class DeviceRepository(Repository):
                                              'vendor': vendor})
         device_id = device.inserted_id
         self.collection.update_one({'_id': device_id}, {"$set": {'status.last_read': 0}})
-        self.set_device_type(device_id)
+        self.initialise_device_fields(device_id)
         device = self.get_device_by_id(device_id=device_id)
         self.update_device_reading(device)
         return device_id
@@ -274,7 +274,7 @@ class DeviceRepository(Repository):
         user_id = house.user_id
         return user_id
 
-    def set_device_type(self, device_id):
+    def initialise_device_fields(self, device_id):
         device = self.collection.find_one({'_id': device_id})
         if device['device_type'] == "thermostat":
             self.collection.update_one({'_id': device_id}, {"$set": {'target.locked_max_temperature': 50}})
