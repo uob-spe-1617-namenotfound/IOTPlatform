@@ -40,7 +40,6 @@ class HouseTests(unittest.TestCase):
         self.assertEqual(len(all_houses), 3, "Incorrect number of houses.")
 
     def test_HouseRemovedCorrectly(self):
-        all_houses = self.houses.get_all_houses()
         self.houses.remove_house(self.house3id)
         all_remaining_houses = self.houses.get_all_houses()
         self.assertEqual(len(all_remaining_houses), 2, "Incorrect number of remaining houses.")
