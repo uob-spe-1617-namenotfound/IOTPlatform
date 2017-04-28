@@ -590,6 +590,7 @@ def logout():
     else:
         return jsonify({"success": False, "error": {"code": 401, "message": "Logout failed"}})
 
+from admin import *
 
 def main():
     setup_cron()
