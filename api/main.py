@@ -234,6 +234,9 @@ def link_device_to_room(room_id, device_id):
 
 @api.route('/device/<string:device_id>/thermostat/configure', methods=['POST'])
 def configure_thermostat(device_id):
+    device = api.device_repository.get_device_by_id(ObjectId(device_id))
+    if device is None:
+        return jsonify({"device": None, "error": {"code": 404, "message": "No such device found"}})
     access = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
     if not access:
         return jsonify({"device": None, "error": {"code": 401, "message": "Authentication failed"}})
@@ -249,6 +252,9 @@ def configure_thermostat(device_id):
 
 @api.route('/device/<string:device_id>/switch/configure', methods=['POST'])
 def configure_switch(device_id):
+    device = api.device_repository.get_device_by_id(ObjectId(device_id))
+    if device is None:
+        return jsonify({"device": None, "error": {"code": 404, "message": "No such device found"}})
     access = api.device_repository.validate_token(ObjectId(device_id), get_request_token())
     if not access:
         return jsonify({"device": None, "error": {"code": 401, "message": "Authentication failed"}})
@@ -550,7 +556,7 @@ def login():
                           'token': token}
         data['error'] = None
     except repositories.RepositoryException as ex:
-        data['success'] = False
+        data['result'] = False
         data['error'] = ex.error_data
     return jsonify(data)
 

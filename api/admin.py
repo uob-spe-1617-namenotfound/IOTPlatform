@@ -22,29 +22,31 @@ def init_hardcoded_data():
     click.echo("user: {}".format(user1))
     admin_user = api.user_repository.register_new_user("dr@no.com", "jamaica", "Dr No", True)
     click.echo("admin: {}".format(admin_user))
-    # user1 = api.user_repository.add_user("Jack Xia", "xxxxxxxx", "nobody@gmail.com", False)
+    user1 = api.user_repository.add_user("Jack Xia", "xxxxxxxx", "nobody@gmail.com", False)
     # user2 = api.user_repository.add_user("Ben Fossett", "xxxxxxxx", "nobody@gmail.com", False)
     house1 = api.house_repository.add_house(user1, "Jack's House", None)
-    # house2 = api.house_repository.add_house(user2, "Ben's House")
+    # house2 = api.house_repository.add_house(user2, "Ben's House", None)
     room1 = api.room_repository.add_room(house1, "Kitchen")
     room2 = api.room_repository.add_room(house1, "Bathroom")
     room3 = api.room_repository.add_room(house1, "Living Room")
-    faulty_device = api.device_repository.add_device(house1, room1, "Faulty thermostat", "thermostat", 1,
+    faulty_device = api.device_repository.add_device(house1, room1, "Faulty thermostat", "thermostat",
+                                                     {'target_temperature': 20},
                                                      {"url": "http://dummy-sensor:5000/faulty_thermostat"},
                                                      vendor="OWN")
-    adapter1 = api.device_repository.add_device(house1, None, "Test Adapter", "light_switch", 1,
+    adapter1 = api.device_repository.add_device(house1, room2, "Test Adapter", "light_switch", None,
                                                 {"username": 'bc15050@mybristol.ac.uk',
                                                  "password": 'test1234',
                                                  "device_id": '46865'}, 'energenie')
-    motion_sensor = api.device_repository.add_device(house1, room3, "Motion Sensor", "motion_sensor", 1,
+    motion_sensor = api.device_repository.add_device(house1, room3, "Motion Sensor", "motion_sensor", None,
                                                      {"url": "http://dummy-sensor:5000/motion_sensor"},
                                                      vendor="OWN")
-    good_thermostat = api.device_repository.add_device(house1, None, "Working thermostat", "thermostat", 1, {
-        "url": "http://dummy-sensor:5000/thermostat/3"
-    }, vendor="OWN")
-    # device2 = api.device_repository.add_device(house1, None, "Living Room Motion Sensor", "motion_sensor", 1)
-    # device3 = api.device_repository.add_device(house1, None, "Kitchen Light Switch", "light_switch", 1)
-    # device_ids1 = [device1, device2, device3]
+    good_thermostat = api.device_repository.add_device(house1, room1, "Working thermostat", "thermostat",
+                                                       {'target_temperature': 20},
+                                                       {"url": "http://dummy-sensor:5000/thermostat/3"}, vendor="OWN")
+    device2 = api.device_repository.add_device(house1, room2, "Living Room Motion Sensor", "motion_sensor", None)
+    device3 = api.device_repository.add_device(house1, room3, "Kitchen Light Switch", "light_switch",
+                                               {'power_state': 0})
+    device_ids1 = [device2, device3]
 
 
 @api.cli.command()

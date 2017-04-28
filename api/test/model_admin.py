@@ -8,9 +8,13 @@ class AdminTests(unittest.TestCase):
 
     def setUp(self):
         self.devices = AdminTests.repository_collection.device_repository
-        self.house1id = ObjectId()
-        self.adapter1id = self.devices.add_device(house_id=self.house1id, room_id=None, name="Test Adapter",
-                                                  device_type="light_switch", target={}, status={},
+        self.houses = AdminTests.repository_collection.house_repository
+        self.users = AdminTests.repository_collection.user_repository
+        self.user1id = self.users.add_user("Benny Clark", "xxxxxxxx", "benny@example.com", False)
+        self.house1id = self.houses.add_house(self.user1id, "Benny's House", None)
+        self.adapter1id = self.devices.add_device(house_id=self.house1id, room_id=None,
+                                                  name="Test Adapter",
+                                                  device_type="light_switch", target={},
                                                   configuration={"username": 'bc15050@mybristol.ac.uk',
                                                                  "password": 'test1234',
                                                                  "device_id": '46865'},
@@ -18,6 +22,8 @@ class AdminTests(unittest.TestCase):
 
     def tearDown(self):
         self.devices.clear_db()
+        self.houses.clear_db()
+        self.users.clear_db()
 
     def test_GettingEnergyReadingsAsList(self):
         consumption = self.devices.get_energy_consumption(self.adapter1id)

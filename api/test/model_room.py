@@ -8,13 +8,18 @@ class RoomTests(unittest.TestCase):
 
     def setUp(self):
         self.rooms = RoomTests.repository_collection.room_repository
-        self.house1id = ObjectId()
+        self.houses = RoomTests.repository_collection.house_repository
+        self.users = RoomTests.repository_collection.user_repository
+        self.user1id = self.users.add_user("Benny Clark", "xxxxxxxx", "benny@example.com", False)
+        self.house1id = self.houses.add_house(self.user1id, "Benny's House", None)
         self.room1id = self.rooms.add_room(self.house1id, "Living Room")
         self.room2id = self.rooms.add_room(self.house1id, "Kitchen")
         self.room3id = self.rooms.add_room(self.house1id, "Bathroom")
 
     def tearDown(self):
         self.rooms.clear_db()
+        self.houses.clear_db()
+        self.users.clear_db()
 
     def test_RoomAddedCorrectly(self):
         room3 = self.rooms.get_room_by_id(self.room3id)

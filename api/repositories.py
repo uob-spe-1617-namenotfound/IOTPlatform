@@ -134,6 +134,8 @@ class HouseRepository(Repository):
 
     def get_house_by_id(self, house_id):
         house = self.collection.find_one({'_id': house_id})
+        if house is None:
+            return None
         target_house = House(house)
         return target_house
 
@@ -227,18 +229,24 @@ class DeviceRepository(Repository):
         return devices
 
     def update_device_reading(self, device):
-        reading = device.read_current_state()
-        self.collection.update_one({'_id': device.get_device_id()},
-                                   {"$set": {'status.last_read': reading}})
+        last_read = device.read_current_state()
+        self.collection.update_one({'_id': device.device_id},
+                                   {"$set": {'status.last_read': last_read}})
+        updated_device = self.collection.find({'_id': device.device_id})
+        return updated_device
 
     def update_all_device_readings(self):
         all_device_ids = [x['_id'] for x in self.collection.find({}, {})]
+        updated_devices = []
         for device_id in all_device_ids:
             device = self.get_device_by_id(device_id)
-            self.update_device_reading(device)
+            updated_device = self.update_device_reading(device)
+            updated_devices.append(updated_device)
+        return updated_devices
 
-    def add_device(self, house_id, room_id, name, device_type, target, status, configuration, vendor):
+    def add_device(self, house_id, room_id, name, device_type, target, configuration, vendor):
         house_devices = self.get_devices_for_house(house_id)
+        user_id = self.get_user_by_house_id(house_id)
         for device in house_devices:
             other_name = device.name
             if name == other_name:
@@ -250,19 +258,23 @@ class DeviceRepository(Repository):
                  or "password" not in configuration
                  or "device_id" not in configuration):
             raise Exception("Not all required info is in the configuration.")
-        device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id,
+        device = self.collection.insert_one({'house_id': house_id, 'room_id': room_id, 'user_id': user_id,
                                              'name': name, 'device_type': device_type, 'locking_theme_id': None,
-                                             'target': target, 'status': status,
-                                             'configuration': configuration,
+                                             'target': target, 'configuration': configuration,
                                              'vendor': vendor})
         device_id = device.inserted_id
         self.collection.update_one({'_id': device_id}, {"$set": {'status.last_read': 0}})
-        self.set_device_type(device_id)
+        self.initialise_device_fields(device_id)
         device = self.get_device_by_id(device_id=device_id)
         self.update_device_reading(device)
         return device_id
 
-    def set_device_type(self, device_id):
+    def get_user_by_house_id(self, house_id):
+        house = self.repositories.house_repository.get_house_by_id(house_id)
+        user_id = house.user_id
+        return user_id
+
+    def initialise_device_fields(self, device_id):
         device = self.collection.find_one({'_id': device_id})
         if device['device_type'] == "thermostat":
             self.collection.update_one({'_id': device_id}, {"$set": {'target.locked_max_temperature': 50}})
@@ -271,11 +283,11 @@ class DeviceRepository(Repository):
             self.collection.update_one({'_id': device_id}, {"$set": {'target.target_temperature': 25}})
             self.collection.update_one({'_id': device_id}, {"$set": {'status.last_temperature': 0}})
         elif device['device_type'] == "motion_sensor":
-            self.collection.update_one({'_id': device_id}, {"$set": {'sensor_data': 0}})
+            self.collection.update_one({'_id': device_id}, {"$set": {'status.sensor_data': 0}})
         elif device['device_type'] == "light_switch":
             self.collection.update_one({'_id': device_id}, {"$set": {'status.power_state': 0}})
         elif device['device_type'] == "open_sensor":
-            self.collection.update_one({'_id': device_id}, {"$set": {'sensor_data': 0}})
+            self.collection.update_one({'_id': device_id}, {"$set": {'status.sensor_data': 0}})
 
     def remove_device(self, device_id):
         device = self.get_device_by_id(device_id)
@@ -350,15 +362,15 @@ class DeviceRepository(Repository):
             self.collection.update_one({'_id': device_id}, {"$set": {'target.target_temperature': temp}}, upsert=False)
             device = self.get_device_by_id(device_id)
             device.configure_target_temperature(temp)
-            self.update_device_reading(device)
-        return device
+            updated_device = self.update_device_reading(device)
+        return updated_device
 
     def set_locking_theme_id(self, device_id, locking_theme_id):
         device = self.get_device_by_id(device_id)
         device.locking_theme_id = locking_theme_id
         self.collection.update_one({'_id': device_id}, {"$set": {'locking_theme_id': locking_theme_id}})
-        self.update_device_reading(device)
-        return device
+        updated_device = self.update_device_reading(device)
+        return updated_device
 
     def change_temperature_scale(self, device_id):
         device = self.collection.find_one({'_id': device_id})
