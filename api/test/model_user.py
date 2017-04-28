@@ -15,7 +15,6 @@ class UserTests(unittest.TestCase):
 
     def test_UserAddedCorrectly(self):
         user3 = self.users.get_user_by_id(self.user3id)
-        attributes = user3.get_user_attributes()
         self.assertEqual(user3.name, "Ben Fossett", "User name not added correctly.")
         self.assertEqual(user3.password_hash, "xxxxxxxx", "User password not added correctly.")
         self.assertEqual(user3.email_address, "ben@example.com", "User email not added correctly.")
@@ -26,7 +25,6 @@ class UserTests(unittest.TestCase):
         self.assertEqual(len(all_users), 3, "Incorrect number of users.")
 
     def test_UserRemovedCorrectly(self):
-        all_users = self.users.get_all_users()
         self.users.remove_user(self.user3id)
         all_remaining_users = self.users.get_all_users()
         self.assertEqual(len(all_remaining_users), 2, "A user has not been removed.")

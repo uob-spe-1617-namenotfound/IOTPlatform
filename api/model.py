@@ -83,6 +83,7 @@ class Device(object):
         self.device_id = None
         self.house_id = None
         self.room_id = None
+        self.user_id = None
         self.name = None
         self.device_type = None
         self.vendor = None
@@ -96,6 +97,7 @@ class Device(object):
     def set_attributes(self, attributes):
         self.device_id = attributes['_id']
         self.house_id = attributes['house_id']
+        self.user_id = attributes['user_id']
         self.room_id = attributes['room_id']
         self.name = attributes['name']
         self.device_type = attributes['device_type']
@@ -107,8 +109,8 @@ class Device(object):
         self.configuration = get_optional_attribute(attributes, 'configuration', None)
 
     def get_device_attributes(self):
-        return {'device_id': self.device_id, 'house_id': self.house_id,
-                'room_id': self.room_id, 'name': self.name, 'device_type': self.device_type,
+        return {'device_id': self.device_id, 'house_id': self.house_id, 'room_id': self.room_id,
+                'user_id': self.user_id, 'name': self.name, 'device_type': self.device_type,
                 'locking_theme_id': self.locking_theme_id, 'faulty': self.faulty, 'target': self.target,
                 'status': self.status, 'vendor': self.vendor, 'configuration': self.configuration}
 
@@ -201,15 +203,12 @@ class Thermostat(Device):
         Device.__init__(self, attributes)
 
     def set_attributes(self, attributes):
-        attributes['device_type'] = "thermostat"
         Device.set_attributes(self, attributes=attributes)
         self.temperature_scale = get_optional_attribute(attributes, 'temperature_scale')
 
     def get_device_attributes(self):
         attributes = Device.get_device_attributes(self)
-        attributes.update({
-            'target': self.target, 'status': self.status, 'temperature_scale': self.temperature_scale
-        })
+        attributes.update({'temperature_scale': self.temperature_scale})
         return attributes
 
     def configure_target_temperature(self, temperature):
@@ -255,15 +254,12 @@ class Thermostat(Device):
 class MotionSensor(Device):
     def __init__(self, attributes):
         Device.__init__(self, attributes)
-        self.sensor_data = None
 
     def set_attributes(self, attributes):
         Device.set_attributes(self, attributes=attributes)
-        self.sensor_data = get_optional_attribute(attributes, 'sensor_data')
 
     def get_device_attributes(self):
         attributes = Device.get_device_attributes(self)
-        attributes.update({'sensor_data': self.sensor_data})
         return attributes
 
 
@@ -304,16 +300,13 @@ class LightSwitch(Device):
 
 class OpenSensor(Device):
     def __init__(self, attributes):
-        self.sensor_data = None
         Device.__init__(self, attributes)
 
     def set_attributes(self, attributes):
         Device.set_attributes(self, attributes=attributes)
-        self.sensor_data = attributes["sensor_data"]
 
     def get_device_attributes(self):
         attributes = Device.get_device_attributes(self)
-        attributes.update({'sensor_data': self.sensor_data})
         return attributes
 
 
