@@ -43,10 +43,14 @@ def init_hardcoded_data():
     good_thermostat = api.device_repository.add_device(house1, room1, "Working thermostat", "thermostat",
                                                        {'target_temperature': 20},
                                                        {"url": "http://dummy-sensor:5000/thermostat/3"}, vendor="OWN")
-    device2 = api.device_repository.add_device(house1, room2, "Living Room Motion Sensor", "motion_sensor", None)
+    device2 = api.device_repository.add_device(house1, room2, "Living Room Motion Sensor", "motion_sensor", None,
+                                               {"url": "http://dummy-sensor:5000/motion_sensor"},
+                                               vendor="OWN")
     device3 = api.device_repository.add_device(house1, room3, "Kitchen Light Switch", "light_switch",
-                                               {'power_state': 0})
-    device_ids1 = [device2, device3]
+                                               {'power_state': 0},
+                                               {"username": 'bc15050@mybristol.ac.uk',
+                                                "password": 'test1234',
+                                                "device_id": '46865'}, 'energenie')
 
 
 @api.cli.command()
