@@ -260,11 +260,12 @@ def configure_switch(device_id):
         return jsonify({"device": None, "error": {"code": 401, "message": "Authentication failed"}})
     data = request.get_json()
     power_state = data['power_state']
-    api.device_repository.set_power_state(ObjectId(device_id), power_state)
+    error = api.device_repository.set_power_state(ObjectId(device_id), power_state)
     device = api.device_repository.get_device_by_id(ObjectId(device_id))
+    logging.debug("Device: {}".format(device.get_device_attributes()))
     return jsonify({
         "device": device.get_device_attributes(),
-        "error": None
+        "error": error
     })
 
 

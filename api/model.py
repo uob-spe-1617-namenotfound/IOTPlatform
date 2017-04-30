@@ -1,4 +1,5 @@
 import datetime
+import logging
 import time
 from datetime import timedelta
 
@@ -127,11 +128,13 @@ class Device(object):
                 try:
                     r = requests.get(url)
                     r_data = r.json()
+                    logging.error("Data: {}".format(r_data))
                     if "error" in r_data and r_data["error"] is not None:
                         error = r_data["error"]
                     else:
-                        data = r_data['data']
+                        data = {"power_state": r_data['data']['state']}
                 except Exception as ex:
+                    logging.error("Cannot read data from configuration URL: {}".format(ex))
                     error = "Cannot read data from configuration URL: {}".format(ex)
             else:
                 error = "Can't read current state as no url is set in configuration"
@@ -289,6 +292,19 @@ class LightSwitch(Device):
                     r_data = r.json()
                     if r_data["status"] != "success":
                         error = "External error: {}".format(r_data['status'])
+                except Exception as ex:
+                    error = "Cannot configure power state: {}".format(ex)
+            else:
+                error = "Not all required information is set in the configuration"
+        elif self.vendor == "OWN":
+            if "url" in self.configuration:
+                try:
+                    r = requests.post(self.configuration["url"] + "/write", json={
+                        "power_state": power_state == 1
+                    })
+                    r_data = r.json()
+                    if r_data["error"] is not None:
+                        error = "External error: {}".format(r_data["error"])
                 except Exception as ex:
                     error = "Cannot configure power state: {}".format(ex)
             else:

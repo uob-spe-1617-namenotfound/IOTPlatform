@@ -347,7 +347,9 @@ class DeviceRepository(Repository):
         if power_state not in [0, 1]:
             raise Exception("Power_state is not of the correct format")
         if device.locking_theme_id is None:
-            device.configure_power_state(power_state)
+            res = device.configure_power_state(power_state)
+            if res is not None:
+                return res
             self.update_device_reading(device)
             self.collection.update_one({'_id': device_id}, {"$set": {'status.power_state': power_state}}, upsert=False)
 
@@ -523,7 +525,8 @@ class ThemeRepository(Repository):
         Repository.__init__(self, mongo_collection, repository_collection)
 
     def add_theme(self, user_id, name, settings, active):
-        new_theme = self.collection.insert_one({'user_id': user_id, 'name': name, 'settings': settings, 'active': active})
+        new_theme = self.collection.insert_one(
+            {'user_id': user_id, 'name': name, 'settings': settings, 'active': active})
         return new_theme.inserted_id
 
     def remove_theme(self, theme_id):
