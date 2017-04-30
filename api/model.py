@@ -118,6 +118,11 @@ class Device(object):
     def get_device_id(self):
         return self.device_id
 
+    def transform_vendor_status_data(self, data, vendor):
+        if vendor == "OWN":
+            return data['data']
+        return data
+
     def read_current_state(self, include_usage_data=0):
         error = None
         data = None
@@ -132,7 +137,7 @@ class Device(object):
                     if "error" in r_data and r_data["error"] is not None:
                         error = r_data["error"]
                     else:
-                        data = {"power_state": r_data['data']['state']}
+                        data = self.transform_vendor_status_data(r_data, 'OWN')
                 except Exception as ex:
                     logging.error("Cannot read data from configuration URL: {}".format(ex))
                     error = "Cannot read data from configuration URL: {}".format(ex)
@@ -277,6 +282,9 @@ class LightSwitch(Device):
         attributes = Device.get_device_attributes(self)
         return attributes
 
+    def transform_vendor_status_data(self, data, vendor):
+        return {"power_state": data['data']['state']}
+    
     def configure_power_state(self, power_state):
         error = None
         if self.vendor == "energenie":
