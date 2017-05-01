@@ -22,7 +22,6 @@ def init_hardcoded_data():
     click.echo("user: {}".format(user1))
     admin_user = api.user_repository.register_new_user("dr@no.com", "jamaica", "Dr No", True)
     click.echo("admin: {}".format(admin_user))
-    user1 = api.user_repository.add_user("Jack Xia", "xxxxxxxx", "nobody@gmail.com", False)
     # user2 = api.user_repository.add_user("Ben Fossett", "xxxxxxxx", "nobody@gmail.com", False)
     house1 = api.house_repository.add_house(user1, "Jack's House", None)
     # house2 = api.house_repository.add_house(user2, "Ben's House", None)
