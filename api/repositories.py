@@ -347,11 +347,11 @@ class DeviceRepository(Repository):
         if power_state not in [0, 1]:
             raise Exception("Power_state is not of the correct format")
         if device.locking_theme_id is None:
+            self.collection.update_one({'_id': device_id}, {"$set": {'target.power_state': power_state}}, upsert=False)
             res = device.configure_power_state(power_state)
             if res is not None:
                 return res
             self.update_device_reading(device)
-            self.collection.update_one({'_id': device_id}, {"$set": {'target.power_state': power_state}}, upsert=False)
         else:
             logging.debug("Device locked by theme: {}".format(device.locking_theme_id))
 
@@ -591,12 +591,12 @@ class ThemeRepository(Repository):
         theme = self.get_theme_by_id(theme_id)
         settings = theme.settings
         ids = [dev['device_id'] for dev in settings]
-        if state is False:
+        if state:
             theme.active = False
             for device_id in ids:
-                DeviceRepository.set_locking_theme_id(device_id, None)
+                self.repositories.device_repository.set_locking_theme_id(device_id, None)
             self.collection.update_one({'_id': theme_id}, {"$set": {'active': False}})
-        elif state is True:
+        elif state:
             theme.active = True
             for dev in settings:
                 device_setting = dev['setting']
