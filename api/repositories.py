@@ -251,7 +251,7 @@ class DeviceRepository(Repository):
             other_name = device.name
             if name == other_name:
                 raise Exception("There is already a device with this name.")
-        if vendor == "OWN" and "url" not in configuration:
+        if vendor == "OWN" and (configuration is None or "url" not in configuration):
             raise Exception("Not all required info is in the configuration.")
         elif vendor == "energenie" and \
                 ("username" not in configuration
@@ -285,7 +285,7 @@ class DeviceRepository(Repository):
         elif device['device_type'] == "motion_sensor":
             self.collection.update_one({'_id': device_id}, {"$set": {'status.sensor_data': 0}})
         elif device['device_type'] == "light_switch":
-            self.collection.update_one({'_id': device_id}, {"$set": {'status.power_state': 0}})
+            self.collection.update_one({'_id': device_id}, {"$set": {'target.power_state': 0}})
         elif device['device_type'] == "open_sensor":
             self.collection.update_one({'_id': device_id}, {"$set": {'status.sensor_data': 0}})
 
@@ -347,9 +347,13 @@ class DeviceRepository(Repository):
         if power_state not in [0, 1]:
             raise Exception("Power_state is not of the correct format")
         if device.locking_theme_id is None:
-            device.configure_power_state(power_state)
+            self.collection.update_one({'_id': device_id}, {"$set": {'target.power_state': power_state}}, upsert=False)
+            res = device.configure_power_state(power_state)
+            if res is not None:
+                return res
             self.update_device_reading(device)
-            self.collection.update_one({'_id': device_id}, {"$set": {'status.power_state': power_state}}, upsert=False)
+        else:
+            logging.debug("Device locked by theme: {}".format(device.locking_theme_id))
 
     def set_target_temperature(self, device_id, temp):
         device = self.collection.find_one({'_id': device_id})
@@ -523,7 +527,8 @@ class ThemeRepository(Repository):
         Repository.__init__(self, mongo_collection, repository_collection)
 
     def add_theme(self, user_id, name, settings, active):
-        new_theme = self.collection.insert_one({'user_id': user_id, 'name': name, 'settings': settings, 'active': active})
+        new_theme = self.collection.insert_one(
+            {'user_id': user_id, 'name': name, 'settings': settings, 'active': active})
         return new_theme.inserted_id
 
     def remove_theme(self, theme_id):
@@ -586,12 +591,12 @@ class ThemeRepository(Repository):
         theme = self.get_theme_by_id(theme_id)
         settings = theme.settings
         ids = [dev['device_id'] for dev in settings]
-        if state is False:
+        if not state:
             theme.active = False
             for device_id in ids:
-                DeviceRepository.set_locking_theme_id(device_id, None)
+                self.repositories.device_repository.set_locking_theme_id(device_id, None)
             self.collection.update_one({'_id': theme_id}, {"$set": {'active': False}})
-        elif state is True:
+        elif state:
             theme.active = True
             for dev in settings:
                 device_setting = dev['setting']
