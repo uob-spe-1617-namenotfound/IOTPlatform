@@ -284,7 +284,14 @@ class LightSwitch(Device):
 
     def transform_vendor_status_data(self, data, vendor):
         return {"power_state": data['data']['state']}
-    
+
+    def get_power_state(self):
+        logging.debug("status: {}".format(self.status))
+        if 'last_read' in self.status and 'data' in self.status['last_read'] and 'power_state' in \
+                self.status['last_read']['data']:
+            return self.status['last_read']['data']['power_state']
+        return None
+
     def configure_power_state(self, power_state):
         error = None
         if self.vendor == "energenie":

@@ -74,7 +74,7 @@ def init_hardcoded_data():
             room_id=kitchen_id,
             name="Motion Sensor",
             device_type="motion_sensor",
-            target=None,
+            target={},
             configuration={"url": "http://dummy-sensor:5000/motion_sensor/{}".format(nb_own_motion_sensors)},
             vendor="OWN")
         kitchen_light_switch_id = api.device_repository.add_device(
@@ -95,7 +95,7 @@ def init_hardcoded_data():
             room_id=bathroom_id,
             name="Bathroom light switch",
             device_type="light_switch",
-            target=None,
+            target={},
             configuration={
                 "url": "http://dummy-sensor:5000/light_switch/{}".format(nb_own_light_swithces)
             },

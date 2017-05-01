@@ -17,3 +17,12 @@ services:
   db:
     image: mongo:3.4
     command: --smallfiles --rest
+  dummy-sensor:
+    build: ./dummy_sensor
+    command: python -u main.py
+    ports:
+      - "12200:5000"
+    expose:
+      - "5000"
+    volumes:
+      - ./dummy_sensor:/code

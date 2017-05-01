@@ -9,6 +9,9 @@ class TokenTests(unittest.TestCase):
     def setUp(self):
         self.tokens = TokenTests.repository_collection.token_repository
         self.users = TokenTests.repository_collection.user_repository
+        self.tokens.clear_db()
+        self.users.clear_db()
+
         self.user1id = self.users.add_user("Benny Clark", "xxxxxxxx", "benny@example.com", False)
         self.user2id = self.users.add_user("Floris Kint", "xxxxxxxx", "floris@example.com", True)
         self.user3id = self.users.add_user("Ben Fossett", "xxxxxxxx", "ben@example.com", True)
@@ -17,8 +20,7 @@ class TokenTests(unittest.TestCase):
         self.token3 = self.tokens.generate_token(self.user3id)
 
     def tearDown(self):
-        self.tokens.clear_db()
-        self.users.clear_db()
+        pass
 
     def test_TokenAddedCorrectly(self):
         token = self.tokens.find_by_token(self.token1)

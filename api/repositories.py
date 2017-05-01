@@ -251,7 +251,7 @@ class DeviceRepository(Repository):
             other_name = device.name
             if name == other_name:
                 raise Exception("There is already a device with this name.")
-        if vendor == "OWN" and "url" not in configuration:
+        if vendor == "OWN" and (configuration is None or "url" not in configuration):
             raise Exception("Not all required info is in the configuration.")
         elif vendor == "energenie" and \
                 ("username" not in configuration
@@ -285,7 +285,7 @@ class DeviceRepository(Repository):
         elif device['device_type'] == "motion_sensor":
             self.collection.update_one({'_id': device_id}, {"$set": {'status.sensor_data': 0}})
         elif device['device_type'] == "light_switch":
-            self.collection.update_one({'_id': device_id}, {"$set": {'status.power_state': 0}})
+            self.collection.update_one({'_id': device_id}, {"$set": {'target.power_state': 0}})
         elif device['device_type'] == "open_sensor":
             self.collection.update_one({'_id': device_id}, {"$set": {'status.sensor_data': 0}})
 
@@ -351,7 +351,9 @@ class DeviceRepository(Repository):
             if res is not None:
                 return res
             self.update_device_reading(device)
-            self.collection.update_one({'_id': device_id}, {"$set": {'status.power_state': power_state}}, upsert=False)
+            self.collection.update_one({'_id': device_id}, {"$set": {'target.power_state': power_state}}, upsert=False)
+        else:
+            logging.debug("Device locked by theme: {}".format(device.locking_theme_id))
 
     def set_target_temperature(self, device_id, temp):
         device = self.collection.find_one({'_id': device_id})

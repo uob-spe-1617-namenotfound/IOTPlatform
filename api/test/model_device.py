@@ -40,7 +40,7 @@ class DeviceTests(unittest.TestCase):
         self.assertEqual(attributes['room_id'], None, "Device room not added correctly.")
         self.assertEqual(attributes['name'], "Kitchen Light Switch", "Device name not added correctly.")
         self.assertEqual(attributes['device_type'], "light_switch", "Device type not added correctly.")
-        self.assertIn(attributes['status']['power_state'], [0, 1], "Device power state not added correctly.")
+        self.assertIn(attributes['target']['power_state'], [0, 1], "Device power state not added correctly.")
         self.assertEqual(attributes['configuration'], None, "Device configuration not added correctly.")
         self.assertEqual(attributes['vendor'], "example", "Device vendor not added correctly.")
 
@@ -84,7 +84,7 @@ class DeviceTests(unittest.TestCase):
     def test_SetPowerState(self):
         self.devices.set_power_state(self.device3id, 0)
         device3 = self.devices.get_device_by_id(self.device3id)
-        power_state = device3.get_device_attributes()['status']['power_state']
+        power_state = device3.get_device_attributes()['target']['power_state']
         self.assertEqual(power_state, 0, "Device power state not configured correctly.")
 
     def test_SetTargetTemp(self):

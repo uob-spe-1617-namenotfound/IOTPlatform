@@ -6,12 +6,13 @@ class UserTests(unittest.TestCase):
 
     def setUp(self):
         self.users = UserTests.repository_collection.user_repository
+        self.users.clear_db()
         self.user1id = self.users.add_user("Benny Clark", "xxxxxxxx", "benny@example.com", False)
         self.user2id = self.users.add_user("Floris Kint", "xxxxxxxx", "floris@example.com", True)
         self.user3id = self.users.add_user("Ben Fossett", "xxxxxxxx", "ben@example.com", True)
 
     def tearDown(self):
-        self.users.clear_db()
+        pass
 
     def test_UserAddedCorrectly(self):
         user3 = self.users.get_user_by_id(self.user3id)
