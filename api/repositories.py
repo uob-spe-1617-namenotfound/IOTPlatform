@@ -591,7 +591,7 @@ class ThemeRepository(Repository):
         theme = self.get_theme_by_id(theme_id)
         settings = theme.settings
         ids = [dev['device_id'] for dev in settings]
-        if state:
+        if not state:
             theme.active = False
             for device_id in ids:
                 self.repositories.device_repository.set_locking_theme_id(device_id, None)
