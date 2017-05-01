@@ -27,6 +27,8 @@ services:
   dummy-sensor:
     build: ./dummy_sensor
     command: python -u main.py
+    ports:
+      - "12200:5000"
     expose:
       - "5000"
     volumes:
