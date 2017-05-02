@@ -1,0 +1,89 @@
+{% extends "internal/base.html" %}
+
+{% block styles %}
+{{ super() }}
+<style>
+.selected {background-color: #3ddb0d;}
+a { color: black;}
+</style>
+{% endblock %}
+
+{% block page_content %}
+
+
+    <table>
+        <thead>
+            <th>Name</th>
+        </thead>
+        <tbody>
+            {$ for theme in themes $}
+                <tr>
+                    {{ theme['name'] }}
+                </tr>
+                <tr>
+                    {$ for device in theme['devices'] $}
+                        <button type="button" data-target="#myModal" class="btn btn-default">device['name']</button>
+                        <div id="myModal" class="modal fade" role="dialog">
+                                <div class="modal-dialog modal-sm">
+                                    <!-- Modal content-->
+                                    <div class="modal-content">
+                                        <div class="modal-body">
+                                            {% block device_settings %}
+                                                {% if device.status.last_read %}
+                                                    {% if device.status.last_read.data.power_state == 1 %}
+                                                        Switch is on.
+                                                        <a class="btn btn-default btn-primary"
+                                                           href="{{ url_for('.set_switch_settings', device_id=device.device_id, state=0) }}">
+                                                            Turn it off
+                                                        </a>
+                                                    {% else %}
+                                                        Switch is off.
+                                                        <a class="btn btn-default btn-primary"
+                                                           href="{{ url_for('.set_switch_settings', device_id=device.device_id, state=1) }}">Turn it
+                                                            on
+                                                        </a>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <div class="alert alert-danger">No data available</div>
+                                                {% endif %}
+                                            {% endblock %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    {$ endfor $}
+                </tr>
+            {$ endfor $}
+        </tbody>
+    </table>
+
+    <a id="add_button" data-url="{{ url_for('.themes') }}" style="float: right;" class="btn btn-success">
+        <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add New Device
+    </a>
+
+{% endblock %}
+
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        var selected_devices = []
+        $(function(){
+            $('tbody tr').click(function (){
+                $(this).toggleClass("selected");
+            });
+            $('#add_button').click(function (){
+                $('.selected').each(function(){
+                    selected_devices.push($(this).data('device-id'));
+                });
+                var data = {
+                    device_ids: selected_devices
+                };
+                $.post('new_theme', data, function (rps) {
+                    console.log(rps);
+                    window.location.href = $('#add_button').data('url');
+                });
+            });
+        });
+    </script>
+{% endblock %}

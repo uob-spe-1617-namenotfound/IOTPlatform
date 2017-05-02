@@ -127,7 +127,14 @@ def link_device_to_room(room_id, device_id):
     return data['device']['device_id']
 
 
-def move_device2room(device2room):
+def get_user_themes(user_id):
+    r = requests.post(get_api_url('/user/{}/themes'.format(user_id)),
+                      json=get_authentication_token())
+    #data = r.json()
+    return None
+
+
+def themes_create(device2room):
     return None
 
 

@@ -167,3 +167,10 @@ def add_theme():
 def new_theme():
     theme_devices = request.form
     return 'done'
+
+
+@internal_site.route('/themes')
+def themes():
+    themes = data_interface.get_user_themes(get_active_user()['user_id'])
+    return render_template("internal/themes.html", themes=themes)
+

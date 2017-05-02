@@ -56,15 +56,6 @@ def account_settings():
     return "To be implemented"
 
 
-status = ['Enabled', 'Disabled']
-themeinfo = [{'id': '1', 'name': 'Weekend Away Theme', 'theme_status': status[0]},
-             {'id': '2', 'name': 'Night Party Theme', 'theme_status': status[1]}]
-
-
-@internal_site.route('/themes')
-def themes():
-    return render_template("internal/themes.html", themeinfo=themeinfo, status=status)
-
 
 @internal_site.route("/graph")
 def graph():
