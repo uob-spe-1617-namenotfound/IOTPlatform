@@ -1,11 +1,16 @@
 {% extends "internal/base.html" %}
 
 {% block styles %}
-{{ super() }}
-<style>
-.selected {background-color: #3ddb0d;}
-a { color: black;}
-</style>
+    {{ super() }}
+    <style>
+        .selected {
+            background-color: #3ddb0d;
+        }
+
+        a {
+            color: black;
+        }
+    </style>
 {% endblock %}
 
 {% block page_content %}
@@ -13,13 +18,13 @@ a { color: black;}
     <h2>Select Devices</h2>
     <table class="table">
         <thead>
-            <tr>
-                <th>Devices</th>
-                <th>Location</th>
-                <th>Status</th>
-                <th>Vendor</th>
-                <th></th>
-            </tr>
+        <tr>
+            <th>Devices</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Vendor</th>
+            <th></th>
+        </tr>
         </thead>
         {% for room in rooms %}
             {% for device in devices %}
@@ -83,20 +88,24 @@ a { color: black;}
 {% block scripts %}
     {{ super() }}
     <script>
+        $.ajaxSetup({
+            contentType: "application/json; charset=utf-8",
+        });
         var selected_devices = []
-        $(function(){
-            $('tbody tr').click(function (){
+        $(function () {
+            $('tbody tr').click(function () {
                 $(this).toggleClass("selected");
             });
-            $('#add_button').click(function (){
-                $('.selected').each(function(){
+            $('#add_button').click(function () {
+                $('.selected').each(function () {
                     selected_devices.push($(this).data('device-id'));
                 });
                 var data = {
                     device_ids: selected_devices
                 };
-                $.post('new_theme', data, function (rps) {
-                    console.log(rps);
+                console.log("Sending", data);
+                $.post('new_theme', JSON.stringify(data), function (rps) {
+                    console.log("receiving", rps);
                     window.location.href = $('#add_button').data('url');
                 });
             });
