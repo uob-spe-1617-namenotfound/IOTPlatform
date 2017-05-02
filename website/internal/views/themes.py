@@ -1,6 +1,3 @@
-import json
-import logging
-
 from flask import render_template, request, jsonify
 
 import data_interface
@@ -31,5 +28,6 @@ def themes():
         'user_id',
         'settings',
         'active'
-    }]  # = data_interface.get_user_themes(get_active_user()['user_id'])
+    }]
+    themes = data_interface.get_user_themes(get_active_user()['user_id'])
     return render_template("internal/themes.html", themes=themes)

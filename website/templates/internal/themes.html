@@ -1,60 +1,66 @@
 {% extends "internal/base.html" %}
 
 {% block styles %}
-{{ super() }}
-<style>
-.off {background-color: #3ddb0d;}
-a { color: black;}
-</style>
+    {{ super() }}
+    <style>
+        .off {
+            background-color: #3ddb0d;
+        }
+
+        a {
+            color: black;
+        }
+    </style>
 {% endblock %}
 
 {% block page_content %}
 
-
+{{ themes }}
     <table>
         <thead>
-            <th>Name</th>
+        <th>Name</th>
         </thead>
         <tbody>
-            {$ for theme in themes $}
-                <tr class="off" >
-                    {{ theme['name'] }}
-                    <input id="toggle-one" style="float: right;" checked type="checkbox">
-                </tr>
-                <tr class="off" >
-                    {$ for device in theme['devices'] $}
-                        <button type="button" data-target="#myModal" class="btn btn-default">device['name']</button>
-                        <div id="myModal" class="modal fade" role="dialog">
-                                <div class="modal-dialog modal-sm">
-                                    <!-- Modal content-->
-                                    <div class="modal-content">
-                                        <div class="modal-body">
-                                            {% block device_settings %}
-                                                {% if device.status.last_read %}
-                                                    {% if device.status.last_read.data.power_state == 1 %}
-                                                        Switch is on.
-                                                        <a class="btn btn-default btn-primary"
-                                                           href="{{ url_for('.set_switch_settings', device_id=device.device_id, state=0) }}">
-                                                            Turn it off
-                                                        </a>
-                                                    {% else %}
-                                                        Switch is off.
-                                                        <a class="btn btn-default btn-primary"
-                                                           href="{{ url_for('.set_switch_settings', device_id=device.device_id, state=1) }}">Turn it
-                                                            on
-                                                        </a>
-                                                    {% endif %}
-                                                {% else %}
-                                                    <div class="alert alert-danger">No data available</div>
-                                                {% endif %}
-                                            {% endblock %}
-                                        </div>
-                                    </div>
+        {% for theme in themes %}
+            <tr class="off">
+                {{ theme['name'] }}
+                <input id="toggle-one" style="float: right;" checked type="checkbox">
+            </tr>
+            <tr class="off">
+                {% for device in theme['devices'] %}
+                    <button type="button" data-target="#myModal" class="btn btn-default">device['name']</button>
+                    <div id="myModal" class="modal fade" role="dialog">
+                        <div class="modal-dialog modal-sm">
+                            <!-- Modal content-->
+                            <div class="modal-content">
+                                <div class="modal-body">
+                                    {% block device_settings %}
+                                        {% if device.status.last_read %}
+                                            {% if device.status.last_read.data.power_state == 1 %}
+                                                Switch is on.
+                                                <a class="btn btn-default btn-primary"
+                                                   href="{{ url_for('.set_switch_settings', device_id=device.device_id, state=0) }}">
+                                                    Turn it off
+                                                </a>
+                                            {% else %}
+                                                Switch is off.
+                                                <a class="btn btn-default btn-primary"
+                                                   href="{{ url_for('.set_switch_settings', device_id=device.device_id, state=1) }}">Turn
+                                                    it
+                                                    on
+                                                </a>
+                                            {% endif %}
+                                        {% else %}
+                                            <div class="alert alert-danger">No data available</div>
+                                        {% endif %}
+                                    {% endblock %}
                                 </div>
                             </div>
-                    {$ endfor $}
-                </tr>
-            {$ endfor $}
+                        </div>
+                    </div>
+                {% endfor %}
+            </tr>
+        {% endfor %}
         </tbody>
     </table>
 
@@ -69,12 +75,12 @@ a { color: black;}
     {{ super() }}
     <script>
         var selected_devices = []
-        $(function(){
-            $('tbody tr').click(function (){
+        $(function () {
+            $('tbody tr').click(function () {
                 $(this).toggleClass("selected");
             });
-            $('#add_button').click(function (){
-                $('.selected').each(function(){
+            $('#add_button').click(function () {
+                $('.selected').each(function () {
                     selected_devices.push($(this).data('device-id'));
                 });
                 var data = {
@@ -86,7 +92,7 @@ a { color: black;}
                 });
             });
             $('#toggle-one').bootstrapToggle();
-            $('#toggle-one').click(function(){
+            $('#toggle-one').click(function () {
                 $(tr).toggleClass("off on");
             })
         });
