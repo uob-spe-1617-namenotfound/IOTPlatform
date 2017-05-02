@@ -171,6 +171,12 @@ def new_theme():
 
 @internal_site.route('/themes')
 def themes():
-    themes = data_interface.get_user_themes(get_active_user()['user_id'])
+    themes = [{
+        'theme_id',
+        'name',
+        'user_id',
+        'settings',
+        'active'
+    }]  #= data_interface.get_user_themes(get_active_user()['user_id'])
     return render_template("internal/themes.html", themes=themes)
 

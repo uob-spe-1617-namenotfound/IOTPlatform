@@ -3,7 +3,7 @@
 {% block styles %}
 {{ super() }}
 <style>
-.selected {background-color: #3ddb0d;}
+.off {background-color: #3ddb0d;}
 a { color: black;}
 </style>
 {% endblock %}
@@ -17,10 +17,11 @@ a { color: black;}
         </thead>
         <tbody>
             {$ for theme in themes $}
-                <tr>
+                <tr class="off" >
                     {{ theme['name'] }}
+                    <input id="toggle-one" style="float: right;" checked type="checkbox">
                 </tr>
-                <tr>
+                <tr class="off" >
                     {$ for device in theme['devices'] $}
                         <button type="button" data-target="#myModal" class="btn btn-default">device['name']</button>
                         <div id="myModal" class="modal fade" role="dialog">
@@ -57,8 +58,8 @@ a { color: black;}
         </tbody>
     </table>
 
-    <a id="add_button" data-url="{{ url_for('.themes') }}" style="float: right;" class="btn btn-success">
-        <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add New Device
+    <a id="add_button" data-url="{{ url_for('.add_theme') }}" style="float: right;" class="btn btn-success">
+        <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add New Theme
     </a>
 
 {% endblock %}
@@ -84,6 +85,10 @@ a { color: black;}
                     window.location.href = $('#add_button').data('url');
                 });
             });
+            $('#toggle-one').bootstrapToggle();
+            $('#toggle-one').click(function(){
+                $(tr).toggleClass("off on");
+            })
         });
     </script>
 {% endblock %}
