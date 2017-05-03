@@ -130,8 +130,10 @@ def link_device_to_room(room_id, device_id):
 def get_user_themes(user_id):
     r = requests.post(get_api_url('/user/{}/themes'.format(user_id)),
                       json=get_authentication_token())
-    #data = r.json()
-    return None
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['themes']
 
 
 def themes_create(device2room):

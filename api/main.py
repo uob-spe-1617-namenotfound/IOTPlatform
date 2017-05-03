@@ -381,13 +381,13 @@ def get_triggers_for_user(user_id):
 
 @api.route('/user/<string:user_id>/themes', methods=['POST'])
 def get_themes_for_user(user_id):
-    access = api.token_repository.validate_token(ObjectId(user_id), get_request_token())
+    access = api.user_repository.validate_token(ObjectId(user_id), get_request_token())
     if not access:
         return jsonify({"themes": None, "error": {"code": 401, "message": "Authentication failed"}})
     themes = api.theme_repository.get_themes_for_user(ObjectId(user_id))
     if themes is None:
         return jsonify({"themes": None, "error": {"code": 404, "message": "No themes found for this user"}})
-    return jsonify({"themes": themes, "error": None})
+    return jsonify({"themes": [theme.get_theme_attributes() for theme in themes], "error": None})
 
 
 @api.route('/theme/<string:theme_id>', methods=['POST'])

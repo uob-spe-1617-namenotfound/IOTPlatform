@@ -149,7 +149,17 @@ def init_hardcoded_data():
             }],
             active=False
         )
-
+    # User
+    user_id = api.user_repository.register_new_user(email_address="hat@bond.com",
+                                                    password="007007",
+                                                    name="The Guy With The Hat",
+                                                    is_admin=False)
+    user_ids.append(user_id)
+    # House
+    house_id = api.house_repository.add_house(user_id=user_id,
+                                              name="{}'s house".format(data[0]),
+                                              location=None)
+    house_ids.append(house_id)
 
 
 @api.cli.command()
