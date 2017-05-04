@@ -340,6 +340,14 @@ def get_overall_power_consumption():
     return data['devices']
 
 
+def get_user_graph_data(user_id):
+    r = requests.post(get_api_url('/graph/{}'.format(user_id)), json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error: {}".format(r.content))
+    return data['data']
+
+
 def logout():
     r = requests.post(get_api_url("/logout"),
                       json=get_authentication_token())
