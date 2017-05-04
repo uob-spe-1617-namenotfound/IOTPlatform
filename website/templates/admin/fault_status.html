@@ -1,0 +1,32 @@
+{% extends "admin/base.html" %}
+{% block page_content %}
+    <h1>Welcome!</h1>
+
+    <ul class="nav nav-pills">
+        <li role="presentation"><a href="{{ url_for('.index') }}">List of Users</a></li>
+        <li role="presentation"><a href="{{ url_for('.map') }}">Map</a></li>
+        <li role="presentation" class="active"><a href="{{ url_for('.fault_status') }}">Faulty devices</a></li>
+    </ul>
+
+    {% if faults_list %}
+        <h3>Faulty devices</h3>
+        <table class="table table-striped">
+            <tr>
+                <th>Type of of fault</th>
+                <th>Number</th>
+            </tr>
+            {% for fault in faults_list %}
+                <tr>
+                    <td>
+                        {{ fault[0] }}
+                    </td>
+                    <td>
+                       {{ fault[1] }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>All devices are functioning perfectly!</p>
+    {% endif %}
+{% endblock %}

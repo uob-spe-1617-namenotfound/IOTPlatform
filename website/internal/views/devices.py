@@ -1,4 +1,6 @@
-from flask import render_template, flash, redirect, url_for
+import logging
+
+from flask import render_template, flash, redirect, url_for, request, jsonify
 
 import data_interface
 import shared.actions
@@ -14,15 +16,17 @@ from utilities.session import get_active_user
 def show_devices():
     all_vendors = get_all_vendors_list()
     devices = data_interface.get_user_devices(get_active_user()['user_id'])
+    logging.info("devices: {}".format(devices))
     rooms = data_interface.get_user_default_rooms()
     rooms = sorted(rooms, key=lambda k: k['name'])
     any_linked = False
     any_unlinked = False
+    moveinfo = []
     if devices:
         for device in devices:
-            if device['room_id'] != None:
+            if device['room_id'] is not None:
                 any_linked = True
-            elif device['room_id'] == None:
+            elif device['room_id'] is None:
                 any_unlinked = True
     # change from default to focal user
     # test requires here to check if devices returns devices correctly
@@ -31,7 +35,7 @@ def show_devices():
 
 
 @internal_site.route('/devices/vendor/<string:vendor_id>/new', methods=['GET', 'POST'])
-def add_new_device(vendor_id=None):
+def add_new_device_for_vendor(vendor_id):
     form = get_vendor_form(vendor_id)
     if form.validate_on_submit():
         data_interface.add_new_device(user_id=get_active_user()['user_id'],
@@ -140,3 +144,12 @@ def set_switch_settings(device_id, state):
     if error is not None:
         flash("State successfully set", "success")
     return redirect(url_for('.show_device', device_id=device_id))
+
+
+@internal_site.route('/device/move', methods=['POST', 'GET'])
+def move_device():
+    device2room = request.form
+    device2room = device2room.to_dict()
+    data_interface.move_device2room(device2room)
+    return jsonify(device2room)
+

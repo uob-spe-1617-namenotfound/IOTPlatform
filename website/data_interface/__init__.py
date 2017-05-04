@@ -127,6 +127,19 @@ def link_device_to_room(room_id, device_id):
     return data['device']['device_id']
 
 
+def get_user_themes(user_id):
+    r = requests.post(get_api_url('/user/{}/themes'.format(user_id)),
+                      json=get_authentication_token())
+    data = r.json()
+    if data['error'] is not None:
+        raise Exception("Error!")
+    return data['themes']
+
+
+def themes_create(device2room):
+    return None
+
+
 def get_house_info(house_id):
     r = requests.post(get_api_url('/house/{}'.format(house_id)),
                       json=get_authentication_token())
@@ -282,9 +295,9 @@ def get_triggers_for_user(user_id):
     return triggers
 
 
-def get_all_faulty_devices():
-    r = requests.get(get_api_url('/admin/faulty'),
-                     json=get_authentication_token())
+def get_admin_fault_status():
+    r = requests.post(get_api_url('/admin/faults'),
+                      json=get_authentication_token())
     data = r.json()
     if data['error'] is not None:
         raise Exception('Error!')

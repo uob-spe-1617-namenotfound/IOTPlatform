@@ -5,7 +5,7 @@
 <ul class="nav nav-pills">
         <li role="presentation"><a href="{{ url_for('.index') }}">List of Users</a></li>
         <li role="presentation" class="active"><a href="#">Map</a></li>
-        <li role="presentation"><a href="{{ url_for('.faulty_devices') }}">Faulty devices</a></li>
+        <li role="presentation"><a href="{{ url_for('.fault_status') }}">Faulty devices</a></li>
     </ul>
 
 <br>
@@ -16,8 +16,6 @@
                 width: 100%;
             }
         </style>
-
-
         <div id="map"></div>
         <script>
 

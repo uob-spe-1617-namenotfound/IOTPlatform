@@ -1,13 +1,11 @@
 {% extends "admin/base.html" %}
 {% block page_content %}
     <h1>Welcome!</h1>
-
     <ul class="nav nav-pills">
         <li role="presentation" class="active"><a href="#">List of Users</a></li>
         <li role="presentation"><a href="{{ url_for('.map') }}">Map</a></li>
-        <li role="presentation"><a href="{{ url_for('.faulty_devices') }}">Faulty devices</a></li>
+        <li role="presentation"><a href="{{ url_for('.fault_status') }}">Faulty devices</a></li>
     </ul>
-
 
     {% if users %}
         <h3>Users</h3>

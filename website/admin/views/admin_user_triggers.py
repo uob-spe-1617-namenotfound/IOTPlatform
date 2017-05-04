@@ -18,6 +18,7 @@ actions = {"door_sensor": ['Turn on', 'Turn Off', 'No Action'],
            "thermostat": ['Turn on', 'Turn Off', 'No Action', 'Modify Temperature'],
            "motion_sensor": ['Turn on', 'Turn Off', 'No Action']}
 
+
 @admin_site.route('/user/<string:user_id>/themes')
 def themes():
     return render_template("admin/admin_themes.html", themeinfo=themeinfo, status=status)

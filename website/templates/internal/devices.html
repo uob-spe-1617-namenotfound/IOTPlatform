@@ -1,20 +1,94 @@
 {% extends "internal/base.html" %}
+
+{% block styles %}
+    {{ super() }}
+<style>
+    .table-hover tbody tr:hover { background-color: #d2def2; }
+    </style>
+{% endblock %}
+
 {% block page_content %}
     <h2>Devices</h2>
     <br>
-    {% for vendor in all_vendors %}
-        <div class="modal" id="modal-add-device-vendor-{{ vendor.id }}">
-            <div class="modal-dialog">
-                <!-- Modal content-->
-                <div class="modal-content">
-                    <div class="modal-body">
-                        <h1>Add a new device of vendor {{ vendor.name }}</h1>
-                        {{ wtf.quick_form(vendor.form, action=url_for('.add_new_device', vendor_id=vendor.id)) }}
-                    </div>
+    <a href="#" data-toggle="modal" data-target="#myModal" class="btn btn-primary">
+        <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add New Device
+    </a>
+    <span data-toggle="modal" data-target="#myModal2">
+        <button class="btn btn-default" type="submit">Move device to different room</button>
+    </span>
+    <div id="myModal2" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-ms">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-body">
+                    <table class="table table-condensed table-striped devices-table table-hover">
+                        <h3 class="devices-table">Choose a device</h3>
+                        {% if devices %}
+                            <thead>
+                                <tr>
+                                    <th>Devices</th>
+                                    <th>Location</th>
+                                    <th>Vendor</th>
+                                </tr>
+                            </thead>
+                            {% for room in rooms %}
+                                {% for device in devices %}
+                                    {% if room.room_id == device['room_id'] %}
+                                        <tr class="device-row" data-device-id="{{ device.device_id }}">
+                                            <td>{{ device.name }}</td>
+                                            <td>{{ room.name }}</td>
+                                            <td>{{ device.vendor }}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                        {% else %}
+                            No devices
+                        {% endif %}
+                    </table>
+                    <table class="table table-condensed table-striped rooms-table table-hover">
+                        <h3 class="rooms-table">Choose destination room</h3>
+                        {% if rooms %}
+                            <thead>
+                            <tr>
+                                <th>Room</th>
+                            </tr>
+                            </thead>
+                            {% for room in rooms %}
+                                <tr class="room-row" data-room-id="{{ room.room_id }}">
+                                    <td>{{ room.name }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            No rooms
+                        {% endif %}
+                    </table>
                 </div>
             </div>
         </div>
-    {% endfor %}
+    </div>
+    <div id="myModal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-ms">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-body">
+                    <h1>Add a new device to your account!</h1>
+                    {% for vendor in all_vendors %}
+                        <div class="modal" id="modal-add-device-vendor-{{ vendor.id }}">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-body">
+                                        <h1>Add a new device of vendor {{ vendor.name }}</h1>
+                                        {{ wtf.quick_form(vendor.form, action=url_for('.add_new_device_for_vendor', vendor_id=vendor.id)) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="btn-group">
         <button class="btn btn-default dropdown-toggle" type="button" id="btn-add-device-select-vendor"
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -55,9 +129,11 @@
                                 </a>
                             </td>
                             <td>-</td>
-                            <td>{device.faulty}}</td>
+                            <td>{% if device.faulty == False %} OK {% elif device.faulty == True %}
+                                Faulty {% endif %}</td>
                             <td>{{ device.vendor }}</td>
-                            <td><a href="#" data-toggle="modal" data-target="#myModal2">x</a></td>
+                            <td><a href="#" data-toggle="modal" data-target="#myModal2"><span
+                                    class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>
                             <div id="myModal2" class="modal fade" role="dialog">
                                 <div class="modal-dialog modal-sm">
                                     <!-- Modal content-->
@@ -92,15 +168,18 @@
                     {% for device in devices %}
                         {% if room.room_id == device['room_id'] %}
                             <tr>
+
                                 <td>
                                     <a href="{{ url_for('.show_device', device_id=device.device_id) }}">
                                         {{ device.name }}
                                     </a>
                                 </td>
                                 <td>{{ room.name }}</td>
-                                <td>{device.faulty}}</td>
+                                <td>{% if device.faulty == False %} OK {% elif device.faulty == True %}
+                                    Faulty {% endif %}</td>
                                 <td>{{ device.vendor }}</td>
-                                <td><a href="#" data-toggle="modal" data-target="#myModal2">x</a></td>
+                                <td><a href="#" data-toggle="modal" data-target="#myModal2"><span
+                                        class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>
                             </tr>
                         {% endif %}
                     {% endfor %}
@@ -111,6 +190,37 @@
         <h1>No data to show!</h1>
     {% endif %}
 
-    <!-- TODO: add links to the table -->
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        var device_id = null;
+        var room_id = null;
+        $(function () {
+            $('.rooms-table').hide();
+            $('#myModal2').on('hidden.bs.modal', function () {
+                $('.devices-table').show();
+                $('.rooms-table').hide();
+            });
+            $('.device-row').click(function () {
+                device_id = $(this).data('device-id');
+                $('.devices-table').hide();
+                $('.rooms-table').show();
+            });
+            $('.room-row').click(function () {
+                room_id = $(this).data('room-id');
+                var data = {
+                    room_id: room_id,
+                    device_id: device_id
+                };
+                $.post('device/move', data, function () {
+                    $('#myModal2').modal('hide');
+                    location.reload(true);
+                });
+            });
+        });
+    </script>
 
 {% endblock %}

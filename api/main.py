@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+import random
 
 from bson.objectid import ObjectId
 from flask import Flask, jsonify, request
@@ -72,10 +73,13 @@ def get_user_graph_data(user_id):
         dateList.append(base - datetime.timedelta(days=x))
 
     readingList = []
+    total = numdays * 10
     for y in range(0, numdays):
-        readingList.append(round(7.845, 2))  # remain constant for now, 7.845 is a random value.
+        # TODO: read actual data
+        total -= random.randint(0, 100) / 10.
+        readingList.append(total)
 
-    data = {date.strftime("%d-%B-%Y"): data for date, data in zip(dateList, readingList)}
+    data = {date.strftime("%Y-%m-%d"): data for date, data in zip(dateList, readingList)}
 
     return jsonify({"data": data, "error": None})
 
@@ -377,13 +381,13 @@ def get_triggers_for_user(user_id):
 
 @api.route('/user/<string:user_id>/themes', methods=['POST'])
 def get_themes_for_user(user_id):
-    access = api.token_repository.validate_token(ObjectId(user_id), get_request_token())
+    access = api.user_repository.validate_token(ObjectId(user_id), get_request_token())
     if not access:
         return jsonify({"themes": None, "error": {"code": 401, "message": "Authentication failed"}})
     themes = api.theme_repository.get_themes_for_user(ObjectId(user_id))
     if themes is None:
         return jsonify({"themes": None, "error": {"code": 404, "message": "No themes found for this user"}})
-    return jsonify({"themes": themes, "error": None})
+    return jsonify({"themes": [theme.get_theme_attributes() for theme in themes], "error": None})
 
 
 @api.route('/theme/<string:theme_id>', methods=['POST'])
@@ -522,11 +526,11 @@ def all_faulty_devices():
         for device in faulty_devices:
             attributes = device.get_device_attributes()
             faulty_device = dict()
-            faulty_device['user_id'] = attributes['user_id']
+            # faulty_device['user_id'] = attributes['user_id']
             faulty_device['device_id'] = attributes['device_id']
             faulty_device['device_type'] = attributes['device_type']
             faulty_device['vendor'] = attributes['vendor']
-            faulty_device['fault'] = attributes['fault']
+            faulty_device['faulty'] = attributes['faulty']
             devices.append(faulty_device)
         return jsonify({"devices": devices, "error": None})
 
@@ -593,9 +597,7 @@ def logout():
     else:
         return jsonify({"success": False, "error": {"code": 401, "message": "Logout failed"}})
 
-
 from admin import *
-
 
 def main():
     setup_cron()
