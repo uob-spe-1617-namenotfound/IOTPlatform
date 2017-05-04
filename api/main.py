@@ -175,7 +175,6 @@ def add_device(house_id):
                                                  name=data['name'],
                                                  device_type=data['device_type'],
                                                  target=data['target'] if 'target' in data else {},
-                                                 status=data['status'] if 'status' in data else {},
                                                  configuration=data['configuration'],
                                                  vendor=data['vendor'])
     device = api.device_repository.get_device_by_id(device_id)

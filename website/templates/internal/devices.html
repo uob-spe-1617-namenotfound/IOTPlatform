@@ -2,17 +2,16 @@
 
 {% block styles %}
     {{ super() }}
-<style>
-    .table-hover tbody tr:hover { background-color: #d2def2; }
+    <style>
+        .table-hover tbody tr:hover {
+            background-color: #d2def2;
+        }
     </style>
 {% endblock %}
 
 {% block page_content %}
     <h2>Devices</h2>
     <br>
-    <a href="#" data-toggle="modal" data-target="#myModal" class="btn btn-primary">
-        <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add New Device
-    </a>
     <span data-toggle="modal" data-target="#myModal2">
         <button class="btn btn-default" type="submit">Move device to different room</button>
     </span>
@@ -25,11 +24,11 @@
                         <h3 class="devices-table">Choose a device</h3>
                         {% if devices %}
                             <thead>
-                                <tr>
-                                    <th>Devices</th>
-                                    <th>Location</th>
-                                    <th>Vendor</th>
-                                </tr>
+                            <tr>
+                                <th>Devices</th>
+                                <th>Location</th>
+                                <th>Vendor</th>
+                            </tr>
                             </thead>
                             {% for room in rooms %}
                                 {% for device in devices %}
@@ -67,28 +66,18 @@
             </div>
         </div>
     </div>
-    <div id="myModal" class="modal fade" role="dialog">
-        <div class="modal-dialog modal-ms">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-body">
-                    <h1>Add a new device to your account!</h1>
-                    {% for vendor in all_vendors %}
-                        <div class="modal" id="modal-add-device-vendor-{{ vendor.id }}">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-body">
-                                        <h1>Add a new device of vendor {{ vendor.name }}</h1>
-                                        {{ wtf.quick_form(vendor.form, action=url_for('.add_new_device_for_vendor', vendor_id=vendor.id)) }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
+    {% for vendor in all_vendors %}
+        <div class="modal" id="modal-add-device-vendor-{{ vendor.id }}">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <h1>Add a new device of vendor {{ vendor.name }}</h1>
+                        {{ wtf.quick_form(vendor.form, action=url_for('.add_new_device_for_vendor', vendor_id=vendor.id)) }}
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    {% endfor %}
     <div class="btn-group">
         <button class="btn btn-default dropdown-toggle" type="button" id="btn-add-device-select-vendor"
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -96,7 +85,6 @@
             <span class="caret"></span>
         </button>
         <ul class="dropdown-menu" aria-labelledby="dropdown-device-vendor">
-
             {% for vendor in all_vendors %}
                 <li>
                     <a href="#" data-toggle="modal" data-target="#modal-add-device-vendor-{{ vendor.id }}">
